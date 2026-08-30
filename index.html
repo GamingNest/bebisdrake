@@ -87,6 +87,8 @@
   #previewMeta .dc { opacity: .75; font-weight: 600; font-size: 11px; letter-spacing: .06em; }
   .item.sel { outline: 2px solid #3a2458; }
   .item .dc { font-size: 12px; font-weight: 800; color: #8a5a12; margin: 2px 0 8px; }
+  .thumb { width: 100%; height: 78px; border-radius: 10px; display: block; margin-bottom: 6px; background: #cfe8f4; }
+  #previewTag { color: #e6d9f8; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
 </style>
 </head>
 <body>
@@ -105,6 +107,7 @@
   <div id="panel">
     <h2>Dragon Shop</h2>
     <div id="previewWrap">
+      <div id="previewTag">Preview</div>
       <canvas id="preview" width="440" height="120"></canvas>
       <div id="previewMeta">Tap an item to preview</div>
     </div>
@@ -390,7 +393,7 @@
   }
 
   function sky() {
-    const m = map();
+    const m = liveMap();
     const g = ctx.createLinearGradient(0, 0, 0, H);
     g.addColorStop(0, m.sky[0]); g.addColorStop(1, m.sky[1]);
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
@@ -404,12 +407,12 @@
     ellipse(x + 160, 130, 40, 14); ctx.fill();
   }
   function ground() {
-    const m = map();
+    const m = liveMap();
     ctx.fillStyle = m.grass; ctx.fillRect(0, groundY, W, H - groundY);
     ctx.fillStyle = m.dirt; ctx.fillRect(0, groundY + 12, W, H);
   }
   function drawPipes() {
-    const m = map();
+    const m = liveMap();
     for (const p of pipes) {
       ctx.fillStyle = m.pipe;
       ctx.fillRect(p.x, 0, PW, p.top);
@@ -492,7 +495,7 @@
     drawPipes();
     drawCoins();
     ground();
-    drawDragonAt(bird.x, bird.y, bird.rot, 0.82, color(), wingPhase, dragon().kind);
+    drawDragonAt(bird.x, bird.y, bird.rot, 0.82, livePal(), wingPhase, liveKind());
     for (const s of parts) {
       ctx.globalAlpha = Math.max(0, s.life * 2);
       ctx.fillStyle = s.c; ctx.fillRect(s.x, s.y, 4, 4); ctx.globalAlpha = 1;
@@ -501,6 +504,18 @@
     requestAnimationFrame(tick);
   }
 
+  function livePal() {
+    if (shopOpen && shopTab === "colors") return currentPreview();
+    return color();
+  }
+  function liveKind() {
+    if (shopOpen && shopTab === "dragons") return currentPreview().kind;
+    return dragon().kind;
+  }
+  function liveMap() {
+    if (shopOpen && shopTab === "maps") return currentPreview();
+    return map();
+  }
   function currentPreview() {
     const items = shopTab === "dragons" ? DRAGONS : shopTab === "colors" ? COLORS : MAPS;
     if (shopPick && shopPick.tab === shopTab) {
@@ -530,6 +545,20 @@
     else previewMeta.innerHTML = it.name + ' · <span class="dcoin"></span> ' + it.price;
   }
 
+  function paintThumb(cv, it) {
+    const keep = ctx;
+    ctx = cv.getContext("2d");
+    const w = cv.width, h = cv.height;
+    const pal = shopTab === "colors" ? it : color();
+    const kind = shopTab === "dragons" ? it.kind : dragon().kind;
+    const mp = shopTab === "maps" ? it : map();
+    const g = ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, mp.sky[0]); g.addColorStop(1, mp.sky[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = mp.grass; ctx.fillRect(0, h - 18, w, 18);
+    drawDragonAt(w * 0.5, h * 0.55, 0, 1.15, pal, 0.35, kind);
+    ctx = keep;
+  }
   function renderShop() {
     const items = shopTab === "dragons" ? DRAGONS : shopTab === "colors" ? COLORS : MAPS;
     const ownedKey = shopTab === "dragons" ? "ownedD" : shopTab === "colors" ? "ownedC" : "ownedM";
@@ -547,32 +576,38 @@
       if (shopTab === "colors") swatch.style.background = it.body;
       else if (shopTab === "maps") swatch.style.background = "linear-gradient(180deg," + it.sky[0] + "," + it.sky[1] + ")";
       else swatch.style.background = color().body;
+      const thumb = document.createElement("canvas");
+      thumb.className = "thumb"; thumb.width = 240; thumb.height = 120;
       const name = document.createElement("div"); name.className = "name"; name.textContent = it.name;
       const dc = document.createElement("div"); dc.className = "dc";
-      dc.textContent = owned ? (eq ? "Equipped" : "Owned") : "";
+      dc.textContent = owned ? (eq ? "Equipped" : "Owned") : "Preview";
       const btn = document.createElement("button");
       if (eq) { btn.textContent = "Wearing"; btn.className = "eq"; }
       else if (owned) { btn.textContent = "Use"; btn.className = "own"; }
       else { btn.innerHTML = '<span class="dcoin"></span>' + it.price; }
+      function selectOnly() { shopPick = { tab: shopTab, id: it.id }; renderShop(); }
       div.onclick = function (e) {
-        if (e.target.tagName === "BUTTON") return;
-        shopPick = { tab: shopTab, id: it.id };
-        renderShop();
+        if (e.target.closest("button")) return;
+        selectOnly();
       };
       btn.onclick = function (e) {
         e.stopPropagation();
-        shopPick = { tab: shopTab, id: it.id };
-        if (owned) { save[eqKey] = it.id; persist(); renderShop(); }
-        else if (save.coins >= it.price) {
-          save.coins -= it.price; save[ownedKey].push(it.id); save[eqKey] = it.id;
-          persist(); coinEl.textContent = String(save.coins); renderShop();
-        } else {
-          dc.innerHTML = "Need <span class='dcoin'></span> " + it.price;
+        if (!owned) {
+          if (!sel) { selectOnly(); return; }
+          if (save.coins >= it.price) {
+            save.coins -= it.price; save[ownedKey].push(it.id); save[eqKey] = it.id;
+            persist(); coinEl.textContent = String(save.coins); renderShop();
+          } else {
+            dc.innerHTML = "Need <span class='dcoin'></span> " + it.price;
+          }
+          return;
         }
+        save[eqKey] = it.id; persist(); renderShop();
       };
-      if (shopTab !== "dragons") div.appendChild(swatch);
+      div.appendChild(thumb);
       div.appendChild(name); div.appendChild(dc); div.appendChild(btn);
       shopGrid.appendChild(div);
+      paintThumb(thumb, it);
     }
   }
 
