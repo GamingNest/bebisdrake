@@ -77,13 +77,25 @@
   size();
 
   function reset() {
-    bird = { x: W * 0.3, y: H * 0.42, vy: 0, rot: 0 };
+    bird = { x: W * 0.3, y: H * 0.42, vy: 0, rot: 0, pal: pickPal() };
     pipes = [];
     parts = [];
+    extras = [];
     score = 0; scroll = 0; wing = 0;
     scoreEl.textContent = "0";
     pipes.push(makePipe(W + 80));
     pipes.push(makePipe(W + 80 + Math.max(220, W * 0.45)));
+    for (let i = 0; i < 3; i++) {
+      extras.push({
+        x: W * (0.55 + i * 0.28),
+        y: 70 + (i * 97) % (H * 0.45),
+        s: 0.42 + i * 0.08,
+        pal: pickPal(bird.pal),
+        flap: Math.random(),
+        rot: -0.15,
+        vx: 18 + i * 10
+      });
+    }
   }
 
   function makePipe(x) {
@@ -155,149 +167,176 @@
     }
   }
 
+
+  const PALS = [
+    { body:"#2a2c33", belly:"#3d414c", wing:"#1c1e24", horn:"#3a3d46", eye:"#b6e04a", pupil:"#14200a", glow:"#7dffb0", blush:"#5a3a44", tongue:"#e07a8a", tooth:"#f4f1ea", spot:"#5ee0c8" },
+    { body:"#4aa3e8", belly:"#d8eefc", wing:"#2d7fc4", horn:"#f2c56b", eye:"#ff8a3d", pupil:"#3a1408", glow:"#ffe08a", blush:"#ff9aa8", tongue:"#ff6b86", tooth:"#fff", spot:"#fff3b0" },
+    { body:"#8b6cff", belly:"#e4dcff", wing:"#6a48d4", horn:"#c9b6ff", eye:"#ffe36b", pupil:"#2a2208", glow:"#d4b8ff", blush:"#ff9ec4", tongue:"#ff7a9c", tooth:"#fff", spot:"#b8f0ff" },
+    { body:"#f2c7a4", belly:"#fff4e6", wing:"#e0a57a", horn:"#c98b5c", eye:"#2eb8c9", pupil:"#062428", glow:"#9cf0e0", blush:"#f4a0a8", tongue:"#ee7a86", tooth:"#fff", spot:"#ffd6e8" },
+    { body:"#3faf7a", belly:"#d4f3e0", wing:"#2d8a5c", horn:"#f0d56a", eye:"#ffb347", pupil:"#2a1806", glow:"#b8ff9a", blush:"#ef8fa0", tongue:"#e56b7c", tooth:"#fff", spot:"#fff1a0" },
+    { body:"#f07878", belly:"#ffe4dc", wing:"#d45a5a", horn:"#ffd18a", eye:"#7dffd2", pupil:"#083028", glow:"#ffd36e", blush:"#ffb0c0", tongue:"#e85a78", tooth:"#fff", spot:"#ffe9a8" }
+  ];
+
+  let extras = [];
+
+  function pickPal(avoid) {
+    const pool = PALS.filter(p => p !== avoid);
+    return pool[(Math.random() * pool.length) | 0];
+  }
+
   function ellipse(x, y, rx, ry, rot) {
     ctx.beginPath();
     ctx.ellipse(x, y, rx, ry, rot || 0, 0, Math.PI * 2);
   }
 
-  function drawDragon() {
-    const b = bird;
-    const f = Math.sin(wing * Math.PI) * 7;
-    ctx.save();
-    ctx.translate(b.x, b.y);
-    ctx.rotate(b.rot);
-    ctx.scale(0.68, 0.68);
-
+  function drawChibi(pal, flapAmt) {
+    const f = Math.sin(flapAmt * Math.PI) * 8;
     // back wing
-    ctx.fillStyle = "#e89abb";
+    ctx.fillStyle = pal.wing;
     ctx.beginPath();
-    ctx.moveTo(-2, 2);
-    ctx.quadraticCurveTo(-2, -22 - f, 16, -10 - f * 0.5);
-    ctx.quadraticCurveTo(6, 0, -2, 4);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(180,80,120,.25)";
-    ctx.lineWidth = 1.2;
-    ctx.beginPath(); ctx.moveTo(0, 1); ctx.quadraticCurveTo(2, -12 - f, 12, -8); ctx.stroke();
+    ctx.moveTo(-2, 0);
+    ctx.quadraticCurveTo(-8, -18 - f, 10, -16 - f);
+    ctx.quadraticCurveTo(8, -4, 0, 4);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = pal.glow;
+    ctx.globalAlpha = 0.35; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, 0); ctx.quadraticCurveTo(-2, -12 - f, 7, -13); ctx.stroke();
+    ctx.globalAlpha = 1;
 
-    // tail
-    ctx.strokeStyle = "#f4a9c6";
-    ctx.lineWidth = 6.5; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(-12, 8); ctx.quadraticCurveTo(-26, 10, -32, 18); ctx.stroke();
-    ctx.fillStyle = "#ffd56f";
+    // tail, spade tip (not the fan from the reference)
+    ctx.strokeStyle = pal.body;
+    ctx.lineWidth = 7; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(-12, 8); ctx.quadraticCurveTo(-28, 6, -36, 16); ctx.stroke();
+    ctx.fillStyle = pal.body;
     ctx.beginPath();
-    ctx.moveTo(-31, 17);
-    ctx.quadraticCurveTo(-40, 12, -38, 22);
-    ctx.quadraticCurveTo(-32, 24, -31, 17);
-    ctx.fill();
-    ctx.fillStyle = "#ffe9a8";
-    ellipse(-35, 18, 2.2, 1.6); ctx.fill();
+    ctx.moveTo(-34, 14);
+    ctx.lineTo(-46, 10);
+    ctx.lineTo(-42, 20);
+    ctx.lineTo(-34, 18);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = pal.glow;
+    ctx.globalAlpha = 0.7;
+    ellipse(-40, 15, 1.6, 1.6); ctx.fill();
+    ctx.globalAlpha = 1;
 
-    // little feet
-    ctx.fillStyle = "#f09aba";
-    ellipse(-6, 16, 4.2, 3.2, 0.2); ctx.fill();
-    ellipse(6, 16.5, 4.4, 3.3, -0.15); ctx.fill();
-    ctx.fillStyle = "#ffd36e";
-    ellipse(-7.5, 17.4, 1.1, 0.9); ctx.fill();
-    ellipse(-4.6, 17.6, 1.1, 0.9); ctx.fill();
-    ellipse(4.6, 17.8, 1.1, 0.9); ctx.fill();
-    ellipse(7.6, 17.6, 1.1, 0.9); ctx.fill();
+    // tiny feet tucked
+    ctx.fillStyle = pal.body;
+    ellipse(-5, 14.5, 3.6, 2.8, 0.25); ctx.fill();
+    ellipse(5, 15, 3.8, 2.9, -0.2); ctx.fill();
 
-    // chubby body
-    ctx.fillStyle = "#ffb7d4";
-    ellipse(0, 6, 16.5, 14.5); ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,.28)";
-    ellipse(-4, 1, 7, 5, -0.4); ctx.fill();
-
-    // belly
-    ctx.fillStyle = "#fff1dc";
-    ellipse(1, 10, 9.5, 8); ctx.fill();
-    ctx.fillStyle = "#f3d3b0";
-    ellipse(-3, 9, 1.5, 1.2); ctx.fill();
-    ellipse(1.5, 11.5, 1.6, 1.3); ctx.fill();
-    ellipse(5.5, 9.2, 1.4, 1.1); ctx.fill();
-
-    // spots
-    ctx.fillStyle = "rgba(232, 120, 160, .45)";
-    ellipse(-8, 4, 2.2, 1.8); ctx.fill();
-    ellipse(7, 8, 1.7, 1.4); ctx.fill();
-    ellipse(-5, 12, 1.4, 1.1); ctx.fill();
+    // plump body
+    ctx.fillStyle = pal.body;
+    ellipse(0, 6.5, 13.5, 12); ctx.fill();
+    ctx.fillStyle = pal.belly;
+    ellipse(1.5, 9.5, 8.2, 7.2); ctx.fill();
+    // glowing back spots (not on the reference)
+    ctx.fillStyle = pal.spot;
+    ctx.globalAlpha = 0.85;
+    ellipse(-6, 2, 1.7, 1.5); ctx.fill();
+    ellipse(-1, 0.5, 1.3, 1.2); ctx.fill();
+    ellipse(5, 3, 1.1, 1); ctx.fill();
+    ctx.globalAlpha = 1;
 
     // front wing
-    ctx.fillStyle = "#ff9fc8";
+    ctx.fillStyle = pal.wing;
     ctx.beginPath();
-    ctx.moveTo(2, 3);
-    ctx.quadraticCurveTo(4, -24 - f, 20, -7 - f);
-    ctx.quadraticCurveTo(8, 4, 2, 6);
-    ctx.fill();
-    ctx.fillStyle = "rgba(255,220,235,.55)";
+    ctx.moveTo(2, 2);
+    ctx.quadraticCurveTo(6, -22 - f, 22, -10 - f * 0.6);
+    ctx.quadraticCurveTo(10, 2, 2, 6);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = pal.glow;
+    ctx.globalAlpha = 0.22;
     ctx.beginPath();
-    ctx.moveTo(4, 3);
-    ctx.quadraticCurveTo(6, -16 - f, 15, -6);
-    ctx.quadraticCurveTo(8, 3, 4, 5);
+    ctx.moveTo(4, 2);
+    ctx.quadraticCurveTo(8, -14 - f, 16, -8);
+    ctx.quadraticCurveTo(8, 2, 4, 5);
     ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // curled pointed horns (reference had round nubs)
+    ctx.fillStyle = pal.horn;
+    ctx.beginPath();
+    ctx.moveTo(8, -12);
+    ctx.quadraticCurveTo(6, -24, 12, -22);
+    ctx.quadraticCurveTo(12, -16, 11, -12);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(16, -13);
+    ctx.quadraticCurveTo(18, -26, 23, -22);
+    ctx.quadraticCurveTo(20, -16, 18, -12);
+    ctx.closePath(); ctx.fill();
 
     // ears
-    ctx.fillStyle = "#f4a3c4";
-    ellipse(8, -12, 3.2, 4.2, -0.4); ctx.fill();
-    ellipse(16, -13, 3, 4, 0.25); ctx.fill();
-    ctx.fillStyle = "#ffd0e4";
-    ellipse(8.2, -11.5, 1.6, 2.2, -0.4); ctx.fill();
-    ellipse(15.8, -12.4, 1.5, 2.1, 0.25); ctx.fill();
+    ctx.fillStyle = pal.body;
+    ellipse(7.5, -10, 3.4, 4.2, -0.5); ctx.fill();
+    ellipse(18, -11, 3.2, 4, 0.35); ctx.fill();
+    ctx.fillStyle = pal.blush;
+    ellipse(7.6, -10, 1.5, 2.1, -0.5); ctx.fill();
+    ellipse(17.8, -11, 1.4, 2, 0.35); ctx.fill();
 
-    // horns, small and round
-    ctx.fillStyle = "#d4c2ff";
-    ellipse(10, -16.5, 2.1, 4.4, -0.15); ctx.fill();
-    ellipse(17, -16.8, 2, 4.2, 0.2); ctx.fill();
-    ctx.fillStyle = "#f0e9ff";
-    ellipse(9.4, -17.5, 0.9, 1.8, -0.15); ctx.fill();
-    ellipse(16.4, -17.8, 0.85, 1.7, 0.2); ctx.fill();
-
-    // head, extra round
-    ctx.fillStyle = "#ffb7d4";
-    ellipse(14, -1, 12.5, 11.2, 0.08); ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,.3)";
-    ellipse(10, -5, 5, 3.5, -0.3); ctx.fill();
+    // big round head
+    ctx.fillStyle = pal.body;
+    ellipse(13, -1.5, 13.2, 12.2, 0.06); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,.08)";
+    ellipse(8, -5, 5, 3.5, -0.4); ctx.fill();
 
     // snout
-    ctx.fillStyle = "#ffcfe0";
-    ellipse(24, 3.2, 7.2, 5.4, 0.12); ctx.fill();
-    ctx.fillStyle = "#e889b0";
-    ellipse(26.5, 2.2, 1.05, 0.8); ctx.fill();
-    ellipse(29.2, 2.5, 1.05, 0.8); ctx.fill();
+    ctx.fillStyle = pal.body;
+    ellipse(22, 4, 7.4, 5.6, 0.12); ctx.fill();
+
+    // teeth + blep
+    ctx.fillStyle = pal.tooth;
+    ctx.beginPath(); ctx.moveTo(20.5, 5.2); ctx.lineTo(21.6, 7.4); ctx.lineTo(22.7, 5.3); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(23.2, 5.4); ctx.lineTo(24.2, 7.2); ctx.lineTo(25.3, 5.4); ctx.fill();
+    ctx.fillStyle = pal.tongue;
+    ellipse(26.2, 7.4, 2.4, 1.7, 0.25); ctx.fill();
+
+    // almond eyes, vertical pupils, extra lash to differ
+    ctx.fillStyle = "#f7f4ea";
+    ellipse(16.2, -2.2, 4.3, 5.0, -0.12); ctx.fill();
+    ctx.fillStyle = pal.eye;
+    ellipse(16.6, -2.0, 2.8, 3.5, -0.12); ctx.fill();
+    ctx.fillStyle = pal.pupil;
+    ellipse(16.8, -1.9, 0.85, 2.5, -0.12); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ellipse(17.8, -3.4, 1.1, 1.3); ctx.fill();
+    ellipse(15.6, -1.0, 0.5, 0.55); ctx.fill();
+    ctx.strokeStyle = pal.body;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.arc(16.2, -2.4, 4.4, Math.PI * 1.05, Math.PI * 1.82); ctx.stroke();
 
     // blush
-    ctx.fillStyle = "rgba(255, 105, 145, .5)";
-    ellipse(12, 3.2, 3.4, 2.1); ctx.fill();
-    ellipse(22, 5, 2.6, 1.7); ctx.fill();
+    ctx.fillStyle = pal.blush;
+    ctx.globalAlpha = 0.55;
+    ellipse(11.5, 3.4, 3.2, 1.8); ctx.fill();
+    ctx.globalAlpha = 1;
 
-    // eye
-    ctx.fillStyle = "#fff";
-    ellipse(18.5, -2.6, 4.6, 5.1); ctx.fill();
-    ctx.fillStyle = "#6b3d9a";
-    ellipse(19.3, -2.4, 2.6, 3.1); ctx.fill();
-    ctx.fillStyle = "#1e1230";
-    ellipse(19.6, -2.2, 1.45, 1.8); ctx.fill();
-    ctx.fillStyle = "#fff";
-    ellipse(20.5, -3.5, 1.15, 1.3); ctx.fill();
-    ellipse(18.6, -1.2, 0.55, 0.6); ctx.fill();
-    ctx.strokeStyle = "#c56b95";
-    ctx.lineWidth = 1.3;
-    ctx.beginPath(); ctx.arc(18.5, -2.8, 4.7, Math.PI * 1.05, Math.PI * 1.85); ctx.stroke();
+    // smile line
+    ctx.strokeStyle = pal.blush;
+    ctx.lineWidth = 1.2; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(23.5, 4.6, 4.0, 0.15, 1.05); ctx.stroke();
+  }
 
-    // smile
-    ctx.strokeStyle = "#d56b94";
-    ctx.lineWidth = 1.5; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.arc(26, 4.2, 3.4, 0.15, 1.15); ctx.stroke();
-
-    // tiny puff
-    if (wing > 0.18) {
-      ctx.fillStyle = "#ffe08a";
-      ellipse(33, 3, 4.5, 2.6); ctx.fill();
-      ctx.fillStyle = "#ff9a4a";
-      ellipse(35.5, 3, 2.2, 1.4); ctx.fill();
-    }
-
+  function drawDragon() {
+    ctx.save();
+    ctx.translate(bird.x, bird.y);
+    ctx.rotate(bird.rot);
+    ctx.scale(0.78, 0.78);
+    drawChibi(bird.pal, wing);
     ctx.restore();
+  }
+
+  function drawExtras() {
+    for (const e of extras) {
+      ctx.save();
+      ctx.translate(e.x, e.y);
+      ctx.rotate(e.rot);
+      ctx.globalAlpha = 0.92;
+      ctx.scale(e.s, e.s);
+      drawChibi(e.pal, e.flap);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    }
   }
 
   function tick(ts) {
@@ -347,7 +386,18 @@
     }
     parts = parts.filter(s => s.life > 0);
 
+    for (const e of extras) {
+      e.x -= (state === "play" ? 40 : 16) * dt + e.vx * dt * 0.2;
+      e.y += Math.sin((ts / 400) + e.s) * 12 * dt;
+      e.flap = (e.flap + dt * 2) % 1;
+      if (e.x < -80) {
+        e.x = W + 60;
+        e.y = 60 + Math.random() * (groundY - 140);
+        e.pal = pickPal(bird.pal);
+      }
+    }
     sky();
+    drawExtras();
     drawPipes();
     ground();
     drawDragon();
