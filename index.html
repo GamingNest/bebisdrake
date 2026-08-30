@@ -20,9 +20,22 @@
     box-shadow: 0 4px 14px rgba(0,0,0,.18);
   }
   #hi-box { left: 14px; background: rgba(58,36,88,.78); }
-  #coin-box { right: 14px; background: rgba(140,90,20,.82); text-align: right; }
+  #coin-box { right: 14px; background: rgba(140,90,20,.82); text-align: right; display: flex; align-items: center; gap: 6px; }
   .lbl { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; opacity: .75; font-weight: 700; }
   .val { font-size: 24px; font-weight: 800; line-height: 1.1; }
+  .dcoin {
+    display: inline-block; width: 1.15em; height: 1.15em; border-radius: 50%;
+    background: radial-gradient(circle at 32% 28%, #fff3b0, #f2c14a 42%, #c98a18 78%);
+    box-shadow: inset 0 0 0 2px #8a5a10, 0 1px 2px rgba(0,0,0,.25);
+    vertical-align: -0.2em; position: relative; flex-shrink: 0;
+  }
+  .dcoin::after {
+    content: ""; position: absolute; left: 22%; top: 30%; width: 56%; height: 40%;
+    background: #7a3d12; clip-path: polygon(20% 80%, 50% 0, 80% 80%, 50% 62%);
+    border-radius: 2px; opacity: .85;
+  }
+  .item button .dcoin { width: 1em; height: 1em; margin-right: 6px; }
+  #previewMeta .dcoin { width: 0.95em; height: 0.95em; margin: 0 4px; }
   #ui {
     position: fixed; inset: 0; z-index: 4; display: flex; flex-direction: column;
     align-items: center; justify-content: center; text-align: center; color: #3a2a4a;
@@ -81,7 +94,7 @@
 <div id="hud">
   <div id="hi-box"><div class="lbl">Best</div><div class="val" id="hi-val">0</div></div>
   <div id="score">0</div>
-  <div id="coin-box"><div class="lbl">DC</div><div class="val" id="coin-val">0</div></div>
+  <div id="coin-box"><span class="dcoin" title="Dragon coins"></span><div class="val" id="coin-val">0</div></div>
 </div>
 <div id="ui">
   <h1>Dragon Tap</h1>
@@ -514,7 +527,7 @@
     const ownedKey = shopTab === "dragons" ? "ownedD" : shopTab === "colors" ? "ownedC" : "ownedM";
     const owned = save[ownedKey].includes(it.id);
     if (owned) previewMeta.innerHTML = it.name + " <span class='dc'>owned</span>";
-    else previewMeta.innerHTML = it.name + " · " + it.price + " DC <div class='dc'>Dragon coins</div>";
+    else previewMeta.innerHTML = it.name + ' · <span class="dcoin"></span> ' + it.price;
   }
 
   function renderShop() {
@@ -536,11 +549,11 @@
       else swatch.style.background = color().body;
       const name = document.createElement("div"); name.className = "name"; name.textContent = it.name;
       const dc = document.createElement("div"); dc.className = "dc";
-      dc.textContent = owned ? (eq ? "Equipped" : "Owned") : (it.price + " DC  ·  Dragon coins");
+      dc.textContent = owned ? (eq ? "Equipped" : "Owned") : "";
       const btn = document.createElement("button");
       if (eq) { btn.textContent = "Wearing"; btn.className = "eq"; }
       else if (owned) { btn.textContent = "Use"; btn.className = "own"; }
-      else { btn.textContent = "Buy · " + it.price + " DC"; }
+      else { btn.innerHTML = '<span class="dcoin"></span>' + it.price; }
       div.onclick = function (e) {
         if (e.target.tagName === "BUTTON") return;
         shopPick = { tab: shopTab, id: it.id };
@@ -554,7 +567,7 @@
           save.coins -= it.price; save[ownedKey].push(it.id); save[eqKey] = it.id;
           persist(); coinEl.textContent = String(save.coins); renderShop();
         } else {
-          dc.textContent = "Need " + it.price + " DC  ·  Dragon coins";
+          dc.innerHTML = "Need <span class='dcoin'></span> " + it.price;
         }
       };
       if (shopTab !== "dragons") div.appendChild(swatch);
