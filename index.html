@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Bebisdrake</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; user-select: none; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #9ec9ef; font-family: "Segoe UI", system-ui, sans-serif; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  #ui {
+    position: fixed; inset: 0; z-index: 2; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; color: #3a2a4a;
+    pointer-events: none;
+  }
+  #ui.hidden { display: none; }
+  h1 { font-size: 36px; font-weight: 800; }
+  p { margin: 10px 0 0; font-size: 16px; opacity: .85; }
+  #score {
+    position: fixed; top: 16px; left: 0; right: 0; z-index: 3; text-align: center;
+    font-size: 44px; font-weight: 800; color: #fff;
+    text-shadow: 0 2px 0 #5a3d78, 0 4px 12px rgba(0,0,0,.25);
+    pointer-events: none;
+  }
+  #hi-box {
+    position: fixed; top: 14px; left: 14px; z-index: 4;
+    background: rgba(58, 36, 88, .78); color: #fff;
+    border-radius: 14px; padding: 8px 14px 9px;
+    min-width: 86px; pointer-events: none;
+    box-shadow: 0 4px 14px rgba(0,0,0,.18);
+  }
+  #hi-box .lbl { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; opacity: .75; font-weight: 700; }
+  #hi-box .val { font-size: 26px; font-weight: 800; line-height: 1.1; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hi-box"><div class="lbl">Bäst</div><div class="val" id="hi-val">0</div></div>
+<div id="score">0</div>
+<div id="ui">
+  <h1>Bebisdrake</h1>
+  <p id="msg">Tryck var som helst för att flyga</p>
+</div>
+<script>
+(function () {
+  const canvas = document.getElementById("c");
+  const ctx = canvas.getContext("2d");
+  const ui = document.getElementById("ui");
+  const msg = document.getElementById("msg");
+  const scoreEl = document.getElementById("score");
+  const hiEl = document.getElementById("hi-val");
+  const HI = "flappy-drake-hi";
+
+  let W = 0, H = 0, dpr = 1, groundY = 0;
+  let state = "ready";
+  let last = 0;
+  let bird, pipes, parts;
+  let score = 0, hi = Number(localStorage.getItem(HI) || 0);
+  hiEl.textContent = String(hi);
+  let wing = 0, scroll = 0;
+  const GAP = 190, PW = 70, SPEED0 = 200, GRAV = 1600, FLAP = -460;
+
+  function size() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = Math.max(1, window.innerWidth);
+    H = Math.max(1, window.innerHeight);
+    canvas.width = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    groundY = H - 90;
+    if (bird) {
+      bird.x = W * 0.3;
+      bird.y = Math.min(bird.y, groundY - 20);
+    }
+  }
+  window.addEventListener("resize", size);
+  size();
+
+  function reset() {
+    bird = { x: W * 0.3, y: H * 0.42, vy: 0, rot: 0 };
+    pipes = [];
+    parts = [];
+    score = 0; scroll = 0; wing = 0;
+    scoreEl.textContent = "0";
+    pipes.push(makePipe(W + 80));
+    pipes.push(makePipe(W + 80 + Math.max(220, W * 0.45)));
+  }
+
+  function makePipe(x) {
+    const min = 80, max = Math.max(min + 10, groundY - GAP - 80);
+    const top = min + Math.random() * (max - min);
+    return { x, top, passed: false };
+  }
+
+  function flap(e) {
+    if (e) e.preventDefault();
+    if (state === "ready" || state === "dead") {
+      reset();
+      state = "play";
+      ui.classList.add("hidden");
+    }
+    if (state === "play") {
+      bird.vy = FLAP;
+      wing = 1;
+    }
+  }
+
+  function die() {
+    if (state !== "play") return;
+    state = "dead";
+    hi = Math.max(hi, score);
+    localStorage.setItem(HI, String(hi));
+    hiEl.textContent = String(hi);
+    ui.classList.remove("hidden");
+    msg.textContent = "Aj. " + score + "  ·  bäst " + hi + ". Tryck igen.";
+    for (let i = 0; i < 16; i++) {
+      parts.push({
+        x: bird.x, y: bird.y,
+        vx: (Math.random() - 0.5) * 240,
+        vy: (Math.random() - 0.7) * 240,
+        life: 0.5, c: ["#ffd4e5", "#c9b6ff", "#fff1a8"][i % 3]
+      });
+    }
+  }
+
+  function sky() {
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#7ebbe8");
+    g.addColorStop(1, "#f4cfe0");
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(255,255,255,.85)";
+    const x = ((scroll * 0.2) % (W + 180)) - 90;
+    ctx.beginPath(); ctx.ellipse(x, 80, 50, 18, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + 160, 130, 40, 14, 0, 0, Math.PI * 2); ctx.fill();
+  }
+
+  function ground() {
+    ctx.fillStyle = "#6bb86a";
+    ctx.fillRect(0, groundY, W, H - groundY);
+    ctx.fillStyle = "#8fd48a";
+    ctx.fillRect(0, groundY, W, 12);
+    ctx.fillStyle = "#e0b56a";
+    ctx.fillRect(0, groundY + 12, W, H);
+  }
+
+  function drawPipes() {
+    for (const p of pipes) {
+      ctx.fillStyle = "#6d52f2";
+      ctx.fillRect(p.x, 0, PW, p.top);
+      ctx.fillRect(p.x, p.top + GAP, PW, groundY - (p.top + GAP));
+      ctx.fillStyle = "#9b84ff";
+      ctx.fillRect(p.x - 6, p.top - 24, PW + 12, 24);
+      ctx.fillRect(p.x - 6, p.top + GAP, PW + 12, 24);
+    }
+  }
+
+  function drawDragon() {
+    const b = bird;
+    const f = Math.sin(wing * Math.PI) * 10;
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(b.rot);
+    ctx.fillStyle = "#e889b4";
+    ctx.beginPath();
+    ctx.moveTo(-4, 0);
+    ctx.quadraticCurveTo(0, -28 - f, 24, -8 - f * 0.4);
+    ctx.quadraticCurveTo(6, 2, -4, 4);
+    ctx.fill();
+    ctx.strokeStyle = "#f2a0c0";
+    ctx.lineWidth = 8; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(-16, 8); ctx.quadraticCurveTo(-34, 6, -42, 18); ctx.stroke();
+    ctx.fillStyle = "#ffd36e";
+    ctx.beginPath(); ctx.moveTo(-42, 18); ctx.lineTo(-52, 12); ctx.lineTo(-44, 26); ctx.fill();
+    ctx.fillStyle = "#ffb3d0";
+    ctx.beginPath(); ctx.ellipse(0, 6, 22, 16, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffe4c4";
+    ctx.beginPath(); ctx.ellipse(2, 11, 13, 9, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ff9ec4";
+    ctx.beginPath();
+    ctx.moveTo(0, 2);
+    ctx.quadraticCurveTo(4, -32 - f, 28, -6 - f);
+    ctx.quadraticCurveTo(8, 4, 0, 6);
+    ctx.fill();
+    ctx.fillStyle = "#ffb3d0";
+    ctx.beginPath(); ctx.ellipse(20, -2, 16, 13, 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffc8dc";
+    ctx.beginPath(); ctx.ellipse(32, 3, 10, 7, 0.1, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#c9b6ff";
+    ctx.beginPath(); ctx.moveTo(12, -12); ctx.lineTo(10, -26); ctx.lineTo(18, -12); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(22, -14); ctx.lineTo(24, -28); ctx.lineTo(28, -12); ctx.fill();
+    ctx.fillStyle = "rgba(255,110,150,.5)";
+    ctx.beginPath(); ctx.ellipse(18, 4, 4, 2.5, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.ellipse(24, -4, 5, 5.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#3a2458";
+    ctx.beginPath(); ctx.arc(25, -4, 2.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.arc(26, -5.2, 1, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#d36b90"; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(32, 3, 5, 0.2, 1.1); ctx.stroke();
+    if (wing > 0.2) {
+      ctx.fillStyle = "#ffd36e";
+      ctx.beginPath(); ctx.ellipse(42, 3, 7, 4, 0, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function tick(ts) {
+    const dt = Math.min(0.033, last ? (ts - last) / 1000 : 0.016);
+    last = ts;
+    if (wing > 0) wing = Math.max(0, wing - dt * 3);
+    if (!bird) reset();
+
+    if (state === "play") {
+      bird.vy += GRAV * dt;
+      bird.y += bird.vy * dt;
+      bird.rot = Math.max(-0.5, Math.min(1, bird.vy / 700));
+      scroll += SPEED0 * dt;
+      const spd = SPEED0 + Math.min(140, score * 6);
+      for (const p of pipes) {
+        p.x -= spd * dt;
+        if (!p.passed && p.x + PW < bird.x) {
+          p.passed = true;
+          score += 1;
+          scoreEl.textContent = String(score);
+        }
+      }
+      if (pipes[0] && pipes[0].x < -PW - 20) {
+        pipes.shift();
+        pipes.push(makePipe(pipes[pipes.length - 1].x + Math.max(220, W * 0.45)));
+      }
+      if (bird.y + 16 > groundY || bird.y < 12) die();
+      for (const p of pipes) {
+        if (bird.x + 18 > p.x && bird.x - 16 < p.x + PW) {
+          if (bird.y - 14 < p.top || bird.y + 14 > p.top + GAP) die();
+        }
+      }
+    } else if (state === "ready") {
+      bird.y = H * 0.42 + Math.sin(ts / 280) * 10;
+      bird.rot = 0;
+      wing = 0.4 + Math.sin(ts / 160) * 0.4;
+      scroll += 50 * dt;
+    } else {
+      bird.vy += GRAV * dt;
+      bird.y = Math.min(groundY - 12, bird.y + bird.vy * dt);
+      bird.rot = Math.min(1.2, bird.rot + dt * 2.5);
+      scroll += 20 * dt;
+    }
+
+    for (const s of parts) {
+      s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 420 * dt; s.life -= dt;
+    }
+    parts = parts.filter(s => s.life > 0);
+
+    sky();
+    drawPipes();
+    ground();
+    drawDragon();
+    for (const s of parts) {
+      ctx.globalAlpha = Math.max(0, s.life * 2);
+      ctx.fillStyle = s.c;
+      ctx.fillRect(s.x, s.y, 4, 4);
+      ctx.globalAlpha = 1;
+    }
+    requestAnimationFrame(tick);
+  }
+
+  reset();
+  requestAnimationFrame(tick);
+
+  const opts = { passive: false };
+  window.addEventListener("pointerdown", flap, opts);
+  window.addEventListener("touchstart", flap, opts);
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space" || e.key === "ArrowUp" || e.key === "Enter") {
+      e.preventDefault();
+      flap();
+    }
+  });
+})();
+</script>
+</body>
+</html>
