@@ -42,7 +42,7 @@
   }
   #shop.open { display: flex; }
   #panel {
-    width: min(460px, 100%); margin: auto; max-height: 92vh; overflow: auto;
+    width: min(460px, 100%); margin: auto; max-height: 88vh; overflow-y: auto;
     background: #f7f1ff; color: #2a1d3a; border-radius: 22px; padding: 16px 16px 20px;
     box-shadow: 0 20px 50px rgba(0,0,0,.35);
   }
@@ -69,7 +69,7 @@
   #previewWrap {
     background: #2a1d3a; border-radius: 16px; padding: 8px; margin-bottom: 12px; text-align: center;
   }
-  #preview { width: 100%; height: 140px; display: block; border-radius: 12px; background: #7ebbe8; }
+  #preview { width: 100%; height: 96px; display: block; border-radius: 12px; background: #7ebbe8; }
   #previewMeta { color: #fff; font-size: 13px; margin-top: 6px; font-weight: 700; }
   #previewMeta .dc { opacity: .75; font-weight: 600; font-size: 11px; letter-spacing: .06em; }
   .item.sel { outline: 2px solid #3a2458; }
@@ -92,7 +92,7 @@
   <div id="panel">
     <h2>Dragon Shop</h2>
     <div id="previewWrap">
-      <canvas id="preview" width="440" height="180"></canvas>
+      <canvas id="preview" width="440" height="120"></canvas>
       <div id="previewMeta">Tap an item to preview</div>
     </div>
     <div class="tabs">
@@ -509,7 +509,7 @@
     ctx.fillStyle = g; ctx.fillRect(0, 0, pw, ph);
     ctx.fillStyle = mp.grass; ctx.fillRect(0, ph - 28, pw, 28);
     ctx.fillStyle = mp.dirt; ctx.fillRect(0, ph - 16, pw, 16);
-    drawDragonAt(pw * 0.48, ph * 0.52, 0, 2.05, pal, wingPhase, kind);
+    drawDragonAt(pw * 0.48, ph * 0.55, 0, 1.55, pal, wingPhase, kind);
     ctx = keep;
     const ownedKey = shopTab === "dragons" ? "ownedD" : shopTab === "colors" ? "ownedC" : "ownedM";
     const owned = save[ownedKey].includes(it.id);
