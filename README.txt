@@ -1,6 +1,4 @@
-GamingNest Baby Dragon — Flappy Edition — REBUILT
+GamingNest Baby Dragon — COMPLETE Flappy Edition
 
-This is a clean, standalone rebuild focused on reliable iPhone/Safari controls.
-Upload ONLY index.html to the root of the GitHub Pages repository.
-
-Controls: tap/click the game area to flap. The PLAY button starts the game.
+Upload index.html to the root of the GitHub Pages repository.
+This build keeps the stable touch controls and restores score, best score, coins, dragon shop/unlocks, colors, maps, pause, sound and saved progress.
