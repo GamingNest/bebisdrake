@@ -86,6 +86,7 @@
   #previewMeta { color: #fff; font-size: 13px; margin-top: 6px; font-weight: 700; }
   #previewMeta .dc { opacity: .75; font-weight: 600; font-size: 11px; letter-spacing: .06em; }
   .item.sel { outline: 2px solid #3a2458; }
+  .item.ex { outline: 2px solid #c9a227; }
   .item .dc { font-size: 12px; font-weight: 800; color: #8a5a12; margin: 2px 0 8px; }
   .thumb { width: 100%; height: 78px; border-radius: 10px; display: block; margin-bottom: 6px; background: #cfe8f4; }
   #previewTag { color: #e6d9f8; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
@@ -152,7 +153,8 @@
     { id: "spike", name: "Spike", price: 34, kind: "armor" },
     { id: "silk", name: "Silk", price: 38, kind: "east" },
     { id: "zephyr", name: "Zephyr", price: 42, kind: "glide" },
-    { id: "pearl", name: "Pearl", price: 44, kind: "orb" }
+    { id: "pearl", name: "Pearl", price: 44, kind: "orb" },
+    { id: "regulus", name: "Regulus", kind: "apex", price: 10000 }
   ];
   const COLORS = [
     { id: "charcoal", name: "Charcoal", price: 0, body:"#2a2c33", belly:"#6d7380", wing:"#1c1e24", horn:"#4a4e58", eye:"#b6e04a", pupil:"#14200a", glow:"#7dffb0", blush:"#8a5460", tongue:"#e07a8a", tooth:"#f4f1ea", spot:"#5ee0c8" },
@@ -167,7 +169,8 @@
     { id: "ruby", name: "Ruby", price: 18, body:"#c42848", belly:"#ffd0d8", wing:"#8e1230", horn:"#ffd18a", eye:"#ffe36b", pupil:"#2a1806", glow:"#ff9aa8", blush:"#ffb0c0", tongue:"#ff6b86", tooth:"#fff", spot:"#fff1a0" },
     { id: "honey", name: "Honey", price: 12, body:"#e8a020", belly:"#fff0c4", wing:"#3a2a18", horn:"#5a3a14", eye:"#3a2458", pupil:"#120818", glow:"#ffe08a", blush:"#ff9aa8", tongue:"#e56b7c", tooth:"#fff", spot:"#fff" },
     { id: "sea", name: "Sea", price: 14, body:"#2a8f9a", belly:"#c8f4f0", wing:"#1a5c66", horn:"#9ad4c8", eye:"#ffe36b", pupil:"#2a1806", glow:"#7dffd2", blush:"#ff9ec4", tongue:"#ff7a9c", tooth:"#fff", spot:"#b8f0ff" },
-    { id: "lilac", name: "Lilac", price: 12, body:"#c9a0d8", belly:"#f6e8ff", wing:"#8a6aaa", horn:"#ffe9a8", eye:"#4aa3e8", pupil:"#0a2030", glow:"#ffd4f0", blush:"#ff9ec4", tongue:"#ff7a9c", tooth:"#fff", spot:"#fff" }
+    { id: "lilac", name: "Lilac", price: 12, body:"#c9a0d8", belly:"#f6e8ff", wing:"#8a6aaa", horn:"#ffe9a8", eye:"#4aa3e8", pupil:"#0a2030", glow:"#ffd4f0", blush:"#ff9ec4", tongue:"#ff7a9c", tooth:"#fff", spot:"#fff" },
+    { id: "regal", name: "Regal", price: 10000, body:"#5a2db8", belly:"#f7f4ea", wing:"#7a3fd4", horn:"#f2d14a", eye:"#ffe36b", pupil:"#1a0a28", glow:"#fff6c8", blush:"#c9a0d8", tongue:"#e07a8a", tooth:"#fff", spot:"#f2d14a" }
   ];
   const MAPS = [
     { id: "dawn", name: "Dawn", price: 0, sky:["#7ebbe8","#f4cfe0"], grass:"#6bb86a", dirt:"#e0b56a", cloud:"rgba(255,255,255,.85)", pipe:"#6d52f2", cap:"#9b84ff" },
@@ -176,7 +179,8 @@
     { id: "meadow", name: "Meadow", price: 14, sky:["#9ad4ff","#d8ffe8"], grass:"#4caf60", dirt:"#c4a06a", cloud:"rgba(255,255,255,.9)", pipe:"#3faf7a", cap:"#7ad49a" },
     { id: "storm", name: "Storm", price: 20, sky:["#4a5568","#8a9bb0"], grass:"#3d4a3a", dirt:"#5a5348", cloud:"rgba(220,228,240,.55)", pipe:"#5a6280", cap:"#8a94b0" },
     { id: "candy", name: "Candy", price: 22, sky:["#ffb3d9","#ffe9a8"], grass:"#7dffb0", dirt:"#ffd1a8", cloud:"rgba(255,255,255,.9)", pipe:"#ff6b9a", cap:"#ff9ec4" },
-    { id: "lava", name: "Emberfall", price: 26, sky:["#3a1020","#c45c2a"], grass:"#5a2a18", dirt:"#3a1c14", cloud:"rgba(255,180,80,.25)", pipe:"#e85a2a", cap:"#ffd36e" }
+    { id: "lava", name: "Emberfall", price: 26, sky:["#3a1020","#c45c2a"], grass:"#5a2a18", dirt:"#3a1c14", cloud:"rgba(255,180,80,.25)", pipe:"#e85a2a", cap:"#ffd36e" },
+    { id:"starhold", name:"Starhold", price:10000, sky:["#07041a","#2a1458"], grass:"#1a1438", dirt:"#0c0818", cloud:"rgba(180,140,255,.28)", pipe:"#c9a227", cap:"#f2d14a", stars:true, space:true }
   ];
 
   let save = load();
@@ -224,10 +228,11 @@
     scoreEl.textContent = "0";
     pipes.push(makePipe(W + 80));
     pipes.push(makePipe(W + 80 + Math.max(220, W * 0.45)));
+    const extraPool = DRAGONS.filter(d => d.price < 10000);
     for (let i = 0; i < 3; i++) {
       extras.push({
         x: W * (0.55 + i * 0.28), y: 70 + (i * 97) % Math.max(120, H * 0.4),
-        s: 0.5 + i * 0.08, pal: pickPal(save.c), kind: DRAGONS[(i + 1) % DRAGONS.length].kind,
+        s: 0.5 + i * 0.08, pal: pickPal(save.c), kind: extraPool[(i + 1) % extraPool.length].kind,
         flap: Math.random(), vx: 18 + i * 10
       });
     }
@@ -277,7 +282,170 @@
   }
 
 
+
+  function drawApex(pal, flapAmt) {
+    const lift = Math.sin(flapAmt * Math.PI * 2) * 0.42;
+    function bladeWing(mirror) {
+      ctx.save();
+      ctx.translate(-4, -2);
+      ctx.scale(mirror, 1);
+      ctx.rotate(-0.62 + lift * (mirror > 0 ? 1 : 0.72));
+      ctx.fillStyle = pal.wing;
+      ctx.beginPath();
+      ctx.moveTo(2, 2);
+      ctx.lineTo(-18, -10);
+      ctx.lineTo(-48, -22);
+      ctx.lineTo(-44, -6);
+      ctx.lineTo(-32, 8);
+      ctx.lineTo(-10, 12);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = pal.horn;
+      ctx.beginPath();
+      ctx.moveTo(2, 2);
+      ctx.lineTo(-48, -22);
+      ctx.lineTo(-40, -16);
+      ctx.lineTo(0, 4);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = pal.glow;
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(-2, 0);
+      ctx.lineTo(-30, -14);
+      ctx.lineTo(-24, -6);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+    bladeWing(1);
+    bladeWing(0.9);
+
+    ctx.fillStyle = pal.body;
+    ctx.beginPath();
+    ctx.moveTo(-14, 2);
+    ctx.lineTo(-34, 6);
+    ctx.lineTo(-52, 12);
+    ctx.lineTo(-50, 18);
+    ctx.lineTo(-32, 14);
+    ctx.lineTo(-12, 12);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = pal.horn;
+    ctx.beginPath();
+    ctx.moveTo(-48, 8);
+    ctx.lineTo(-68, 14);
+    ctx.lineTo(-48, 20);
+    ctx.lineTo(-50, 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = pal.glow;
+    ctx.beginPath();
+    ctx.moveTo(-52, 13);
+    ctx.lineTo(-66, 14);
+    ctx.lineTo(-52, 16);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = pal.body;
+    ctx.beginPath();
+    ctx.moveTo(-18, 0);
+    ctx.lineTo(-6, -10);
+    ctx.lineTo(10, -12);
+    ctx.lineTo(20, -6);
+    ctx.lineTo(18, 10);
+    ctx.lineTo(4, 16);
+    ctx.lineTo(-12, 14);
+    ctx.lineTo(-20, 6);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = pal.belly;
+    ctx.beginPath();
+    ctx.moveTo(-8, 8);
+    ctx.lineTo(8, 0);
+    ctx.lineTo(16, 4);
+    ctx.lineTo(10, 12);
+    ctx.lineTo(-4, 14);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = pal.horn;
+    const spines = [[-8, -2, -6, -14, -2, -4], [0, -6, 4, -18, 8, -8], [10, -8, 14, -20, 18, -6]];
+    for (const sp of spines) {
+      ctx.beginPath();
+      ctx.moveTo(sp[0], sp[1]); ctx.lineTo(sp[2], sp[3]); ctx.lineTo(sp[4], sp[5]);
+      ctx.closePath(); ctx.fill();
+    }
+
+    ctx.fillStyle = pal.body;
+    ctx.beginPath();
+    ctx.moveTo(16, -8);
+    ctx.lineTo(24, -14);
+    ctx.lineTo(30, -10);
+    ctx.lineTo(44, -4);
+    ctx.lineTo(42, 4);
+    ctx.lineTo(28, 8);
+    ctx.lineTo(16, 8);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = pal.belly;
+    ctx.beginPath();
+    ctx.moveTo(28, 2);
+    ctx.lineTo(42, 0);
+    ctx.lineTo(40, 4);
+    ctx.lineTo(26, 6);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = pal.horn;
+    ctx.beginPath();
+    ctx.moveTo(22, -12); ctx.lineTo(18, -26); ctx.lineTo(26, -12); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(26, -12); ctx.lineTo(28, -28); ctx.lineTo(32, -10); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = pal.glow;
+    ctx.beginPath();
+    ctx.moveTo(22, -16); ctx.lineTo(19, -24); ctx.lineTo(24, -16); ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = pal.body;
+    ctx.beginPath();
+    ctx.moveTo(-8, 14); ctx.lineTo(-14, 22); ctx.lineTo(-6, 20); ctx.lineTo(-4, 14); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(8, 14); ctx.lineTo(6, 22); ctx.lineTo(14, 20); ctx.lineTo(12, 12); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = pal.horn;
+    ctx.beginPath();
+    ctx.moveTo(-14, 22); ctx.lineTo(-16, 24); ctx.lineTo(-10, 22); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(6, 22); ctx.lineTo(4, 24); ctx.lineTo(10, 22); ctx.closePath(); ctx.fill();
+
+    ctx.fillStyle = pal.eye;
+    ctx.beginPath();
+    ctx.moveTo(28, -8);
+    ctx.lineTo(34, -6);
+    ctx.lineTo(32, -1);
+    ctx.lineTo(26, -3);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = pal.pupil;
+    ctx.beginPath();
+    ctx.moveTo(30, -7);
+    ctx.lineTo(31.4, -5.2);
+    ctx.lineTo(30.2, -2.4);
+    ctx.lineTo(28.8, -4.2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = pal.glow;
+    ctx.beginPath();
+    ctx.moveTo(32, -7);
+    ctx.lineTo(33.2, -6.2);
+    ctx.lineTo(32.4, -5.2);
+    ctx.closePath();
+    ctx.fill();
+  }
+
   function drawChibi(pal, flapAmt, kind) {
+    if (kind === "apex") { drawApex(pal, flapAmt); return; }
     const k = kind || "chubby";
     const L = {
       chubby: { bw:14.5, bh:12.5, head:13.6, span:30, wing:"bat", tail:"stub", horn:"short", ear:"round" },
@@ -496,6 +664,89 @@
       ctx.fillStyle = "rgba(255,255,255,.7)";
       for (let i = 0; i < 28; i++) ctx.fillRect((i * 97 + scroll * 0.05) % W, (i * 53) % (H * 0.55), 2, 2);
     }
+    if (m.space) {
+      const wrap = (v, span) => ((v % span) + span) % span;
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      for (let i = 0; i < 36; i++) {
+        const sx = wrap(i * 137 + scroll * 0.08, W);
+        const sy = (i * 71) % (H * 0.62);
+        const sz = i % 5 === 0 ? 3 : 1.5;
+        ctx.fillRect(sx, sy, sz, sz);
+      }
+      ctx.fillStyle = "#f2d14a";
+      for (let i = 0; i < 6; i++) {
+        const tx = wrap(i * 211 + scroll * 0.12, W);
+        const ty = 30 + (i * 89) % (H * 0.45);
+        const tw = 1.2 + Math.abs(Math.sin(scroll * 0.01 + i));
+        ctx.beginPath();
+        ctx.moveTo(tx, ty - 4 * tw); ctx.lineTo(tx + 1.2, ty); ctx.lineTo(tx, ty + 4 * tw); ctx.lineTo(tx - 1.2, ty);
+        ctx.closePath(); ctx.fill();
+      }
+      ctx.fillStyle = m.cloud;
+      ellipse(wrap(120 - scroll * 0.04, W + 200) - 40, 70, 90, 28); ctx.fill();
+      ellipse(wrap(340 - scroll * 0.03, W + 200) - 40, 160, 70, 22); ctx.fill();
+      ellipse(wrap(520 - scroll * 0.05, W + 200) - 40, 100, 80, 24); ctx.fill();
+      const px = wrap(W * 0.72 - scroll * 0.035, W + 160) - 40;
+      const py = 90;
+      ctx.fillStyle = "#5a2db8";
+      ctx.beginPath(); ctx.arc(px, py, 34, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#7a3fd4";
+      ctx.beginPath(); ctx.ellipse(px - 6, py - 8, 18, 14, -0.3, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#f2d14a"; ctx.lineWidth = 3; ctx.globalAlpha = 0.85;
+      ctx.beginPath(); ctx.ellipse(px, py + 4, 42, 10, 0.15, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = 1;
+      function ufo(ux, uy, sc) {
+        ctx.save(); ctx.translate(ux, uy); ctx.scale(sc, sc);
+        ctx.fillStyle = "rgba(180,255,140,.22)";
+        ctx.beginPath(); ctx.ellipse(0, 2, 22, 10, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#6a6e78";
+        ctx.beginPath(); ctx.ellipse(0, 4, 18, 6, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#3ee07a";
+        ctx.beginPath(); ctx.ellipse(0, 0, 9, 7, 0, Math.PI, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#ffe36b";
+        for (let i = -2; i <= 2; i++) { ctx.beginPath(); ctx.arc(i * 6, 6, 1.6, 0, Math.PI * 2); ctx.fill(); }
+        ctx.restore();
+      }
+      ufo(wrap(80 - scroll * 0.18, W + 120) - 40, 55, 1);
+      ufo(wrap(W * 0.55 - scroll * 0.14, W + 120) - 40, 140, 0.75);
+      const ax = wrap(W * 0.35 - scroll * 0.11, W + 80) - 20;
+      const ay = 110 + Math.sin(scroll * 0.02) * 8;
+      ctx.fillStyle = "#f7f4ea";
+      ctx.beginPath(); ctx.arc(ax, ay, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#1a1438";
+      ctx.beginPath(); ctx.ellipse(ax + 1.5, ay, 4, 3.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(ax - 4, ay + 6, 8, 10);
+      ctx.fillRect(ax - 8, ay + 8, 5, 3);
+      ctx.fillRect(ax + 3, ay + 8, 5, 3);
+      ctx.fillRect(ax - 3, ay + 15, 2.5, 7);
+      ctx.fillRect(ax + 1.5, ay + 15, 2.5, 7);
+      const gx = wrap(W * 0.85 - scroll * 0.13, W + 80) - 20;
+      const gy = 70 + Math.sin(scroll * 0.018 + 1) * 6;
+      ctx.strokeStyle = "#7ad49a"; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(gx - 3, gy - 5); ctx.lineTo(gx - 6, gy - 14); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(gx + 3, gy - 5); ctx.lineTo(gx + 6, gy - 14); ctx.stroke();
+      ctx.fillStyle = "#3ee07a";
+      ctx.beginPath(); ctx.arc(gx - 6, gy - 14, 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(gx + 6, gy - 14, 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.ellipse(gx, gy, 7, 8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#1a0a28";
+      ctx.beginPath(); ctx.arc(gx - 2.5, gy - 1, 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(gx + 2.5, gy - 1, 1.6, 0, Math.PI * 2); ctx.fill();
+      function silDrake(dx, dy, sc) {
+        ctx.save(); ctx.translate(dx, dy); ctx.scale(sc, sc);
+        ctx.fillStyle = "rgba(242,209,74,.55)";
+        ctx.beginPath();
+        ctx.moveTo(-28, 4); ctx.lineTo(-8, 0); ctx.lineTo(10, -4); ctx.lineTo(26, 0);
+        ctx.lineTo(10, 4); ctx.lineTo(-8, 8); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-4, -2); ctx.lineTo(-22, -16); ctx.lineTo(-10, 2); ctx.closePath(); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-4, 2); ctx.lineTo(-18, 14); ctx.lineTo(-8, 6); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+      silDrake(wrap(200 - scroll * 0.07, W + 100) - 30, 48, 0.85);
+      silDrake(wrap(W * 0.8 - scroll * 0.06, W + 100) - 30, 175, 0.6);
+      return;
+    }
     ctx.fillStyle = m.cloud;
     const x = ((scroll * 0.2) % (W + 180)) - 90;
     ellipse(x, 80, 50, 18); ctx.fill();
@@ -579,7 +830,7 @@
       e.flap = (e.flap + dt * 2.4) % 1;
       if (e.x < -80) {
         e.x = W + 60; e.y = 60 + Math.random() * (groundY - 140);
-        e.pal = pickPal(save.c); e.kind = DRAGONS[(Math.random() * DRAGONS.length) | 0].kind;
+        e.pal = pickPal(save.c); const extraPool = DRAGONS.filter(d => d.price < 10000); e.kind = extraPool[(Math.random() * extraPool.length) | 0].kind;
       }
     }
     for (const s of parts) { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 420 * dt; s.life -= dt; }
@@ -601,6 +852,7 @@
 
   function livePal() {
     if (shopOpen && shopTab === "colors") return currentPreview();
+    if (liveKind() === "apex") return COLORS.find(x => x.id === "regal") || color();
     return color();
   }
   function liveKind() {
@@ -622,8 +874,9 @@
     if (!shopOpen) return;
     const pw = preview.width, ph = preview.height;
     const it = currentPreview();
-    const pal = shopTab === "colors" ? it : color();
     const kind = shopTab === "dragons" ? it.kind : dragon().kind;
+    let pal = shopTab === "colors" ? it : color();
+    if (kind === "apex" && shopTab !== "colors") pal = COLORS.find(x => x.id === "regal") || pal;
     const mp = shopTab === "maps" ? it : map();
     const keep = ctx;
     ctx = previewCtx;
@@ -644,8 +897,9 @@
     const keep = ctx;
     ctx = cv.getContext("2d");
     const w = cv.width, h = cv.height;
-    const pal = shopTab === "colors" ? it : color();
     const kind = shopTab === "dragons" ? it.kind : dragon().kind;
+    let pal = shopTab === "colors" ? it : color();
+    if (kind === "apex" && shopTab !== "colors") pal = COLORS.find(x => x.id === "regal") || pal;
     const mp = shopTab === "maps" ? it : map();
     const g = ctx.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, mp.sky[0]); g.addColorStop(1, mp.sky[1]);
@@ -665,7 +919,7 @@
       const eq = save[eqKey] === it.id;
       const sel = shopPick && shopPick.id === it.id;
       const div = document.createElement("div");
-      div.className = "item" + (owned ? "" : " locked") + (sel ? " sel" : "");
+      div.className = "item" + (owned ? "" : " locked") + (sel ? " sel" : "") + (it.price >= 10000 ? " ex" : "");
       const swatch = document.createElement("div");
       swatch.className = "swatch";
       if (shopTab === "colors") swatch.style.background = it.body;
@@ -673,7 +927,7 @@
       else swatch.style.background = color().body;
       const thumb = document.createElement("canvas");
       thumb.className = "thumb"; thumb.width = 240; thumb.height = 120;
-      const name = document.createElement("div"); name.className = "name"; name.textContent = it.name;
+      const name = document.createElement("div"); name.className = "name"; name.textContent = it.name + (it.price >= 10000 ? " Exclusive" : "");
       const dc = document.createElement("div"); dc.className = "dc";
       dc.textContent = owned ? (eq ? "Equipped" : "Owned") : "Preview";
       const btn = document.createElement("button");
