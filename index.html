@@ -139,12 +139,20 @@
   const DRAGONS = [
     { id: "pebble", name: "Pebble", price: 0, kind: "chubby" },
     { id: "pip", name: "Pip", price: 12, kind: "hatch" },
-    { id: "nubbin", name: "Nubbin", price: 20, kind: "horn" },
-    { id: "glim", name: "Glim", price: 28, kind: "fae" },
-    { id: "noodle", name: "Noodle", price: 36, kind: "wyrm" },
-    { id: "dumpling", name: "Dumpling", price: 48, kind: "puff" },
-    { id: "ember", name: "Ember", price: 40, kind: "fire" },
-    { id: "frost", name: "Frost", price: 40, kind: "ice" }
+    { id: "nubbin", name: "Nubbin", price: 18, kind: "horn" },
+    { id: "glim", name: "Glim", price: 24, kind: "moth" },
+    { id: "noodle", name: "Noodle", price: 28, kind: "wyrm" },
+    { id: "dumpling", name: "Dumpling", price: 32, kind: "puff" },
+    { id: "ember", name: "Ember", price: 36, kind: "fire" },
+    { id: "frost", name: "Frost", price: 36, kind: "ice" },
+    { id: "sprout", name: "Sprout", price: 22, kind: "leaf" },
+    { id: "bumble", name: "Bumble", price: 26, kind: "bee" },
+    { id: "kelp", name: "Kelp", price: 30, kind: "gill" },
+    { id: "cub", name: "Cub", price: 20, kind: "pup" },
+    { id: "spike", name: "Spike", price: 34, kind: "armor" },
+    { id: "silk", name: "Silk", price: 38, kind: "east" },
+    { id: "zephyr", name: "Zephyr", price: 42, kind: "glide" },
+    { id: "pearl", name: "Pearl", price: 44, kind: "orb" }
   ];
   const COLORS = [
     { id: "charcoal", name: "Charcoal", price: 0, body:"#2a2c33", belly:"#6d7380", wing:"#1c1e24", horn:"#4a4e58", eye:"#b6e04a", pupil:"#14200a", glow:"#7dffb0", blush:"#8a5460", tongue:"#e07a8a", tooth:"#f4f1ea", spot:"#5ee0c8" },
@@ -156,7 +164,10 @@
     { id: "banana", name: "Banana", price: 12, body:"#f2d14a", belly:"#fff6c8", wing:"#e0b020", horn:"#c98a18", eye:"#5b4dff", pupil:"#120c40", glow:"#fff1a0", blush:"#ff9aa8", tongue:"#ff6b86", tooth:"#fff", spot:"#fff" },
     { id: "ink", name: "Ink", price: 14, body:"#1a1428", belly:"#4a3d66", wing:"#120c1c", horn:"#c9b6ff", eye:"#7dffd2", pupil:"#042018", glow:"#b8f0ff", blush:"#8a5460", tongue:"#e07a8a", tooth:"#fff", spot:"#ff9ec4" },
     { id: "snow", name: "Snow", price: 14, body:"#eef3f8", belly:"#fff", wing:"#cfd8e6", horn:"#9ad4ff", eye:"#4aa3e8", pupil:"#0a2030", glow:"#b8f0ff", blush:"#ffb0c0", tongue:"#ff7a9c", tooth:"#fff", spot:"#c9b6ff" },
-    { id: "ruby", name: "Ruby", price: 18, body:"#c42848", belly:"#ffd0d8", wing:"#8e1230", horn:"#ffd18a", eye:"#ffe36b", pupil:"#2a1806", glow:"#ff9aa8", blush:"#ffb0c0", tongue:"#ff6b86", tooth:"#fff", spot:"#fff1a0" }
+    { id: "ruby", name: "Ruby", price: 18, body:"#c42848", belly:"#ffd0d8", wing:"#8e1230", horn:"#ffd18a", eye:"#ffe36b", pupil:"#2a1806", glow:"#ff9aa8", blush:"#ffb0c0", tongue:"#ff6b86", tooth:"#fff", spot:"#fff1a0" },
+    { id: "honey", name: "Honey", price: 12, body:"#e8a020", belly:"#fff0c4", wing:"#3a2a18", horn:"#5a3a14", eye:"#3a2458", pupil:"#120818", glow:"#ffe08a", blush:"#ff9aa8", tongue:"#e56b7c", tooth:"#fff", spot:"#fff" },
+    { id: "sea", name: "Sea", price: 14, body:"#2a8f9a", belly:"#c8f4f0", wing:"#1a5c66", horn:"#9ad4c8", eye:"#ffe36b", pupil:"#2a1806", glow:"#7dffd2", blush:"#ff9ec4", tongue:"#ff7a9c", tooth:"#fff", spot:"#b8f0ff" },
+    { id: "lilac", name: "Lilac", price: 12, body:"#c9a0d8", belly:"#f6e8ff", wing:"#8a6aaa", horn:"#ffe9a8", eye:"#4aa3e8", pupil:"#0a2030", glow:"#ffd4f0", blush:"#ff9ec4", tongue:"#ff7a9c", tooth:"#fff", spot:"#fff" }
   ];
   const MAPS = [
     { id: "dawn", name: "Dawn", price: 0, sky:["#7ebbe8","#f4cfe0"], grass:"#6bb86a", dirt:"#e0b56a", cloud:"rgba(255,255,255,.85)", pipe:"#6d52f2", cap:"#9b84ff" },
@@ -265,13 +276,30 @@
     ctx.ellipse(x, y, rx, ry, rot || 0, 0, Math.PI * 2);
   }
 
+
   function drawChibi(pal, flapAmt, kind) {
     const k = kind || "chubby";
-    const bodyW = k === "puff" ? 16.5 : k === "wyrm" ? 18 : 14.5;
-    const bodyH = k === "puff" ? 15 : k === "wyrm" ? 10 : 12.5;
-    const head = k === "hatch" ? 15 : 13.6;
-    const span = k === "fae" ? 34 : k === "wyrm" ? 24 : 30;
-    function batWing(mirror, size, phaseOff) {
+    const L = {
+      chubby: { bw:14.5, bh:12.5, head:13.6, span:30, wing:"bat", tail:"stub", horn:"short", ear:"round" },
+      hatch:  { bw:10.5, bh:9.5, head:16.8, span:20, wing:"bat", tail:"stub", horn:"none", ear:"big" },
+      horn:   { bw:14, bh:12, head:13, span:28, wing:"bat", tail:"stub", horn:"long", ear:"tiny" },
+      moth:   { bw:13, bh:11, head:13, span:36, wing:"moth", tail:"fluff", horn:"ant", ear:"none" },
+      wyrm:   { bw:20, bh:8.5, head:11, span:16, wing:"tiny", tail:"long", horn:"nub", ear:"none" },
+      puff:   { bw:17.5, bh:16, head:14, span:18, wing:"tiny", tail:"fluff", horn:"nub", ear:"round" },
+      fire:   { bw:14.5, bh:12, head:13, span:30, wing:"bat", tail:"flame", horn:"short", ear:"round" },
+      ice:    { bw:14.5, bh:12, head:13, span:28, wing:"crystal", tail:"ice", horn:"crystal", ear:"tiny" },
+      leaf:   { bw:13.5, bh:12, head:13, span:26, wing:"leaf", tail:"leaf", horn:"none", ear:"leaf" },
+      bee:    { bw:12, bh:11, head:12, span:22, wing:"moth", tail:"stub", horn:"ant", ear:"none" },
+      gill:   { bw:15, bh:10, head:12.5, span:0, wing:"none", tail:"fin", horn:"none", ear:"gill" },
+      pup:    { bw:14, bh:12.5, head:14.5, span:24, wing:"tiny", tail:"stub", horn:"none", ear:"flop" },
+      armor:  { bw:15, bh:13, head:13, span:28, wing:"bat", tail:"spike", horn:"long", ear:"tiny" },
+      east:   { bw:18, bh:9.5, head:12, span:22, wing:"tiny", tail:"long", horn:"nub", ear:"none" },
+      glide:  { bw:13, bh:10, head:12.5, span:40, wing:"bat", tail:"fin", horn:"short", ear:"tiny" },
+      orb:    { bw:16, bh:15.5, head:12, span:14, wing:"tiny", tail:"stub", horn:"nub", ear:"round" }
+    }[k] || { bw:14.5, bh:12.5, head:13.6, span:30, wing:"bat", tail:"stub", horn:"short", ear:"round" };
+
+    function batWing(mirror, size, phaseOff, style) {
+      if (style === "none" || size <= 0) return;
       const lift = Math.sin((flapAmt + phaseOff) * Math.PI * 2) * 0.75;
       ctx.save();
       ctx.translate(-5, 3);
@@ -280,87 +308,158 @@
       ctx.fillStyle = pal.wing;
       ctx.beginPath();
       ctx.moveTo(0, 0);
-      ctx.quadraticCurveTo(-size * 0.22, -size * 0.62, -size, -size * 0.05);
-      ctx.quadraticCurveTo(-size * 0.68, size * 0.28, -size * 0.12, size * 0.2);
+      if (style === "moth" || style === "leaf") {
+        ctx.quadraticCurveTo(-size * 0.15, -size * 0.85, -size * 0.75, -size * 0.35);
+        ctx.quadraticCurveTo(-size * 1.05, size * 0.05, -size * 0.35, size * 0.35);
+      } else if (style === "tiny") {
+        ctx.quadraticCurveTo(-size * 0.2, -size * 0.4, -size * 0.7, 0);
+        ctx.quadraticCurveTo(-size * 0.4, size * 0.25, 0, 4);
+      } else if (style === "crystal") {
+        ctx.lineTo(-size * 0.4, -size * 0.55);
+        ctx.lineTo(-size, -size * 0.05);
+        ctx.lineTo(-size * 0.35, size * 0.22);
+      } else {
+        ctx.quadraticCurveTo(-size * 0.22, -size * 0.62, -size, -size * 0.05);
+        ctx.quadraticCurveTo(-size * 0.68, size * 0.28, -size * 0.12, size * 0.2);
+      }
       ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = pal.glow; ctx.globalAlpha = 0.65; ctx.lineWidth = 1.6;
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-size * 0.95, -size * 0.04); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-size * 0.7, size * 0.1); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-size * 0.4, size * 0.18); ctx.stroke();
-      ctx.globalAlpha = 1;
+      if (style === "leaf") {
+        ctx.strokeStyle = pal.glow; ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-size * 0.7, -size * 0.1); ctx.stroke();
+      } else {
+        ctx.strokeStyle = pal.glow; ctx.globalAlpha = 0.65; ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-size * 0.9, 0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-size * 0.55, size * 0.14); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
       ctx.restore();
     }
-    batWing(1, span, 0);
-    batWing(0.92, span * 0.88, 0.12);
+    batWing(1, L.span, 0, L.wing);
+    if (L.wing !== "none") batWing(0.92, L.span * 0.88, 0.12, L.wing);
 
-    // short tail
-    ctx.strokeStyle = pal.body; ctx.lineWidth = 9; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.moveTo(-10, 10); ctx.quadraticCurveTo(-15, 12, -17, 16); ctx.stroke();
-    ctx.fillStyle = pal.body; ellipse(-18, 17.5, 5.6, 5); ctx.fill();
-    if (k === "fire") { ctx.fillStyle = "#ff9a4a"; ellipse(-20, 16, 3, 2.4); ctx.fill(); }
-    if (k === "ice") { ctx.fillStyle = "#b8f0ff"; ellipse(-20, 16, 3, 2.4); ctx.fill(); }
+    // tail
+    ctx.lineCap = "round";
+    if (L.tail === "long") {
+      ctx.strokeStyle = pal.body; ctx.lineWidth = 7;
+      ctx.beginPath(); ctx.moveTo(-12, 8); ctx.quadraticCurveTo(-28, 4, -38, 14); ctx.stroke();
+      ctx.fillStyle = pal.body; ellipse(-40, 15, 4.5, 4); ctx.fill();
+      if (k === "east") {
+        ctx.strokeStyle = pal.glow; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(18, 6); ctx.quadraticCurveTo(28, 2, 34, 8); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(18, 8); ctx.quadraticCurveTo(30, 12, 36, 10); ctx.stroke();
+      }
+    } else if (L.tail === "flame") {
+      ctx.fillStyle = "#ff9a4a";
+      ctx.beginPath(); ctx.moveTo(-10, 10); ctx.lineTo(-26, 6); ctx.lineTo(-22, 16); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#ffe08a"; ellipse(-16, 11, 3, 2.4); ctx.fill();
+    } else if (L.tail === "ice") {
+      ctx.fillStyle = "#b8f0ff";
+      ctx.beginPath(); ctx.moveTo(-10, 10); ctx.lineTo(-24, 4); ctx.lineTo(-20, 16); ctx.closePath(); ctx.fill();
+    } else if (L.tail === "fluff") {
+      ctx.fillStyle = pal.body; ellipse(-16, 14, 7, 6); ctx.fill();
+      ctx.fillStyle = pal.belly; ellipse(-16, 14, 4, 3.4); ctx.fill();
+    } else if (L.tail === "fin") {
+      ctx.fillStyle = pal.wing;
+      ctx.beginPath(); ctx.moveTo(-10, 10); ctx.lineTo(-24, 4); ctx.lineTo(-22, 18); ctx.closePath(); ctx.fill();
+    } else if (L.tail === "leaf") {
+      ctx.fillStyle = pal.glow;
+      ctx.beginPath(); ctx.ellipse(-18, 14, 7, 4, -0.5, 0, Math.PI * 2); ctx.fill();
+    } else if (L.tail === "spike") {
+      ctx.fillStyle = pal.horn;
+      ctx.beginPath(); ctx.moveTo(-8, 10); ctx.lineTo(-22, 6); ctx.lineTo(-12, 16); ctx.closePath(); ctx.fill();
+    } else {
+      ctx.strokeStyle = pal.body; ctx.lineWidth = 8;
+      ctx.beginPath(); ctx.moveTo(-10, 10); ctx.quadraticCurveTo(-15, 12, -17, 16); ctx.stroke();
+      ctx.fillStyle = pal.body; ellipse(-18, 17.5, 5.2, 4.6); ctx.fill();
+    }
 
-    // bigger legs, out from the body
+    // legs
     ctx.fillStyle = pal.body;
-    ellipse(-10, 20, 6.4, 5.4, 0.3); ctx.fill();
-    ellipse(10, 20.5, 6.6, 5.5, -0.25); ctx.fill();
+    ellipse(-10, 20, k === "wyrm" ? 3.5 : 6.2, k === "wyrm" ? 3 : 5.2, 0.3); ctx.fill();
+    ellipse(10, 20.5, k === "wyrm" ? 3.5 : 6.4, k === "wyrm" ? 3 : 5.3, -0.25); ctx.fill();
     ctx.fillStyle = pal.belly;
-    ellipse(-12.2, 22.2, 1.8, 1.5); ctx.fill();
-    ellipse(-8.2, 22.6, 1.8, 1.5); ctx.fill();
-    ellipse(8.2, 22.8, 1.8, 1.5); ctx.fill();
-    ellipse(12.2, 22.4, 1.8, 1.5); ctx.fill();
+    ellipse(-12, 22, 1.6, 1.3); ctx.fill();
+    ellipse(12, 22.2, 1.6, 1.3); ctx.fill();
 
-    // arms, out from the body
-    ctx.fillStyle = pal.body;
-    ellipse(-16, 7.5, 6.2, 3.8, 0.55); ctx.fill();
-    ellipse(16, 8.5, 6.2, 3.8, -0.5); ctx.fill();
-    ctx.fillStyle = pal.belly;
-    ellipse(-18.6, 8.2, 1.4, 1.15); ctx.fill();
-    ellipse(-16.2, 9.8, 1.4, 1.15); ctx.fill();
-    ellipse(18.6, 9.2, 1.4, 1.15); ctx.fill();
-    ellipse(16.2, 10.6, 1.4, 1.15); ctx.fill();
+    // arms skip for wyrm/gill tiny
+    if (k !== "wyrm" && k !== "gill") {
+      ctx.fillStyle = pal.body;
+      ellipse(-15, 7.5, 5.6, 3.4, 0.55); ctx.fill();
+      ellipse(15, 8.5, 5.6, 3.4, -0.5); ctx.fill();
+    }
 
     // body
     ctx.fillStyle = pal.body;
-    ellipse(0, 7, bodyW, bodyH); ctx.fill();
+    ellipse(0, 7, L.bw, L.bh); ctx.fill();
+    if (k === "bee") {
+      ctx.fillStyle = pal.horn;
+      ctx.fillRect(-L.bw + 4, 4, 5, L.bh); ctx.fillRect(2, 4, 5, L.bh);
+    }
     ctx.fillStyle = pal.belly;
-    ellipse(1.5, 10, bodyW * 0.58, bodyH * 0.58); ctx.fill();
+    ellipse(1.5, 10, L.bw * 0.55, L.bh * 0.55); ctx.fill();
+    if (k === "armor") {
+      ctx.fillStyle = pal.horn;
+      ellipse(-5, 1, 2.2, 3.4); ctx.fill();
+      ellipse(1, -1, 2.4, 3.8); ctx.fill();
+      ellipse(7, 1, 2.2, 3.4); ctx.fill();
+    }
     ctx.fillStyle = pal.spot; ctx.globalAlpha = 0.85;
     ellipse(-6, 2, 1.8, 1.6); ctx.fill();
-    ellipse(0, 0.5, 1.4, 1.3); ctx.fill();
-    ellipse(6, 3, 1.2, 1.1); ctx.fill();
+    ellipse(5, 3, 1.2, 1.1); ctx.fill();
     ctx.globalAlpha = 1;
 
-
-    // horns
+    // horns / ears
     ctx.fillStyle = pal.horn;
-    if (k === "horn") {
-      ellipse(9, -20, 3, 7.5, -0.25); ctx.fill();
-      ellipse(19, -21, 2.8, 7.2, 0.3); ctx.fill();
-    } else {
+    if (L.horn === "long") {
+      ellipse(9, -21, 3, 8, -0.28); ctx.fill();
+      ellipse(19, -22, 2.8, 7.6, 0.32); ctx.fill();
+    } else if (L.horn === "crystal") {
+      ctx.beginPath(); ctx.moveTo(10, -12); ctx.lineTo(8, -24); ctx.lineTo(14, -12); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(18, -12); ctx.lineTo(20, -25); ctx.lineTo(23, -12); ctx.fill();
+    } else if (L.horn === "ant") {
+      ctx.strokeStyle = pal.horn; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(10, -12); ctx.lineTo(8, -22); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(18, -12); ctx.lineTo(22, -22); ctx.stroke();
+    } else if (L.horn === "nub") {
+      ellipse(10, -15, 2.2, 3.2); ctx.fill();
+      ellipse(17, -15.5, 2.2, 3.2); ctx.fill();
+    } else if (L.horn === "short") {
       ellipse(10, -17.5, 2.8, 5.2, -0.2); ctx.fill();
       ellipse(18, -18, 2.6, 5, 0.25); ctx.fill();
     }
 
-    // ears
     ctx.fillStyle = pal.body;
-    ellipse(7.2, -11, 3.8, 4.6, -0.5); ctx.fill();
-    ellipse(19, -12, 3.6, 4.4, 0.35); ctx.fill();
-    ctx.fillStyle = pal.blush;
-    ellipse(7.3, -11, 1.7, 2.3, -0.5); ctx.fill();
-    ellipse(18.8, -12, 1.6, 2.2, 0.35); ctx.fill();
+    if (L.ear === "flop") {
+      ellipse(5, -8, 5.5, 3.4, 0.6); ctx.fill();
+      ellipse(20, -9, 5.5, 3.4, -0.5); ctx.fill();
+    } else if (L.ear === "big") {
+      ellipse(6, -12, 4.6, 6, -0.4); ctx.fill();
+      ellipse(20, -13, 4.4, 5.8, 0.4); ctx.fill();
+    } else if (L.ear === "gill") {
+      ctx.fillStyle = pal.blush;
+      ellipse(6, 2, 4, 6, 0.4); ctx.fill();
+      ellipse(8, 0, 3, 5, 0.5); ctx.fill();
+    } else if (L.ear === "leaf") {
+      ctx.fillStyle = pal.glow;
+      ellipse(6, -12, 4, 6, -0.5); ctx.fill();
+      ellipse(20, -12, 4, 6, 0.5); ctx.fill();
+    } else if (L.ear === "round") {
+      ellipse(7.2, -11, 3.8, 4.6, -0.5); ctx.fill();
+      ellipse(19, -12, 3.6, 4.4, 0.35); ctx.fill();
+      ctx.fillStyle = pal.blush;
+      ellipse(7.3, -11, 1.7, 2.3, -0.5); ctx.fill();
+      ellipse(18.8, -12, 1.6, 2.2, 0.35); ctx.fill();
+    }
 
     // head
     ctx.fillStyle = pal.body;
-    ellipse(13.5, -1.5, head, head * 0.92, 0.06); ctx.fill();
+    ellipse(13.5, -1.5, L.head, L.head * 0.92, 0.06); ctx.fill();
     ctx.fillStyle = "rgba(255,255,255,.1)";
     ellipse(8, -5.5, 5.5, 3.8, -0.4); ctx.fill();
-
     ctx.fillStyle = pal.body;
-    ellipse(23, 4.2, 8, 6, 0.12); ctx.fill();
+    ellipse(23, 4.2, k === "hatch" ? 6.5 : 8, 6, 0.12); ctx.fill();
     ctx.fillStyle = pal.tooth;
     ctx.beginPath(); ctx.moveTo(21, 5.6); ctx.lineTo(22.2, 8); ctx.lineTo(23.4, 5.6); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(24, 5.8); ctx.lineTo(25.1, 7.8); ctx.lineTo(26.3, 5.8); ctx.fill();
     ctx.fillStyle = pal.tongue;
     ellipse(27, 8, 2.6, 1.8, 0.25); ctx.fill();
 
@@ -372,15 +471,11 @@
     ellipse(17.1, -2.1, 0.95, 2.7, -0.12); ctx.fill();
     ctx.fillStyle = "#fff";
     ellipse(18.2, -3.7, 1.25, 1.45); ctx.fill();
-    ellipse(15.7, -1.0, 0.55, 0.6); ctx.fill();
     ctx.strokeStyle = pal.body; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(16.4, -2.6, 4.8, Math.PI * 1.05, Math.PI * 1.82); ctx.stroke();
-
     ctx.fillStyle = pal.blush; ctx.globalAlpha = 0.55;
     ellipse(11.2, 3.6, 3.6, 2); ctx.fill();
     ctx.globalAlpha = 1;
-    ctx.strokeStyle = pal.blush; ctx.lineWidth = 1.3; ctx.lineCap = "round";
-    ctx.beginPath(); ctx.arc(24, 4.8, 4.2, 0.15, 1.05); ctx.stroke();
   }
 
   function drawDragonAt(x, y, rot, s, pal, flapAmt, kind) {
