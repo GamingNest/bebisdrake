@@ -1,5 +1,5 @@
-# Bebisdrake
+# Dragon Tap
 
-Ett litet Flappy-spel. Tryck, klicka eller space för att flyga.
+A tiny Flappy-style game. Tap, click, or press space to fly.
 
-Öppna `index.html` i en webbläsare, eller spela här om GitHub Pages är igång.
+Open `index.html` in a browser, or play at https://razo94.github.io/bebisdrake/
