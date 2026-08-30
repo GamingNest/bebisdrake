@@ -66,6 +66,14 @@
   .item.locked { opacity: .72; }
   #closeShop { background: #eee; color: #333; width: 100%; margin-top: 12px; }
   .swatch { height: 28px; border-radius: 8px; margin-bottom: 6px; }
+  #previewWrap {
+    background: #2a1d3a; border-radius: 16px; padding: 8px; margin-bottom: 12px; text-align: center;
+  }
+  #preview { width: 100%; height: 140px; display: block; border-radius: 12px; background: #7ebbe8; }
+  #previewMeta { color: #fff; font-size: 13px; margin-top: 6px; font-weight: 700; }
+  #previewMeta .dc { opacity: .75; font-weight: 600; font-size: 11px; letter-spacing: .06em; }
+  .item.sel { outline: 2px solid #3a2458; }
+  .item .dc { font-size: 12px; font-weight: 800; color: #8a5a12; margin: 2px 0 8px; }
 </style>
 </head>
 <body>
@@ -73,7 +81,7 @@
 <div id="hud">
   <div id="hi-box"><div class="lbl">Best</div><div class="val" id="hi-val">0</div></div>
   <div id="score">0</div>
-  <div id="coin-box"><div class="lbl">Coins</div><div class="val" id="coin-val">0</div></div>
+  <div id="coin-box"><div class="lbl">DC</div><div class="val" id="coin-val">0</div></div>
 </div>
 <div id="ui">
   <h1>Dragon Tap</h1>
@@ -83,6 +91,10 @@
 <div id="shop">
   <div id="panel">
     <h2>Dragon Shop</h2>
+    <div id="previewWrap">
+      <canvas id="preview" width="440" height="180"></canvas>
+      <div id="previewMeta">Tap an item to preview</div>
+    </div>
     <div class="tabs">
       <button class="on" data-tab="dragons">Dragons</button>
       <button data-tab="colors">Colors</button>
@@ -95,7 +107,7 @@
 <script>
 (function () {
   const canvas = document.getElementById("c");
-  const ctx = canvas.getContext("2d");
+  let ctx = canvas.getContext("2d");
   const ui = document.getElementById("ui");
   const msg = document.getElementById("msg");
   const scoreEl = document.getElementById("score");
@@ -103,6 +115,9 @@
   const coinEl = document.getElementById("coin-val");
   const shopEl = document.getElementById("shop");
   const shopGrid = document.getElementById("shopGrid");
+  const preview = document.getElementById("preview");
+  const previewCtx = preview.getContext("2d");
+  const previewMeta = document.getElementById("previewMeta");
   const SAVE = "dragon-tap-save-v1";
 
   const DRAGONS = [
@@ -151,7 +166,7 @@
   let state = "ready";
   let last = 0;
   let bird, pipes, parts, coins, extras;
-  let score = 0, wing = 0, scroll = 0, shopOpen = false, shopTab = "dragons";
+  let score = 0, wing = 0, wingPhase = 0, scroll = 0, shopOpen = false, shopTab = "dragons", shopPick = null;
   const GAP = 190, PW = 70, SPEED0 = 200, GRAV = 1600, FLAP = -460;
 
   hiEl.textContent = String(save.hi);
@@ -235,25 +250,32 @@
   }
 
   function drawChibi(pal, flapAmt, kind) {
-    const f = Math.sin(flapAmt * Math.PI) * 10;
     const k = kind || "chubby";
     const bodyW = k === "puff" ? 16.5 : k === "wyrm" ? 18 : 14.5;
     const bodyH = k === "puff" ? 15 : k === "wyrm" ? 10 : 12.5;
     const head = k === "hatch" ? 15 : 13.6;
-    const wingSpan = k === "fae" ? 34 : k === "wyrm" ? 22 : 30;
-    const wingH = k === "fae" ? 30 : 26;
-
-    // back wing
-    ctx.fillStyle = pal.wing;
-    ctx.beginPath();
-    ctx.moveTo(-4, 2);
-    ctx.quadraticCurveTo(-14, -wingH - f, 8, -wingH + 4 - f);
-    ctx.quadraticCurveTo(6, -2, -2, 6);
-    ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = pal.glow; ctx.globalAlpha = 0.4; ctx.lineWidth = 1.4;
-    ctx.beginPath(); ctx.moveTo(-2, 2); ctx.lineTo(-4, -12 - f); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(-2, 2); ctx.lineTo(4, -14 - f); ctx.stroke();
-    ctx.globalAlpha = 1;
+    const span = k === "fae" ? 34 : k === "wyrm" ? 24 : 30;
+    function batWing(mirror, size, phaseOff) {
+      const lift = Math.sin((flapAmt + phaseOff) * Math.PI * 2) * 0.75;
+      ctx.save();
+      ctx.translate(-5, 3);
+      ctx.scale(mirror, 1);
+      ctx.rotate(-0.72 + lift);
+      ctx.fillStyle = pal.wing;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.quadraticCurveTo(-size * 0.22, -size * 0.62, -size, -size * 0.05);
+      ctx.quadraticCurveTo(-size * 0.68, size * 0.28, -size * 0.12, size * 0.2);
+      ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = pal.glow; ctx.globalAlpha = 0.65; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-size * 0.95, -size * 0.04); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-size * 0.7, size * 0.1); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-size * 0.4, size * 0.18); ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+    batWing(1, span, 0);
+    batWing(0.92, span * 0.88, 0.12);
 
     // short tail
     ctx.strokeStyle = pal.body; ctx.lineWidth = 9; ctx.lineCap = "round";
@@ -293,23 +315,6 @@
     ellipse(6, 3, 1.2, 1.1); ctx.fill();
     ctx.globalAlpha = 1;
 
-    // front wing, bigger with fingers
-    ctx.fillStyle = pal.wing;
-    ctx.beginPath();
-    ctx.moveTo(2, 3);
-    ctx.quadraticCurveTo(8, -wingH - 2 - f, wingSpan, -8 - f * 0.5);
-    ctx.quadraticCurveTo(12, 3, 2, 8);
-    ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = pal.glow; ctx.globalAlpha = 0.45; ctx.lineWidth = 1.3;
-    ctx.beginPath(); ctx.moveTo(4, 4); ctx.lineTo(12, -16 - f); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(4, 4); ctx.lineTo(18, -10 - f); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(4, 4); ctx.lineTo(22, -4 - f * 0.4); ctx.stroke();
-    ctx.globalAlpha = 1;
-    if (k === "fae") {
-      ctx.fillStyle = pal.glow; ctx.globalAlpha = 0.35;
-      ellipse(14, -8 - f, 8, 6); ctx.fill();
-      ctx.globalAlpha = 1;
-    }
 
     // horns
     ctx.fillStyle = pal.horn;
@@ -418,6 +423,7 @@
     const dt = Math.min(0.033, last ? (ts - last) / 1000 : 0.016);
     last = ts;
     if (wing > 0) wing = Math.max(0, wing - dt * 3);
+    wingPhase = (wingPhase + dt * (2.6 + wing * 3)) % 1;
     if (!bird) reset();
 
     if (state === "play") {
@@ -447,7 +453,7 @@
     } else if (state === "ready") {
       bird.y = H * 0.42 + Math.sin(ts / 280) * 10;
       bird.rot = 0;
-      wing = 0.4 + Math.sin(ts / 160) * 0.4;
+      /* idle flap via wingPhase */
       scroll += 50 * dt;
     } else {
       bird.vy += GRAV * dt;
@@ -459,7 +465,7 @@
     for (const e of extras) {
       e.x -= (state === "play" ? 40 : 16) * dt + e.vx * dt * 0.2;
       e.y += Math.sin((ts / 400) + e.s) * 12 * dt;
-      e.flap = (e.flap + dt * 2) % 1;
+      e.flap = (e.flap + dt * 2.4) % 1;
       if (e.x < -80) {
         e.x = W + 60; e.y = 60 + Math.random() * (groundY - 140);
         e.pal = pickPal(save.c); e.kind = DRAGONS[(Math.random() * DRAGONS.length) | 0].kind;
@@ -473,47 +479,86 @@
     drawPipes();
     drawCoins();
     ground();
-    drawDragonAt(bird.x, bird.y, bird.rot, 1.38, color(), wing, dragon().kind);
+    drawDragonAt(bird.x, bird.y, bird.rot, 0.82, color(), wingPhase, dragon().kind);
     for (const s of parts) {
       ctx.globalAlpha = Math.max(0, s.life * 2);
       ctx.fillStyle = s.c; ctx.fillRect(s.x, s.y, 4, 4); ctx.globalAlpha = 1;
     }
+    drawShopPreview();
     requestAnimationFrame(tick);
+  }
+
+  function currentPreview() {
+    const items = shopTab === "dragons" ? DRAGONS : shopTab === "colors" ? COLORS : MAPS;
+    if (shopPick && shopPick.tab === shopTab) {
+      return items.find(x => x.id === shopPick.id) || items[0];
+    }
+    return items.find(x => x.id === (shopTab === "dragons" ? save.d : shopTab === "colors" ? save.c : save.m)) || items[0];
+  }
+  function drawShopPreview() {
+    if (!shopOpen) return;
+    const pw = preview.width, ph = preview.height;
+    const it = currentPreview();
+    const pal = shopTab === "colors" ? it : color();
+    const kind = shopTab === "dragons" ? it.kind : dragon().kind;
+    const mp = shopTab === "maps" ? it : map();
+    const keep = ctx;
+    ctx = previewCtx;
+    const g = ctx.createLinearGradient(0, 0, 0, ph);
+    g.addColorStop(0, mp.sky[0]); g.addColorStop(1, mp.sky[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, pw, ph);
+    ctx.fillStyle = mp.grass; ctx.fillRect(0, ph - 28, pw, 28);
+    ctx.fillStyle = mp.dirt; ctx.fillRect(0, ph - 16, pw, 16);
+    drawDragonAt(pw * 0.48, ph * 0.52, 0, 2.05, pal, wingPhase, kind);
+    ctx = keep;
+    const ownedKey = shopTab === "dragons" ? "ownedD" : shopTab === "colors" ? "ownedC" : "ownedM";
+    const owned = save[ownedKey].includes(it.id);
+    if (owned) previewMeta.innerHTML = it.name + " <span class='dc'>owned</span>";
+    else previewMeta.innerHTML = it.name + " · " + it.price + " DC <div class='dc'>Dragon coins</div>";
   }
 
   function renderShop() {
     const items = shopTab === "dragons" ? DRAGONS : shopTab === "colors" ? COLORS : MAPS;
     const ownedKey = shopTab === "dragons" ? "ownedD" : shopTab === "colors" ? "ownedC" : "ownedM";
     const eqKey = shopTab === "dragons" ? "d" : shopTab === "colors" ? "c" : "m";
+    if (!shopPick || shopPick.tab !== shopTab) shopPick = { tab: shopTab, id: save[eqKey] };
     shopGrid.innerHTML = "";
     for (const it of items) {
       const owned = save[ownedKey].includes(it.id);
       const eq = save[eqKey] === it.id;
+      const sel = shopPick && shopPick.id === it.id;
       const div = document.createElement("div");
-      div.className = "item" + (owned ? "" : " locked");
+      div.className = "item" + (owned ? "" : " locked") + (sel ? " sel" : "");
       const swatch = document.createElement("div");
       swatch.className = "swatch";
       if (shopTab === "colors") swatch.style.background = it.body;
       else if (shopTab === "maps") swatch.style.background = "linear-gradient(180deg," + it.sky[0] + "," + it.sky[1] + ")";
       else swatch.style.background = color().body;
       const name = document.createElement("div"); name.className = "name"; name.textContent = it.name;
-      const meta = document.createElement("div"); meta.className = "meta";
-      meta.textContent = owned ? (eq ? "Equipped" : "Owned") : (it.price + " coins");
+      const dc = document.createElement("div"); dc.className = "dc";
+      dc.textContent = owned ? (eq ? "Equipped" : "Owned") : (it.price + " DC  ·  Dragon coins");
       const btn = document.createElement("button");
       if (eq) { btn.textContent = "Wearing"; btn.className = "eq"; }
       else if (owned) { btn.textContent = "Use"; btn.className = "own"; }
-      else { btn.textContent = "Buy"; }
-      btn.onclick = function () {
+      else { btn.textContent = "Buy · " + it.price + " DC"; }
+      div.onclick = function (e) {
+        if (e.target.tagName === "BUTTON") return;
+        shopPick = { tab: shopTab, id: it.id };
+        renderShop();
+      };
+      btn.onclick = function (e) {
+        e.stopPropagation();
+        shopPick = { tab: shopTab, id: it.id };
         if (owned) { save[eqKey] = it.id; persist(); renderShop(); }
         else if (save.coins >= it.price) {
           save.coins -= it.price; save[ownedKey].push(it.id); save[eqKey] = it.id;
           persist(); coinEl.textContent = String(save.coins); renderShop();
         } else {
-          meta.textContent = "Need " + it.price + " coins";
+          dc.textContent = "Need " + it.price + " DC  ·  Dragon coins";
         }
       };
       if (shopTab !== "dragons") div.appendChild(swatch);
-      div.appendChild(name); div.appendChild(meta); div.appendChild(btn);
+      div.appendChild(name); div.appendChild(dc); div.appendChild(btn);
       shopGrid.appendChild(div);
     }
   }
