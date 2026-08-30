@@ -44,7 +44,7 @@ h1 span{color:#9c61ff}
 .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:10px}
 .item{background:#0e1530;border:1px solid #5362a833;border-radius:16px;padding:10px;text-align:left;position:relative}
 .item.selected{border-color:#9d65ff;box-shadow:0 0 20px #824dff22}
-.item img{width:100%;aspect-ratio:1.35;border-radius:11px;object-fit:cover;background:#171b3b}
+.item img{width:100%;aspect-ratio:1.35;border-radius:11px;object-fit:cover;background:#171b3b}.dragon-thumb{width:100%;height:100px;display:block;border-radius:11px;background:radial-gradient(circle at 50% 40%,#2b3975,transparent 62%),linear-gradient(135deg,#101a40,#080b19)}
 .item .name{font-weight:900;font-size:13px;margin-top:7px}
 .item .meta{font-size:10px;color:#9fa9ca;margin-top:3px}
 .item button{width:100%;margin-top:7px;padding:8px;border-radius:10px;background:#171f46;font-weight:850;font-size:11px}
@@ -79,7 +79,7 @@ h1 span{color:#9c61ff}
       <div class="logo-mark">🐉</div>
       <div class="brand">GAMINGNEST PRESENTS</div>
       <h1>BABY <span>DRAGON</span></h1>
-      <div class="tag">A little dragon. A big adventure.</div>
+      <div class="tag">A little dragon. A big adventure.<br><b style="color:#b991ff">Flappy Edition · 6 unique dragons</b></div>
       <button class="primary" id="playBtn">▶ PLAY</button>
       <div class="menu-grid">
         <button data-screen="dragons"><b>🐲</b>Dragons</button>
@@ -123,22 +123,22 @@ let W=0,H=0,D=1,state='ready',last=0,score=0,best=+(localStorage.getItem('gn_bes
 let dragon,obstacles,particles,scroll=0,wing=0,selectedDragon=localStorage.getItem('gn_dragon')||'baby',selectedColor=localStorage.getItem('gn_color')||'night',selectedMap=localStorage.getItem('gn_map')||'sky';
 const owned=new Set(JSON.parse(localStorage.getItem('gn_owned')||'["baby"]'));
 const dragons=[
-{id:'baby',name:'Baby Dragon',price:0,body:'#2f4f92',wing:'#5ca8ff',eye:'#67c9ff'},
-{id:'fire',name:'Fire Dragon',price:500,body:'#a63d2f',wing:'#ff7b32',eye:'#ffd36a'},
-{id:'ice',name:'Ice Dragon',price:800,body:'#6bc7e8',wing:'#b7f4ff',eye:'#fff'},
-{id:'forest',name:'Forest Dragon',price:1200,body:'#397b55',wing:'#83cf67',eye:'#d9ff8a'},
-{id:'shadow',name:'Shadow Dragon',price:1500,body:'#5c3a8d',wing:'#a16cff',eye:'#e6c5ff'},
-{id:'gold',name:'Golden Dragon',price:2000,body:'#c28a27',wing:'#ffd55a',eye:'#fff1a0'}
+{id:'baby',name:'Baby Dragon',price:0,body:'#263b70',wing:'#ff914d',eye:'#ffd36a',style:'baby',accent:'#b9c9ff'},
+{id:'fire',name:'Fire Dragon',price:500,body:'#8d211b',wing:'#ff5b24',eye:'#ffe36b',style:'fire',accent:'#ffbd32'},
+{id:'ice',name:'Ice Dragon',price:800,body:'#4c9fc1',wing:'#d9fbff',eye:'#69eaff',style:'ice',accent:'#ffffff'},
+{id:'forest',name:'Forest Dragon',price:1200,body:'#2c6b43',wing:'#82cf57',eye:'#d9ff73',style:'forest',accent:'#b9df8b'},
+{id:'shadow',name:'Shadow Dragon',price:1500,body:'#30213f',wing:'#9d4cff',eye:'#e5b7ff',style:'shadow',accent:'#d080ff'},
+{id:'gold',name:'Golden Dragon',price:2000,body:'#956018',wing:'#ffd24a',eye:'#fff0a0',style:'gold',accent:'#fff2ae'}
 ];
 const colors=[
-{id:'night',name:'Night',body:'#2f4f92',wing:'#5ca8ff'},
-{id:'rose',name:'Rose',body:'#d45d91',wing:'#ff9ec4'},
-{id:'mint',name:'Mint',body:'#3e9c82',wing:'#8df1c8'},
-{id:'sun',name:'Sunset',body:'#c66a28',wing:'#ffcf66'},
-{id:'violet',name:'Violet',body:'#6540a5',wing:'#b28cff'},
-{id:'lava',name:'Lava',body:'#a83b32',wing:'#ff744e'},
-{id:'frost',name:'Frost',body:'#579fc1',wing:'#c4f5ff'},
-{id:'gold',name:'Gold',body:'#ba8629',wing:'#ffe072'}
+{id:'ocean',name:'Ocean',body:'#176aa5',wing:'#4fd5ff'},
+{id:'ember',name:'Ember',body:'#a82d1f',wing:'#ff7b32'},
+{id:'amethyst',name:'Amethyst',body:'#6330a6',wing:'#c16cff'},
+{id:'emerald',name:'Emerald',body:'#1d7a51',wing:'#6ee77c'},
+{id:'sunrise',name:'Sunrise',body:'#c66a22',wing:'#ffd25a'},
+{id:'frost',name:'Frost',body:'#75b9d5',wing:'#d8fbff'},
+{id:'midnight',name:'Midnight',body:'#20263a',wing:'#65738f'},
+{id:'royal',name:'Royal',body:'#5b3a9d',wing:'#f08cff'}
 ];
 const maps=[
 {id:'sky',name:'Sky Kingdom',desc:'Bright skies & floating islands',a:'#78bfff',b:'#f5d3e6'},
@@ -159,11 +159,112 @@ function currentDragon(){return dragons.find(d=>d.id===selectedDragon)||dragons[
 function currentColor(){return colors.find(c=>c.id===selectedColor)||colors[0]}
 function flap(){if(state==='ready'||state==='dead'){resetGame();state='play';overlay.classList.add('hidden');beep(760,.07,'triangle');vibrate(8)}else if(state==='play'&&!paused){dragon.vy=-470;wing=1;beep(860,.045,'triangle');vibrate(6)}}
 function die(){if(state!=='play')return;state='dead';best=Math.max(best,score);coins+=score*5;save();bestEl.textContent=best;document.getElementById('home').querySelector('.tag').textContent=`Score ${score} · ${coins} coins`;overlay.classList.remove('hidden');showScreen('home');beep(130,.2,'sawtooth',.06);vibrate([30,40,80]);document.getElementById('playBtn').textContent='▶ PLAY AGAIN';for(let i=0;i<24;i++)particles.push({x:dragon.x,y:dragon.y,vx:(Math.random()-.5)*280,vy:(Math.random()-.6)*280,life:.7,col:i%2?'#9e63ff':'#ffd15b'})}
-function bg(){let m=maps.find(q=>q.id===selectedMap)||maps[0],g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,m.a);g.addColorStop(1,m.b);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.fillStyle='#ffffff18';for(let i=0;i<45;i++){let sx=(i*151-scroll*.12)%(W+30);if(sx<0)sx+=W+30,;let sy=(i*71)%(H-110);ctx.fillRect(sx,sy,2,2)}if(selectedMap==='night'){ctx.fillStyle='#ffffff12';for(let i=0;i<10;i++){let bx=(i*95-scroll*.35)%W;ctx.fillRect(bx,H-170-(i%4)*28,45,86)}}else{ctx.fillStyle='#ffffff2b';for(let i=0;i<3;i++){let cx=((i*260+scroll*.05)%(W+260))-130;ctx.beginPath();ctx.ellipse(cx,90+i*80,75,20,0,0,Math.PI*2);ctx.fill()}}}
+function bg(){let m=maps.find(q=>q.id===selectedMap)||maps[0],g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,m.a);g.addColorStop(1,m.b);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.fillStyle='#ffffff18';for(let i=0;i<45;i++){let sx=(i*151-scroll*.12)%(W+30);if(sx<0)sx+=W+30;let sy=(i*71)%(H-110);ctx.fillRect(sx,sy,2,2)}if(selectedMap==='night'){ctx.fillStyle='#ffffff12';for(let i=0;i<10;i++){let bx=(i*95-scroll*.35)%W;ctx.fillRect(bx,H-170-(i%4)*28,45,86)}}else{ctx.fillStyle='#ffffff2b';for(let i=0;i<3;i++){let cx=((i*260+scroll*.05)%(W+260))-130;ctx.beginPath();ctx.ellipse(cx,90+i*80,75,20,0,0,Math.PI*2);ctx.fill()}}}
 function ground(){let gy=H-84;ctx.fillStyle='#080b19';ctx.fillRect(0,gy,W,84);ctx.fillStyle='#8c4dff';ctx.fillRect(0,gy,W,4);ctx.fillStyle='#ffffff10';for(let i=0;i<30;i++){let xx=(i*80-scroll*.7)%W;if(xx<0)xx+=W;ctx.fillRect(xx,gy+18+(i%3)*16,34,2)}}
 function obstaclesDraw(){let gy=H-84;for(const p of obstacles){let gr=ctx.createLinearGradient(p.x,0,p.x+74,0);gr.addColorStop(0,'#4a22a0');gr.addColorStop(.5,'#a35cff');gr.addColorStop(1,'#4c1e94');ctx.fillStyle=gr;ctx.fillRect(p.x,0,74,p.top);ctx.fillRect(p.x,p.top+190,74,gy-(p.top+190));ctx.fillStyle='#d19aff';ctx.fillRect(p.x-7,p.top-20,88,20);ctx.fillRect(p.x-7,p.top+190,88,20)}}
-function dragonDraw(){let b=dragon,d=currentDragon(),co=currentColor(),body=co.body,wingC=co.wing,f=Math.sin(wing*Math.PI)*10;ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.rot);ctx.shadowBlur=18;ctx.shadowColor=wingC;ctx.fillStyle=body;ctx.beginPath();ctx.ellipse(0,6,23,17,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#ffe1c2';ctx.beginPath();ctx.ellipse(2,11,13,9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=wingC;ctx.beginPath();ctx.moveTo(0,1);ctx.quadraticCurveTo(5,-32-f,28,-7-f*.4);ctx.quadraticCurveTo(9,4,0,7);ctx.fill();ctx.fillStyle=wingC;ctx.beginPath();ctx.moveTo(-16,8);ctx.quadraticCurveTo(-34,6,-42,18);ctx.lineWidth=8;ctx.strokeStyle=wingC;ctx.lineCap='round';ctx.stroke();ctx.fillStyle='#ffd36e';ctx.beginPath();ctx.moveTo(-42,18);ctx.lineTo(-52,12);ctx.lineTo(-44,26);ctx.fill();ctx.fillStyle='#c9b6ff';ctx.beginPath();ctx.moveTo(12,-12);ctx.lineTo(10,-27);ctx.lineTo(19,-12);ctx.fill();ctx.beginPath();ctx.moveTo(22,-14);ctx.lineTo(25,-29);ctx.lineTo(29,-11);ctx.fill();ctx.fillStyle=d.eye||'#67c9ff';ctx.beginPath();ctx.ellipse(24,-4,5,5.4,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#15142a';ctx.beginPath();ctx.arc(25,-4,2.4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(26,-5.2,1,0,Math.PI*2);ctx.fill();ctx.restore()}
-let paused=false;
+function dragonDraw(){
+let b=dragon,d=currentDragon(),co=currentColor(),body=co.body,wingC=co.wing,f=Math.sin(wing*Math.PI)*10,style=d.style;
+ctx.save();ctx.translate(b.x,b.y);ctx.rotate(b.rot);ctx.lineJoin='round';ctx.lineCap='round';
+
+// Tail: different curve and tip for each species.
+ctx.strokeStyle=body;ctx.lineWidth=8;ctx.beginPath();
+if(style==='fire'){ctx.moveTo(-13,8);ctx.quadraticCurveTo(-37,16,-49,3);ctx.quadraticCurveTo(-57,-5,-52,-15)}
+else if(style==='ice'){ctx.moveTo(-13,8);ctx.quadraticCurveTo(-34,4,-47,18);ctx.quadraticCurveTo(-53,25,-61,17)}
+else if(style==='forest'){ctx.moveTo(-13,8);ctx.quadraticCurveTo(-33,10,-45,24);ctx.quadraticCurveTo(-52,31,-61,26)}
+else if(style==='shadow'){ctx.moveTo(-13,8);ctx.quadraticCurveTo(-35,19,-49,7);ctx.quadraticCurveTo(-57,-2,-51,-13)}
+else if(style==='gold'){ctx.moveTo(-13,8);ctx.quadraticCurveTo(-34,11,-46,19);ctx.quadraticCurveTo(-53,24,-59,14)}
+else {ctx.moveTo(-13,8);ctx.quadraticCurveTo(-34,10,-45,20);ctx.quadraticCurveTo(-52,26,-58,18)}
+ctx.stroke();
+
+// Body and belly.
+ctx.shadowBlur=16;ctx.shadowColor=wingC;
+ctx.fillStyle=body;ctx.beginPath();ctx.ellipse(0,6,24,18,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+ctx.fillStyle=style==='ice'?'#d9f9ff':style==='fire'?'#ffad55':style==='forest'?'#b3d98c':style==='shadow'?'#8c6aa9':style==='gold'?'#ffe59b':'#ffe1c2';
+ctx.beginPath();ctx.ellipse(3,11,13,9,0,0,Math.PI*2);ctx.fill();
+
+// Wings — intentionally different silhouettes.
+ctx.fillStyle=wingC;ctx.beginPath();
+if(style==='fire'){
+ctx.moveTo(-1,3);ctx.lineTo(4,-35-f);ctx.lineTo(15,-24-f*.4);ctx.lineTo(30,-31);ctx.lineTo(24,-6);ctx.quadraticCurveTo(10,5,-1,8);
+}else if(style==='ice'){
+ctx.moveTo(-1,3);ctx.lineTo(0,-37-f);ctx.lineTo(13,-25);ctx.lineTo(27,-36);ctx.lineTo(24,-5);ctx.quadraticCurveTo(10,4,-1,8);
+}else if(style==='forest'){
+ctx.moveTo(-1,3);ctx.quadraticCurveTo(-2,-31-f,8,-24);ctx.lineTo(16,-34);ctx.lineTo(23,-10);ctx.quadraticCurveTo(10,5,-1,8);
+}else if(style==='shadow'){
+ctx.moveTo(-1,3);ctx.lineTo(-9,-33-f);ctx.lineTo(6,-24);ctx.lineTo(18,-38);ctx.lineTo(29,-8);ctx.quadraticCurveTo(10,4,-1,8);
+}else if(style==='gold'){
+ctx.moveTo(-1,3);ctx.lineTo(5,-34-f);ctx.lineTo(17,-23);ctx.lineTo(27,-30);ctx.lineTo(24,-5);ctx.quadraticCurveTo(10,4,-1,8);
+}else{
+ctx.moveTo(-1,3);ctx.quadraticCurveTo(2,-33-f,28,-9-f*.35);ctx.quadraticCurveTo(10,4,-1,8);
+}
+ctx.fill();
+
+// Wing structure.
+ctx.strokeStyle='#ffffff44';ctx.lineWidth=1.5;ctx.beginPath();
+ctx.moveTo(2,0);ctx.lineTo(11,-25);ctx.moveTo(8,2);ctx.lineTo(21,-20);ctx.stroke();
+
+// Head and muzzle.
+ctx.fillStyle=body;ctx.beginPath();ctx.ellipse(21,-2,17,14,.05,0,Math.PI*2);ctx.fill();
+ctx.fillStyle=style==='ice'?'#e9fcff':style==='gold'?'#ffe8a6':'#ffc9dc';ctx.beginPath();ctx.ellipse(32,3,10,7,.05,0,Math.PI*2);ctx.fill();
+
+// Horn/crown silhouettes.
+ctx.fillStyle=d.accent;
+if(style==='fire'){
+ctx.beginPath();ctx.moveTo(9,-10);ctx.lineTo(6,-30);ctx.lineTo(15,-17);ctx.lineTo(22,-36);ctx.lineTo(28,-9);ctx.fill();
+}else if(style==='ice'){
+ctx.beginPath();ctx.moveTo(9,-10);ctx.lineTo(8,-30);ctx.lineTo(17,-19);ctx.lineTo(24,-34);ctx.lineTo(30,-8);ctx.fill();
+}else if(style==='forest'){
+ctx.strokeStyle=d.accent;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(10,-8);ctx.lineTo(6,-22);ctx.lineTo(1,-28);ctx.moveTo(10,-16);ctx.lineTo(3,-20);ctx.moveTo(21,-9);ctx.lineTo(28,-22);ctx.lineTo(34,-27);ctx.stroke();
+}else if(style==='shadow'){
+ctx.fillStyle='#24162f';ctx.beginPath();ctx.moveTo(8,-10);ctx.lineTo(4,-31);ctx.lineTo(15,-18);ctx.lineTo(23,-37);ctx.lineTo(29,-8);ctx.fill();
+}else if(style==='gold'){
+ctx.beginPath();ctx.moveTo(8,-10);ctx.lineTo(5,-31);ctx.lineTo(15,-18);ctx.lineTo(22,-35);ctx.lineTo(28,-9);ctx.fill();
+}else{
+ctx.fillStyle='#c7d0ff';ctx.beginPath();ctx.moveTo(10,-10);ctx.lineTo(8,-28);ctx.lineTo(17,-13);ctx.moveTo(21,-12);ctx.lineTo(25,-30);ctx.lineTo(29,-10);ctx.fill();
+}
+
+// Eye, nose and smile.
+ctx.fillStyle=d.eye;ctx.beginPath();ctx.ellipse(25,-4,5.5,5.8,0,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#151426';ctx.beginPath();ctx.arc(26,-4,2.5,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(27,-5.2,1.1,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#17111f';ctx.beginPath();ctx.arc(37,2,1.2,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle='#6f395b';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(32,3,5,.2,1.1);ctx.stroke();
+
+// Signature species detail at the tail tip.
+ctx.fillStyle=wingC;
+if(style==='fire'){ctx.beginPath();ctx.moveTo(-51,3);ctx.lineTo(-61,-3);ctx.lineTo(-55,8);ctx.lineTo(-63,14);ctx.lineTo(-50,12);ctx.fill();}
+if(style==='ice'){ctx.beginPath();ctx.moveTo(-48,18);ctx.lineTo(-61,12);ctx.lineTo(-54,21);ctx.lineTo(-61,28);ctx.lineTo(-48,24);ctx.fill();}
+if(style==='forest'){ctx.beginPath();ctx.arc(-48,25,4,0,Math.PI*2);ctx.fill();}
+if(style==='shadow'){ctx.beginPath();ctx.moveTo(-50,7);ctx.lineTo(-62,1);ctx.lineTo(-55,10);ctx.lineTo(-63,17);ctx.lineTo(-50,15);ctx.fill();}
+if(style==='gold'){ctx.beginPath();ctx.ellipse(42,3,7,4,0,0,Math.PI*2);ctx.fill();}
+ctx.restore();
+}
+
+function renderDragonThumb(canvas,d){
+let q=canvas.getContext('2d'),cw=canvas.width,ch=canvas.height;q.clearRect(0,0,cw,ch);
+q.save();q.translate(cw*.52,ch*.60);
+let g=q.createRadialGradient(0,0,8,0,0,cw*.55);g.addColorStop(0,d.wing+'55');g.addColorStop(1,'transparent');q.fillStyle=g;q.fillRect(-cw/2,-ch/2,cw,ch);
+q.shadowBlur=12;q.shadowColor=d.wing;q.fillStyle=d.body;
+q.beginPath();q.ellipse(0,10,43,30,0,0,Math.PI*2);q.fill();q.shadowBlur=0;
+q.fillStyle=d.wing;q.beginPath();
+if(d.style==='fire'){q.moveTo(-4,7);q.lineTo(2,-49);q.lineTo(17,-31);q.lineTo(31,-43);q.lineTo(28,-5);q.closePath()}
+else if(d.style==='ice'){q.moveTo(-4,7);q.lineTo(-1,-52);q.lineTo(14,-33);q.lineTo(29,-49);q.lineTo(27,-5);q.closePath()}
+else if(d.style==='forest'){q.moveTo(-4,7);q.quadraticCurveTo(-3,-44,12,-31);q.lineTo(25,-48);q.lineTo(31,-8);q.closePath()}
+else if(d.style==='shadow'){q.moveTo(-4,7);q.lineTo(-13,-48);q.lineTo(4,-34);q.lineTo(18,-52);q.lineTo(34,-8);q.closePath()}
+else if(d.style==='gold'){q.moveTo(-4,7);q.lineTo(3,-48);q.lineTo(18,-32);q.lineTo(30,-44);q.lineTo(28,-6);q.closePath()}
+else {q.moveTo(-4,7);q.quadraticCurveTo(-2,-45,34,-10);q.quadraticCurveTo(14,7,-4,7);q.closePath()}
+q.fill();
+q.fillStyle=d.body;q.beginPath();q.ellipse(37,-1,29,22,0,0,Math.PI*2);q.fill();
+q.fillStyle=d.accent;q.beginPath();
+if(d.style==='forest'){q.moveTo(20,-14);q.lineTo(14,-38);q.lineTo(25,-25);q.lineTo(33,-42);q.lineTo(39,-14)}
+else if(d.style==='shadow'){q.moveTo(19,-14);q.lineTo(14,-42);q.lineTo(26,-26);q.lineTo(35,-45);q.lineTo(42,-13)}
+else {q.moveTo(20,-14);q.lineTo(18,-40);q.lineTo(28,-25);q.lineTo(36,-43);q.lineTo(42,-13)}
+q.fill();
+q.fillStyle=d.eye;q.beginPath();q.ellipse(45,-6,9,10,0,0,Math.PI*2);q.fill();q.fillStyle='#111426';q.beginPath();q.arc(47,-6,4,0,Math.PI*2);q.fill();
+q.restore();
+}
+
+let paused=false;let paused=false;
 function tick(ts){let dt=Math.min(.033,last?(ts-last)/1000:.016);last=ts;if(wing>0)wing=Math.max(0,wing-dt*3);if(state==='play'&&!paused){dragon.vy+=1550*dt;dragon.y+=dragon.vy*dt;dragon.rot=Math.max(-.5,Math.min(1,dragon.vy/700));scroll+=200*dt;let spd=200+Math.min(160,score*6);for(const p of obstacles){p.x-=spd*dt;if(!p.passed&&p.x+74<dragon.x){p.passed=true;score++;coins+=2;scoreEl.textContent=score;beep(980,.04);vibrate(5)}}if(obstacles[0].x<-110){obstacles.shift();obstacles.push(makeObstacle(obstacles.at(-1).x+Math.max(250,W*.48)))}let gy=H-84;if(dragon.y+16>gy||dragon.y<12)die();for(const p of obstacles)if(dragon.x+18>p.x&&dragon.x-16<p.x+74&&(dragon.y-14<p.top||dragon.y+14>p.top+190))die()}else if(state==='ready'){dragon.y=H*.42+Math.sin(ts/280)*10;dragon.rot=0;wing=.4+Math.sin(ts/160)*.4;scroll+=35*dt}else if(state==='dead'){dragon.vy+=1550*dt;dragon.y=Math.min(H-96,dragon.y+dragon.vy*dt);dragon.rot=Math.min(1.2,dragon.rot+dt*2.5);scroll+=15*dt}for(const s of particles){s.x+=s.vx*dt;s.y+=s.vy*dt;s.vy+=420*dt;s.life-=dt}particles=particles.filter(s=>s.life>0);bg();obstaclesDraw();ground();dragonDraw();for(const s of particles){ctx.globalAlpha=Math.max(0,s.life*1.7);ctx.fillStyle=s.col;ctx.fillRect(s.x,s.y,5,5);ctx.globalAlpha=1}requestAnimationFrame(tick)}
 function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));overlay.classList.remove('hidden')}
 document.querySelectorAll('[data-screen]').forEach(b=>b.onclick=()=>{showScreen(b.dataset.screen);renderLists()});
@@ -174,9 +275,8 @@ document.getElementById('soundMenu').onclick=()=>{muted=!muted;save();document.g
 document.getElementById('resetBtn').onclick=()=>{localStorage.clear();location.reload()};
 addEventListener('pointerdown',e=>{if(overlay.classList.contains('hidden')&&!e.target.closest('button'))flap()},{passive:false});
 addEventListener('keydown',e=>{if(['Space','ArrowUp','Enter'].includes(e.code)){e.preventDefault();flap()}});
-function dragonCard(d,shop=false){let ownedNow=owned.has(d.id),sel=selectedDragon===d.id;return `<div class="item ${sel?'selected':''}"><div style="height:100px;border-radius:11px;background:radial-gradient(circle at 50% 40%,${d.wing}55,transparent 55%),linear-gradient(135deg,#101a40,#080b19);display:flex;align-items:center;justify-content:center;font-size:58px">🐉</div><div class="name">${d.name}</div><div class="meta">${ownedNow?'Owned':d.price+' coins'}</div><button data-dragon="${d.id}" class="${ownedNow?'':'buy'}">${ownedNow?(sel?'Selected':'Select'):'Unlock'}</button></div>`}
-function renderLists(){document.getElementById('dragonCards').innerHTML=dragons.map(d=>dragonCard(d)).join('');document.getElementById('shopCards').innerHTML=dragons.filter(d=>d.price>0).map(d=>dragonCard(d,true)).join('');document.getElementById('swatches').innerHTML=colors.map(c=>`<button class="swatch ${selectedColor===c.id?'selected':''}" data-color="${c.id}" style="background:linear-gradient(135deg,${c.body},${c.wing})"><span>${c.name}</span></button>`).join('');document.getElementById('mapGrid').innerHTML=maps.map(m=>`<button class="map ${selectedMap===m.id?'selected':''}" data-map="${m.id}" style="background-image:linear-gradient(90deg,#0008,#0002),linear-gradient(135deg,${m.a},${m.b})"><div><b>${m.name}</b><small>${m.desc}</small></div></button>`).join('')}
-document.addEventListener('click',e=>{let b=e.target.closest('[data-dragon]');if(b){let id=b.dataset.dragon,d=dragons.find(q=>q.id===id);if(!owned.has(id)){if(coins<d.price){showToast('Not enough coins');return}coins-=d.price;owned.add(id);showToast('Dragon unlocked!');beep(920,.1,'triangle')}selectedDragon=id;save();renderLists();return}b=e.target.closest('[data-color]');if(b){selectedColor=b.dataset.color;save();renderLists();showToast('Color selected');return}b=e.target.closest('[data-map]');if(b){selectedMap=b.dataset.map;save();renderLists();showToast('Map selected');return}});
+function dragonCard(d,shop=false){let ownedNow=owned.has(d.id),sel=selectedDragon===d.id;return `<div class="item ${sel?'selected':''}"><canvas class="dragon-thumb" data-thumb="${d.id}" width="260" height="150"></canvas><div class="name">${d.name}</div><div class="meta">${ownedNow?'Owned':d.price+' coins'}</div><button data-dragon="${d.id}" class="${ownedNow?'':'buy'}">${ownedNow?(sel?'Selected':'Select'):'Unlock'}</button></div>`}
+function renderLists(){document.getElementById('dragonCards').innerHTML=dragons.map(d=>dragonCard(d)).join('');document.getElementById('shopCards').innerHTML=dragons.filter(d=>d.price>0).map(d=>dragonCard(d,true)).join('');document.getElementById('swatches').innerHTML=colors.map(c=>`<button class="swatch ${selectedColor===c.id?'selected':''}" data-color="${c.id}" style="background:linear-gradient(135deg,${c.body},${c.wing})"><span>${c.name}</span></button>`).join('');document.getElementById('mapGrid').innerHTML=maps.map(m=>`<button class="map ${selectedMap===m.id?'selected':''}" data-map="${m.id}" style="background-image:linear-gradient(90deg,#0008,#0002),linear-gradient(135deg,${m.a},${m.b})"><div><b>${m.name}</b><small>${m.desc}</small></div></button>`).join('');document.querySelectorAll('[data-thumb]').forEach(c=>renderDragonThumb(c,dragons.find(d=>d.id===c.dataset.thumb)))}
 bestEl.textContent=best;renderLists();resetGame();requestAnimationFrame(tick);
 })();
 </script>
