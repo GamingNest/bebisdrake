@@ -163,7 +163,7 @@ scoreEl.textContent="0";
 function startGame(){
 resetGame();mode="playing";paused=false;pause.textContent="Ⅱ";
 overlay.classList.add("hidden");
-setTimeout(function(){flap();},0);
+flap();
 }
 
 function flap(){
@@ -312,7 +312,7 @@ canvas.addEventListener("pointerdown",input,{passive:false});
 canvas.addEventListener("touchstart",input,{passive:false});
 window.addEventListener("keydown",function(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();input(e);}});
 
-bestText=bestEl;bestText.textContent=String(best);coinsEl.textContent=String(coins);
+bestEl.textContent=String(best);coinsEl.textContent=String(coins);
 render();resetGame();requestAnimationFrame(loop);
 })();
 </script>
