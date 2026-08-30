@@ -90,6 +90,14 @@
   .item .dc { font-size: 12px; font-weight: 800; color: #8a5a12; margin: 2px 0 8px; }
   .thumb { width: 100%; height: 78px; border-radius: 10px; display: block; margin-bottom: 6px; background: #cfe8f4; }
   #previewTag { color: #e6d9f8; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+
+  #muteBtn {
+    position: absolute; bottom: 16px; left: 14px; pointer-events: auto;
+    border: 0; background: rgba(58,36,88,.78); color: #fff;
+    font-weight: 700; font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+    padding: 8px 12px; border-radius: 999px; cursor: pointer;
+  }
+  #muteBtn.off { opacity: .5; }
 </style>
 </head>
 <body>
@@ -98,6 +106,7 @@
   <div id="hi-box"><div class="lbl">Best</div><div class="val" id="hi-val">0</div></div>
   <div id="score">0</div>
   <div id="coin-box"><span class="dcoin" title="Dragon coins"></span><div class="val" id="coin-val">0</div></div>
+  <button id="muteBtn" type="button">Sound</button>
 </div>
 <div id="ui">
   <h1>Dragon Tap</h1>
@@ -136,6 +145,57 @@
   const previewCtx = preview.getContext("2d");
   const previewMeta = document.getElementById("previewMeta");
   const SAVE = "dragon-tap-save-v1";
+
+  let actx = null;
+  function audio() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!actx) actx = new AC();
+    if (actx.state === "suspended") actx.resume();
+    return actx;
+  }
+  function tone(freq, dur, type, vol, slide, delay) {
+    if (save.muted) return;
+    const ac = audio();
+    if (!ac) return;
+    const t = ac.currentTime + (delay || 0);
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = type || "sine";
+    o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, slide), t + dur);
+    g.gain.setValueAtTime(Math.max(0.0001, vol || 0.1), t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(ac.destination);
+    o.start(t); o.stop(t + dur + 0.03);
+  }
+  function sfx(kind) {
+    if (kind === "flap") {
+      tone(520, 0.08, "triangle", 0.07, 240);
+      tone(880, 0.05, "sine", 0.035, 520);
+    } else if (kind === "coin") {
+      tone(988, 0.07, "sine", 0.11);
+      tone(1480, 0.14, "triangle", 0.08, 0, 0.05);
+    } else if (kind === "score") {
+      tone(587, 0.07, "square", 0.04, 784);
+    } else if (kind === "die") {
+      tone(220, 0.22, "sawtooth", 0.09, 70);
+      tone(110, 0.32, "triangle", 0.1, 45, 0.04);
+    } else if (kind === "buy") {
+      tone(659, 0.09, "sine", 0.1);
+      tone(880, 0.12, "triangle", 0.08, 0, 0.07);
+      tone(1175, 0.16, "sine", 0.06, 0, 0.14);
+    } else if (kind === "start") {
+      tone(392, 0.1, "triangle", 0.07);
+      tone(523, 0.14, "triangle", 0.07, 0, 0.08);
+    }
+  }
+  function syncMute() {
+    const b = document.getElementById("muteBtn");
+    b.textContent = save.muted ? "Muted" : "Sound";
+    b.classList.toggle("off", !!save.muted);
+  }
+
 
   const DRAGONS = [
     { id: "pebble", name: "Pebble", price: 0, kind: "chubby" },
@@ -247,14 +307,16 @@
 
   function flap(e) {
     if (shopOpen) return;
-    if (e && e.target && (e.target.closest && (e.target.closest("#shop") || e.target.closest("#shopBtn")))) return;
+    if (e && e.target && (e.target.closest && (e.target.closest("#shop") || e.target.closest("#shopBtn") || e.target.closest("#muteBtn")))) return;
     if (e) e.preventDefault();
+    audio();
     if (state === "ready" || state === "dead") {
       reset();
       state = "play";
       ui.classList.add("hidden");
+      sfx("start");
     }
-    if (state === "play") { bird.vy = FLAP; wing = 1; }
+    if (state === "play") { bird.vy = FLAP; wing = 1; sfx("flap"); }
   }
 
   function die() {
@@ -264,6 +326,7 @@
     persist();
     hiEl.textContent = String(save.hi);
     ui.classList.remove("hidden");
+    sfx("die");
     msg.textContent = "Ouch. " + score + "  ·  best " + save.hi + ". Tap again.";
     for (let i = 0; i < 16; i++) {
       parts.push({ x: bird.x, y: bird.y, vx: (Math.random() - 0.5) * 240, vy: (Math.random() - 0.7) * 240, life: 0.5, c: ["#ffd4e5","#c9b6ff","#fff1a8"][i % 3] });
@@ -796,11 +859,11 @@
       const spd = SPEED0 + Math.min(140, score * 6);
       for (const p of pipes) {
         p.x -= spd * dt;
-        if (!p.passed && p.x + PW < bird.x) { p.passed = true; score += 1; scoreEl.textContent = String(score); }
+        if (!p.passed && p.x + PW < bird.x) { p.passed = true; score += 1; scoreEl.textContent = String(score); sfx("score"); }
       }
       for (const c of coins) {
         c.x -= spd * dt;
-        if (!c.got && Math.hypot(c.x - bird.x, c.y - bird.y) < 28) { c.got = true; addCoins(1); }
+        if (!c.got && Math.hypot(c.x - bird.x, c.y - bird.y) < 28) { c.got = true; addCoins(1); sfx("coin"); }
       }
       if (pipes[0] && pipes[0].x < -PW - 20) {
         pipes.shift();
@@ -945,7 +1008,7 @@
           if (!sel) { selectOnly(); return; }
           if (save.coins >= it.price) {
             save.coins -= it.price; save[ownedKey].push(it.id); save[eqKey] = it.id;
-            persist(); coinEl.textContent = String(save.coins); renderShop();
+            persist(); coinEl.textContent = String(save.coins); sfx("buy"); renderShop();
           } else {
             dc.innerHTML = "Need <span class='dcoin'></span> " + it.price;
           }
@@ -960,6 +1023,16 @@
     }
   }
 
+  document.getElementById("muteBtn").addEventListener("pointerdown", function (e) { e.stopPropagation(); e.preventDefault(); });
+  document.getElementById("muteBtn").addEventListener("click", function (e) {
+    e.stopPropagation();
+    audio();
+    save.muted = !save.muted;
+    persist();
+    syncMute();
+    if (!save.muted) sfx("coin");
+  });
+  syncMute();
   document.getElementById("shopBtn").addEventListener("pointerdown", function (e) { e.stopPropagation(); e.preventDefault(); });
   document.getElementById("shopBtn").addEventListener("click", function (e) {
     e.stopPropagation();
