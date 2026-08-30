@@ -41,7 +41,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <div id="overlay"><div class="panel">
 <section id="home" class="screen active">
 <div class="logo">🐉</div><div class="brand">GAMINGNEST PRESENTS</div><h1>BABY <span>DRAGON</span></h1>
-<div class="tag" id="status">A little dragon. A big adventure.<br><b>Flappy Edition</b></div>
+<div class="tag" id="status">A little dragon. A big adventure.<br><b>Flappy Edition</b><br>🏆 +1 score per gate · 🪙 +5 coins per gate</div>
 <button class="primary" id="play" type="button">▶ PLAY</button>
 <div class="menu">
 <button data-screen="dragons"><i>🐲</i>Dragons</button><button data-screen="colors"><i>🎨</i>Colors</button><button data-screen="maps"><i>🗺️</i>Maps</button>
@@ -50,7 +50,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <div class="tag" style="font-size:9px;letter-spacing:.12em;margin-bottom:0">SMALL GAMES · BIG ADVENTURES</div>
 </section>
 <section id="dragons" class="screen"><button class="back" data-home>‹</button><div class="title">Dragons</div><div class="sub">Unique designs with different silhouettes.</div><div id="dragonCards" class="cards"></div></section>
-<section id="shop" class="screen"><button class="back" data-home>‹</button><div class="title">Dragon Shop</div><div class="sub">Coins earned from successful flights.</div><div id="shopCards" class="cards"></div></section>
+<section id="shop" class="screen"><button class="back" data-home>‹</button><div class="title">Dragon Shop</div><div class="sub">Your balance: 🪙 <b id="shopCoins">0</b><br>Pass a gate = <b>+5 coins</b></div><div id="shopCards" class="cards"></div></section>
 <section id="colors" class="screen"><button class="back" data-home>‹</button><div class="title">Colors</div><div class="sub">Eight distinct color palettes.</div><div id="swatches" class="swatches"></div></section>
 <section id="maps" class="screen"><button class="back" data-home>‹</button><div class="title">Maps</div><div class="sub">Change the atmosphere.</div><div id="mapsList"></div></section>
 </div></div><div id="toast"></div>
@@ -102,13 +102,73 @@ function drawBG(){var m=getMap(),g=ctx.createLinearGradient(0,0,0,H);g.addColorS
 function drawGround(){var y=H-85;ctx.fillStyle="#080a18";ctx.fillRect(0,y,W,85);ctx.fillStyle="#9c5cff";ctx.fillRect(0,y,W,4)}
 function drawGates(){var ground=H-85;for(var i=0;i<gates.length;i++){var p=gates[i],g=ctx.createLinearGradient(p.x,0,p.x+76,0);g.addColorStop(0,"#43209a");g.addColorStop(.5,"#a65cff");g.addColorStop(1,"#4a2096");ctx.fillStyle=g;ctx.fillRect(p.x,0,76,p.top);ctx.fillRect(p.x,p.top+p.gap,76,ground-p.top-p.gap);ctx.fillStyle="#d6a2ff";ctx.fillRect(p.x-7,p.top-20,90,20);ctx.fillRect(p.x-7,p.top+p.gap,90,20)}}
 function drawDragon(){var d=getDragon(),c=getColor(),style=d.style,b=dragon,x=b.x,y=b.y;ctx.save();ctx.translate(x,y);ctx.rotate(Math.max(-.5,Math.min(1,b.vy/700)));ctx.lineJoin="round";ctx.shadowBlur=16;ctx.shadowColor=c.wing;ctx.fillStyle=c.wing;ctx.beginPath();if(style==="fire"){ctx.moveTo(-1,3);ctx.lineTo(3,-35-wing*7);ctx.lineTo(16,-23);ctx.lineTo(30,-31);ctx.lineTo(24,-5)}else if(style==="ice"){ctx.moveTo(-1,3);ctx.lineTo(0,-38-wing*7);ctx.lineTo(13,-25);ctx.lineTo(27,-37);ctx.lineTo(24,-5)}else if(style==="forest"){ctx.moveTo(-1,3);ctx.quadraticCurveTo(-2,-32-wing*7,8,-24);ctx.lineTo(17,-35);ctx.lineTo(24,-7)}else if(style==="shadow"){ctx.moveTo(-1,3);ctx.lineTo(-9,-34-wing*7);ctx.lineTo(6,-24);ctx.lineTo(18,-39);ctx.lineTo(29,-7)}else if(style==="gold"){ctx.moveTo(-1,3);ctx.lineTo(5,-35-wing*7);ctx.lineTo(17,-23);ctx.lineTo(28,-31);ctx.lineTo(24,-5)}else{ctx.moveTo(-1,3);ctx.quadraticCurveTo(2,-34-wing*7,28,-9);ctx.quadraticCurveTo(10,4,-1,8)}ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.fillStyle=c.body;ctx.beginPath();ctx.ellipse(0,7,24,18,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=style==="ice"?"#d9f9ff":style==="fire"?"#ffad55":style==="forest"?"#b3d98c":style==="shadow"?"#8c6aa9":style==="gold"?"#ffe59b":"#ffe1c2";ctx.beginPath();ctx.ellipse(3,12,13,9,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=c.body;ctx.beginPath();ctx.ellipse(21,-2,17,14,.05,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(32,3,10,7,.05,0,Math.PI*2);ctx.fill();ctx.fillStyle=d.accent;ctx.beginPath();ctx.moveTo(9,-10);ctx.lineTo(6,-31);ctx.lineTo(16,-15);ctx.lineTo(23,-35);ctx.lineTo(29,-9);ctx.fill();ctx.fillStyle=d.eye;ctx.beginPath();ctx.ellipse(26,-4,5.5,5.8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#151426";ctx.beginPath();ctx.arc(27,-4,2.5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(28,-5.2,1.1,0,Math.PI*2);ctx.fill();ctx.strokeStyle=c.body;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(-14,9);ctx.quadraticCurveTo(-34,10,-48,21);ctx.stroke();ctx.restore()}
-function update(dt){if(mode!=="playing"||paused)return;dragon.vy+=1450*dt;dragon.y+=dragon.vy*dt;scroll+=210*dt;wing=Math.max(0,wing-dt*3);var speed=205+Math.min(140,score*5);for(var i=0;i<gates.length;i++){var p=gates[i];p.x-=speed*dt;if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=2;coinsEl.textContent=String(coins);scoreEl.textContent=String(score);save()}}if(gates[0].x<-100){gates.shift();gates.push(makeGate(gates[gates.length-1].x+Math.max(280,W*.55)))}var ground=H-85;if(dragon.y-15<0||dragon.y+15>ground){die();return}for(var j=0;j<gates.length;j++){var q=gates[j];if(dragon.x+17>q.x&&dragon.x-17<q.x+76&&(dragon.y-14<q.top||dragon.y+14>q.top+q.gap)){die();return}}}
+function update(dt){if(mode!=="playing"||paused)return;dragon.vy+=1450*dt;dragon.y+=dragon.vy*dt;scroll+=210*dt;wing=Math.max(0,wing-dt*3);var speed=205+Math.min(140,score*5);for(var i=0;i<gates.length;i++){var p=gates[i];p.x-=speed*dt;if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=5;coinsEl.textContent=String(coins);scoreEl.textContent=String(score);save();render()}}if(gates[0].x<-100){gates.shift();gates.push(makeGate(gates[gates.length-1].x+Math.max(280,W*.55)))}var ground=H-85;if(dragon.y-15<0||dragon.y+15>ground){die();return}for(var j=0;j<gates.length;j++){var q=gates[j];if(dragon.x+17>q.x&&dragon.x-17<q.x+76&&(dragon.y-14<q.top||dragon.y+14>q.top+q.gap)){die();return}}}
 function loop(t){var dt=Math.min(.035,last?(t-last)/1000:.016);last=t;update(dt);drawBG();drawGates();drawGround();drawDragon();requestAnimationFrame(loop)}
 
 function show(id){var ss=document.querySelectorAll(".screen");for(var i=0;i<ss.length;i++)ss[i].classList.toggle("active",ss[i].id===id)}
-function render(){var dc="",sc="",sw="",ml="";for(var i=0;i<dragons.length;i++){var d=dragons[i],o=owned.has(d.id),s=selectedDragon===d.id;dc+='<div class="card '+(s?"selected":"")+'"><div class="thumb" style="background:linear-gradient(135deg,'+d.body+','+d.wing+')"><div class="dragon-art">🐉</div></div><b>'+d.name+'</b><small>'+(o?"Owned":d.price+" coins")+'</small><button data-dragon="'+d.id+'" class="'+(o?"":"buy")+'">'+(o?(s?"Selected":"Select"):"Unlock")+'</button></div>'}for(var j=1;j<dragons.length;j++){var q=dragons[j],oo=owned.has(q.id);sc+='<div class="card"><div class="thumb" style="background:linear-gradient(135deg,'+q.body+','+q.wing+')"><div class="dragon-art">🐉</div></div><b>'+q.name+'</b><small>'+q.price+' coins</small><button data-dragon="'+q.id+'" class="'+(oo?"":"buy")+'">'+(oo?"Select":"Unlock")+'</button></div>'}for(var k=0;k<colors.length;k++){var c=colors[k];sw+='<button class="swatch '+(selectedColor===c.id?"selected":"")+'" data-color="'+c.id+'" style="background:linear-gradient(135deg,'+c.body+','+c.wing+')"><span>'+c.name+'</span></button>'}for(var n=0;n<maps.length;n++){var m=maps[n];ml+='<button class="map '+(selectedMap===m.id?"selected":"")+'" data-map="'+m.id+'" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><b>'+m.name+'</b><small>'+m.desc+'</small></button>'}document.getElementById("dragonCards").innerHTML=dc;document.getElementById("shopCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("mapsList").innerHTML=ml}
+function render(){
+var dc="",sc="",sw="",ml="";
+for(var i=0;i<dragons.length;i++){
+ var d=dragons[i],o=owned.has(d.id),s=selectedDragon===d.id;
+ dc+='<div class="card '+(s?"selected":"")+'">'+
+ '<div class="thumb" style="background:linear-gradient(135deg,'+d.body+','+d.wing+')"><div class="dragon-art">🐉</div></div>'+
+ '<b>'+d.name+'</b><small>'+(o?"Owned":d.price+" coins")+'</small>'+
+ '<button type="button" data-action="dragon" data-id="'+d.id+'" class="'+(o?"":"buy")+'">'+
+ (o?(s?"Selected":"Select"):"Unlock")+'</button></div>';
+}
+for(var j=1;j<dragons.length;j++){
+ var q=dragons[j],oo=owned.has(q.id);
+ sc+='<div class="card">'+
+ '<div class="thumb" style="background:linear-gradient(135deg,'+q.body+','+q.wing+')"><div class="dragon-art">🐉</div></div>'+
+ '<b>'+q.name+'</b><small>'+q.price+" coins · Balance "+coins+'</small>'+
+ '<button type="button" data-action="dragon" data-id="'+q.id+'" class="'+(oo?"":"buy")+'">'+
+ (oo?"Select":"Unlock")+'</button></div>';
+}
+for(var k=0;k<colors.length;k++){
+ var c=colors[k];
+ sw+='<button type="button" class="swatch '+(selectedColor===c.id?"selected":"")+'" data-action="color" data-id="'+c.id+'" style="background:linear-gradient(135deg,'+c.body+','+c.wing+')"><span>'+c.name+"</span></button>";
+}
+for(var n=0;n<maps.length;n++){
+ var m=maps[n];
+ ml+='<button type="button" class="map '+(selectedMap===m.id?"selected":"")+'" data-action="map" data-id="'+m.id+'" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><b>'+m.name+'</b><small>'+m.desc+"</small></button>";
+}
+document.getElementById("dragonCards").innerHTML=dc;
+document.getElementById("shopCards").innerHTML=sc;
+document.getElementById("swatches").innerHTML=sw;
+document.getElementById("mapsList").innerHTML=ml;
+var sb=document.getElementById("shopCoins");if(sb)sb.textContent=String(coins);
+}
+document.addEventListener("click",function(e){
+ var t=e.target.closest ? e.target.closest("button") : e.target;
+ if(!t || t.tagName!=="BUTTON")return;
 
-document.addEventListener("click",function(e){var t=e.target.closest("button");if(!t)return;if(t.hasAttribute("data-screen")){show(t.getAttribute("data-screen"));render();return}if(t.hasAttribute("data-home")){show("home");return}if(t.hasAttribute("data-dragon")){var id=t.getAttribute("data-dragon"),d=null;for(var i=0;i<dragons.length;i++)if(dragons[i].id===id)d=dragons[i];if(!owned.has(id)){if(coins<d.price){toast("Not enough coins");return}coins-=d.price;owned.add(id);toast("Dragon unlocked!")}selectedDragon=id;save();render();return}if(t.hasAttribute("data-color")){selectedColor=t.getAttribute("data-color");save();render();toast("Color selected");return}if(t.hasAttribute("data-map")){selectedMap=t.getAttribute("data-map");save();render();toast("Map selected");return}});
+ if(t.hasAttribute("data-screen")){show(t.getAttribute("data-screen"));render();return;}
+ if(t.hasAttribute("data-home")){show("home");return;}
+
+ var action=t.getAttribute("data-action");
+ var id=t.getAttribute("data-id");
+
+ if(action==="dragon"){
+  var d=null;
+  for(var i=0;i<dragons.length;i++){if(dragons[i].id===id){d=dragons[i];break;}}
+  if(!d)return;
+  if(owned.has(id)){
+   selectedDragon=id;save();render();toast(d.name+" selected");return;
+  }
+  if(coins<d.price){toast("You need "+(d.price-coins)+" more coins");return;}
+  coins-=d.price;
+  owned.add(id);
+  selectedDragon=id;
+  save();render();toast(d.name+" unlocked!");
+  return;
+ }
+ if(action==="color"){
+  selectedColor=id;save();render();toast("Color selected");return;
+ }
+ if(action==="map"){
+  selectedMap=id;save();render();toast("Map selected");return;
+ }
+});
 play.addEventListener("click",function(){start()});
 pause.addEventListener("click",function(){if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}});
 document.getElementById("sound").addEventListener("click",function(){muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound"});
