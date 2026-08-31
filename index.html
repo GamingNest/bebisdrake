@@ -262,23 +262,106 @@ document.getElementById("dragonCards").innerHTML=dc;document.getElementById("sho
 }
 
 document.addEventListener("click",function(e){
-var b=e.target.closest?e.target.closest("button"):null;if(!b)return;
-if(b.hasAttribute("data-screen")){show(b.getAttribute("data-screen"));render();return}
-if(b.hasAttribute("data-home")){show("home");render();return}
+var b=e.target.closest?e.target.closest("button"):null;
+if(!b)return;
+
+try{
+if(b.id==="play"){
+e.preventDefault();
+e.stopPropagation();
+startGame();
+return;
+}
+
+if(b.id==="pause"){
+e.preventDefault();
+e.stopPropagation();
+if(mode==="playing"){
+paused=!paused;
+pause.textContent=paused?"▶":"Ⅱ";
+toast(paused?"Paused":"Resumed");
+}
+return;
+}
+
+if(b.hasAttribute("data-screen")){
+show(b.getAttribute("data-screen"));
+render();
+return;
+}
+
+if(b.hasAttribute("data-home")){
+show("home");
+render();
+return;
+}
+
 var action=b.getAttribute("data-action"),id=b.getAttribute("data-id");
-if(action==="dragon"){var d=null;for(var i=0;i<dragons.length;i++)if(dragons[i].id===id)d=dragons[i];if(!d)return;
-if(owned.has(id)){selectedDragon=id;save();render();toast(d.name+" selected");return}
-if(coins<d.price){toast("Not enough coins");return}
-coins-=d.price;owned.add(id);selectedDragon=id;save();render();toast(d.name+" unlocked!");return}
-if(action==="color"){selectedColor=id;save();render();toast("Color selected");return}
-if(action==="map"){selectedMap=id;save();render();toast("Map selected");return}
+
+if(action==="dragon"){
+var d=null;
+for(var i=0;i<dragons.length;i++)if(dragons[i].id===id)d=dragons[i];
+if(!d)return;
+if(owned.has(id)){
+selectedDragon=id;
+save();
+render();
+toast(d.name+" selected");
+return;
+}
+if(coins<d.price){
+toast("Not enough coins");
+return;
+}
+coins-=d.price;
+owned.add(id);
+selectedDragon=id;
+save();
+render();
+toast(d.name+" unlocked!");
+return;
+}
+
+if(action==="color"){
+selectedColor=id;
+save();
+render();
+toast("Color selected");
+return;
+}
+
+if(action==="map"){
+selectedMap=id;
+save();
+render();
+toast("Map selected");
+return;
+}
+}catch(err){
+console.error("Dragon Tap menu error:",err);
+toast("Menu error - reload the game");
+}
 });
-play.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();startGame()});
-pause.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}});
+play.addEventListener("click",function(e){
+e.preventDefault();
+e.stopPropagation();
+startGame();
+});
+
+pause.addEventListener("click",function(e){
+e.preventDefault();
+e.stopPropagation();
+if(mode==="playing"){
+paused=!paused;
+pause.textContent=paused?"▶":"Ⅱ";
+toast(paused?"Paused":"Resumed");
+}
+});
+
 document.getElementById("sound").addEventListener("click",function(){muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound"});
 document.getElementById("reset").addEventListener("click",function(){localStorage.clear();location.reload()});
 function input(e){if(e)e.preventDefault();var now=Date.now();if(now-lastInput<100)return;lastInput=now;flap()}
-canvas.addEventListener("pointerdown",input,{passive:false});canvas.addEventListener("touchstart",input,{passive:false});
+canvas.addEventListener("pointerdown",input,{passive:false});
 window.addEventListener("keydown",function(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();input(e)}});
 
 bestEl.textContent=String(best);coinsEl.textContent=String(coins);render();resetGame();requestAnimationFrame(loop);
