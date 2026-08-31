@@ -122,7 +122,7 @@ var confirmCancel=document.getElementById("confirmCancel");
 var W=0,H=0,dpr=1,last=0,mode="menu",paused=false,score=0,scroll=0,wing=0,lastInput=0;
 var best=Number(localStorage.getItem("gn_best")||0);
 /* Personal build: starts with 2,000,000 coins when no saved balance exists. */
-var coins=Number(localStorage.getItem("gn_coins")||2000000);
+var coins=2000000; localStorage.setItem("gn_coins","2000000");
 var muted=localStorage.getItem("gn_muted")==="1";
 var selectedDragon=localStorage.getItem("gn_dragon")||"baby";
 var selectedColor=localStorage.getItem("gn_color")||"ocean";
@@ -453,7 +453,7 @@ play.addEventListener("click",function(e){e.preventDefault();e.stopPropagation()
 pause.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}});
 
 document.getElementById("sound").addEventListener("click",function(){muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound";if(!muted){ensureAudio();sfxClick()}});
-document.getElementById("reset").addEventListener("click",function(){localStorage.clear();location.reload()});
+document.getElementById("reset").addEventListener("click",function(){localStorage.clear();localStorage.setItem("gn_coins","2000000");location.reload()});
 function input(e){if(e)e.preventDefault();var now=Date.now();if(now-lastInput<100)return;lastInput=now;flap()}
 canvas.addEventListener("pointerdown",input,{passive:false});
 window.addEventListener("keydown",function(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();input(e)}});
