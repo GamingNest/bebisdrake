@@ -47,7 +47,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <section id="home" class="screen active">
 <div class="logo">🐉</div><div class="brand">GAMINGNEST PRESENTS</div>
 <h1>DRAGON <span>TAP</span></h1>
-<div class="tag" id="status">Tap to fly. Dodge the gates. Collect the coins.<br><b>Flappy Edition</b><br>🏆 +1 score per gate · 🪙 +2 coins per gate · 🪙 +1 per coin</div>
+<div class="tag" id="status">Tap to fly. Dodge the gates. Collect the coins.<br><b>Flappy Edition</b><br>🏆 +1 score per gate · 🪙 +2 coins per gate · 🪙 +1 per coin collected</div>
 <button class="primary" id="play" type="button">▶ PLAY</button>
 <div class="menu">
 <button type="button" data-screen="dragons"><i>🐲</i>Dragons</button>
@@ -154,13 +154,12 @@ var gap=190,ground=H-85,min=58,max=Math.max(min+1,ground-gap-58);
 return{x:x,top:min+Math.random()*(max-min),gap:gap,passed:false};
 }
 
-function makeCoin(x){
+function makeCoinAt(x,y){
 var ground=H-85;
-var minY=95;
-var maxY=Math.max(minY+20,ground-115);
+var safeY=Math.max(65,Math.min(ground-65,y));
 return{
 x:x,
-y:minY+Math.random()*(maxY-minY),
+y:safeY,
 r:15,
 collected:false,
 spin:Math.random()*Math.PI*2,
@@ -168,18 +167,30 @@ bob:Math.random()*Math.PI*2
 };
 }
 
+function makeCoinInGate(gate){
+/* Always put the coin in the playable opening of a gate. */
+return makeCoinAt(
+gate.x+38,
+gate.top+(gate.gap/2)
+);
+}
+
+function makeCoinBetween(gateA,gateB){
+/* Put a coin safely between two gates, never inside a pillar. */
+var gapStart=gateA.x+76;
+var gapEnd=gateB.x;
+var x=gapStart+Math.max(45,(gapEnd-gapStart)*0.5);
+var y=gateA.top+(gateA.gap/2);
+return makeCoinAt(x,y);
+}
 function resetGame(){
 score=0;scroll=0;wing=0;
 dragon.x=W*.28;dragon.y=H*.42;dragon.vy=0;dragon.rot=0;
 gates=[makeGate(W+100),makeGate(W+100+Math.max(285,W*.55))];
 coinItems=[
-makeCoin(W+160),
-makeCoin(W+320),
-makeCoin(W+480),
-makeCoin(W+640),
-makeCoin(W+800),
-makeCoin(W+960),
-makeCoin(W+1120)
+makeCoinInGate(gates[0]),
+makeCoinBetween(gates[0],gates[1]),
+makeCoinInGate(gates[1])
 ];
 scoreEl.textContent="0";
 coinsEl.textContent=String(coins);
@@ -484,14 +495,16 @@ toast("+1 🪙");
 if(gates[0].x<-100){
 gates.shift();
 gates.push(makeGate(gates[gates.length-1].x+Math.max(285,W*.55)));
-}
 
-for(var ci=coinItems.length-1;ci>=0;ci--){
-if(coinItems[ci].x<-50)coinItems.splice(ci,1);
+/* Remove old coins and rebuild them from the new gate layout.
+   This guarantees coins are always in reachable openings or safe gaps. */
+coinItems=[];
+for(var gi=0;gi<gates.length;gi++){
+coinItems.push(makeCoinInGate(gates[gi]));
+if(gi<gates.length-1){
+coinItems.push(makeCoinBetween(gates[gi],gates[gi+1]));
 }
-while(coinItems.length<7){
-var lastCoinX=coinItems.length?coinItems[coinItems.length-1].x:W;
-coinItems.push(makeCoin(lastCoinX+150+Math.random()*180));
+}
 }
 
 var ground=H-85;
