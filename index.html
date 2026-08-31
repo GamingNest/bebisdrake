@@ -335,39 +335,57 @@ function spriteId(d){return (d&&d.style==="void")?"void":((d&&d.style)||"baby")}
 function paintDragon(g,d,pal,t,anim){
 var im=dragonImgs[spriteId(d)];
 if(!im||!im.complete||!im.naturalWidth)return;
-var flap=(anim&&anim.flap)||0;
-var stretch=(anim&&anim.stretch)||0;
-var w=124,h=124;
-g.save();
-/* soft body: stretch on jump, squash on fall, tiny wing tilt */
-g.scale(1-stretch*0.55, 1+stretch*0.7);
-g.rotate(flap*0.08 + stretch*0.12);
+var src=im, IW=im.naturalWidth, IH=im.naturalHeight;
 var skin=pal||{};
 var tint=skin.body&&!skin._natural;
 if(getColor&&getColor().id==="natural")tint=false;
-g.imageSmoothingEnabled=true;
 if(tint){
-  if(!paintDragon.buf){paintDragon.buf=document.createElement("canvas");paintDragon.buf.width=256;paintDragon.buf.height=256}
-  var b=paintDragon.buf,bx=b.getContext("2d");
-  bx.clearRect(0,0,256,256);
-  bx.drawImage(im,0,0,256,256);
+  if(!paintDragon.buf){paintDragon.buf=document.createElement("canvas")}
+  var b=paintDragon.buf; b.width=IW; b.height=IH;
+  var bx=b.getContext("2d");
+  bx.clearRect(0,0,IW,IH);
+  bx.drawImage(im,0,0);
   bx.globalCompositeOperation="source-atop";
-  bx.fillStyle=skin.body;bx.globalAlpha=0.55;bx.fillRect(0,0,256,256);
+  bx.fillStyle=skin.body;bx.globalAlpha=0.5;bx.fillRect(0,0,IW,IH);
   bx.globalCompositeOperation="source-over";bx.globalAlpha=1;
-  g.drawImage(b,-w*0.48,-h*0.62,w,h);
-}else{
-  g.drawImage(im,-w*0.48,-h*0.62,w,h);
+  src=b;
 }
-g.restore();
+g.imageSmoothingEnabled=true;
+var sc=124/IW;
+var cx=IW*0.5, cy=IH*0.52;
+function part(sx,sy,sw,sh,jx,jy,rot){
+  g.save();
+  g.translate((jx-cx)*sc,(jy-cy)*sc);
+  g.rotate(rot);
+  g.drawImage(src,sx,sy,sw,sh,(sx-jx)*sc,(sy-jy)*sc,sw*sc,sh*sc);
+  g.restore();
+}
+var tm=t||0;
+var tuck=(anim&&anim.tuck)||0;
+var pitch=(anim&&anim.pitch)||0;
+var beat=Math.max(0.35, wing||0.4);
+var flapL=Math.sin(tm*12)*0.48*beat;
+var flapR=Math.sin(tm*12+0.85)*0.44*beat;
+var tailA=Math.sin(tm*6.2)*0.16 + pitch*0.18 - tuck*0.08;
+var legF=0.18*tuck + Math.sin(tm*8.5)*0.16*(1-Math.abs(tuck)*0.4);
+var legB=-0.12*tuck + Math.sin(tm*8.5+Math.PI)*0.14*(1-Math.abs(tuck)*0.4);
+var headN=Math.sin(tm*4.6)*0.05 - pitch*0.12;
+/* far wing, tail, hind legs, body, front legs, near wing, head */
+part(IW*0.04,IH*0.02,IW*0.48,IH*0.46, IW*0.38,IH*0.30, -0.18+flapL);
+part(0,IH*0.28,IW*0.46,IH*0.52, IW*0.36,IH*0.54, tailA);
+part(IW*0.18,IH*0.54,IW*0.34,IH*0.38, IW*0.40,IH*0.66, legB);
+part(IW*0.22,IH*0.24,IW*0.50,IH*0.50, IW*0.50,IH*0.48, 0);
+part(IW*0.36,IH*0.54,IW*0.36,IH*0.38, IW*0.54,IH*0.68, legF);
+part(IW*0.28,IH*0.02,IW*0.50,IH*0.46, IW*0.48,IH*0.32, 0.12+flapR);
+part(IW*0.44,IH*0.04,IW*0.52,IH*0.52, IW*0.64,IH*0.34, headN);
 }
 
 function drawDragon(){
 var d=getDragon(),skin=getColor(),x=dragon.x,y=dragon.y;
 var S=(d.scale||.68)*1.22,t=performance.now()/1000;
 var pitch=Math.max(-.48,Math.min(.78,dragon.rot));
-var stretch=Math.max(-0.22,Math.min(0.28,-dragon.vy/780));
-stretch+=(dragon.stretch||0);
-var anim={flap:Math.sin(t*10.5)*Math.max(0.25,wing),flapR:0,walk:0,pitch:pitch,stretch:stretch};
+var tuck=Math.max(-1,Math.min(1,dragon.vy/520));
+var anim={pitch:pitch,tuck:tuck};
 ctx.save();
 ctx.translate(x,y);
 ctx.rotate(pitch+Math.sin(t*3.8)*.012);
