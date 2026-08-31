@@ -28,7 +28,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 .menu{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.menu button{padding:10px 3px;border-radius:12px;background:#111832;border:1px solid #5e6eb044;font-size:10px;font-weight:900}.menu i{display:block;font-style:normal;font-size:19px;margin-bottom:2px}
 .screen{display:none}.screen.active{display:block}.back{float:left;width:34px;height:34px;border-radius:10px;background:#121936;border:1px solid #5e6eb044;font-size:22px}.title{text-align:center;font-size:21px;font-weight:950}.sub{text-align:center;color:#aab3d2;font-size:10px;margin:3px 0 10px}
 .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.card{background:#0d1530;border:1px solid #5363a044;border-radius:14px;padding:7px;text-align:center}.card.selected{border-color:#a56cff;box-shadow:0 0 18px #884cff22}.card.exclusive{border-color:#d8a83b88;background:linear-gradient(160deg,#171322,#0b0d1d)}.card.exclusive.selected{border-color:#ffd35a;box-shadow:0 0 20px #ffd35a33}.thumb{height:78px;border-radius:9px;display:flex;align-items:center;justify-content:center}.dragonArt{font-size:48px;filter:drop-shadow(0 0 10px #fff5)}.card b{display:block;font-size:11px;margin-top:5px}.card small{display:block;color:#9da8ca;font-size:9px;margin-top:2px}.card button{width:100%;padding:7px;margin-top:6px;border-radius:9px;background:#182043;font-size:10px;font-weight:900}.card button.buy{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
-.shopTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0 12px;position:sticky;top:0;z-index:2;background:#111736;padding:5px;border-radius:15px;border:1px solid #ffffff12}.shopTab{min-height:58px;border-radius:11px;background:#10182f;border:1px solid #ffffff12;font-size:10px;font-weight:900}.shopTab.active{background:linear-gradient(135deg,#6f4cff,#3b8cff);border-color:#a56cff}.shopTab span{display:block;margin-top:3px;font-size:9px}.shopPanel{display:none}.shopPanel.active{display:block}.shopPanel .sub{margin-bottom:8px}.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:55px;border-radius:13px;border:2px solid #ffffff18;position:relative}.swatch.selected{border-color:#fff;box-shadow:0 0 15px #fff4}.swatch span{position:absolute;bottom:3px;left:0;right:0;font-size:8px;font-weight:950;text-shadow:0 1px 4px #000}
+.customPreview{margin:8px 0 12px;border-radius:16px;border:1px solid #a56cff55;background:linear-gradient(135deg,#111832,#0a0d20);padding:4px;text-align:center}.customPreview canvas{width:100%;height:150px;display:block}.customCurrent{font-size:11px;font-weight:950;padding:5px;color:#d9def3}.customSectionTitle{font-size:11px;font-weight:950;margin:10px 0 6px;color:#cbd3eb}.previewCanvas{width:100%;height:100%;display:block}.thumb{overflow:hidden}.swatchPreview{height:42px;border-radius:10px}.mapPreview{height:70px;border-radius:11px;margin-bottom:6px;position:relative;overflow:hidden}.mapPreview:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 25%,rgba(255,255,255,.25),transparent 25%),linear-gradient(155deg,transparent 45%,rgba(0,0,0,.2) 46%,transparent 65%)}.locked{opacity:.72}.priceTag{display:inline-block;margin-top:3px;padding:2px 6px;border-radius:7px;background:#151e3a;color:#ffd75a;font-size:8px;font-weight:950}.shopTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0 12px;position:sticky;top:0;z-index:2;background:#111736;padding:5px;border-radius:15px;border:1px solid #ffffff12}.shopTab{min-height:58px;border-radius:11px;background:#10182f;border:1px solid #ffffff12;font-size:10px;font-weight:900}.shopTab.active{background:linear-gradient(135deg,#6f4cff,#3b8cff);border-color:#a56cff}.shopTab span{display:block;margin-top:3px;font-size:9px}.shopPanel{display:none}.shopPanel.active{display:block}.shopPanel .sub{margin-bottom:8px}.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:55px;border-radius:13px;border:2px solid #ffffff18;position:relative}.swatch.selected{border-color:#fff;box-shadow:0 0 15px #fff4}.swatch span{position:absolute;bottom:3px;left:0;right:0;font-size:8px;font-weight:950;text-shadow:0 1px 4px #000}
 .map{width:100%;height:62px;margin:4px 0;border-radius:13px;text-align:left;padding:9px 12px;border:1px solid #ffffff22}.map.selected{border-color:#a56cff}.map b{display:block;font-size:12px}.map small{color:#c6cee5;font-size:9px}
 #toast{position:fixed;z-index:30;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);opacity:0;transition:.18s;background:#111832ee;border:1px solid #7d6cff55;padding:9px 13px;border-radius:12px;font-size:11px;font-weight:900;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,0)!important}
 </style>
@@ -50,30 +50,36 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <div class="tag" id="status">Tap to fly. Dodge the gates. Collect the coins.<br><b>Flappy Edition</b><br>🏆 +1 score per gate · 🪙 +2 coins per gate · 🪙 +1 per coin</div>
 <button class="primary" id="play" type="button">▶ PLAY</button>
 <div class="menu">
-<button type="button" data-screen="dragons"><i>🐲</i>Dragons</button>
-<button type="button" data-screen="shop" data-open-shop-tab="colors"><i>🎨</i>Colors</button>
-<button type="button" data-screen="shop" data-open-shop-tab="maps"><i>🗺️</i>Maps</button>
 <button type="button" data-screen="shop"><i>🛒</i>Shop</button>
+<button type="button" data-screen="customize"><i>✨</i>Customize</button>
 <button type="button" id="sound"><i>🔊</i>Sound</button>
 <button type="button" id="reset"><i>↻</i>Reset</button>
 </div>
 </section>
-<section id="dragons" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Dragons</div><div class="sub" id="dragonLevelInfo">Your level: 1</div><div id="dragonCards" class="cards"></div></section>
 <section id="shop" class="screen">
 <button class="back" type="button" data-home>‹</button>
-<div class="title">Shop</div>
-<div class="sub">Balance: 🪙 <b id="shopCoins">0</b></div>
+<div class="title">Shop</div><div class="sub">Balance: 🪙 <b id="shopCoins">0</b></div>
 <div class="shopTabs">
 <button type="button" class="shopTab active" data-shop-tab="dragons">🐉<span>Dragons</span></button>
 <button type="button" class="shopTab" data-shop-tab="colors">🎨<span>Colors / Skins</span></button>
 <button type="button" class="shopTab" data-shop-tab="maps">🗺️<span>Maps</span></button>
 </div>
-<div id="shopPanelDragons" class="shopPanel active"><div class="sub">Unlock and select your dragons.</div><div id="shopCards" class="cards"></div></div>
-<div id="shopPanelColors" class="shopPanel"><div class="sub">Customize your dragon with different skins.</div><div id="shopSwatches" class="swatches"></div></div>
-<div id="shopPanelMaps" class="shopPanel"><div class="sub">Choose your atmosphere.</div><div id="shopMapsList"></div></div>
+<div id="shopPanelDragons" class="shopPanel active"><div class="sub">Preview and unlock dragons.</div><div id="shopCards" class="cards"></div></div>
+<div id="shopPanelColors" class="shopPanel"><div class="sub">Preview and unlock skins · 200 coins each.</div><div id="shopSwatches" class="swatches"></div></div>
+<div id="shopPanelMaps" class="shopPanel"><div class="sub">Preview and unlock maps · 300 coins each.</div><div id="shopMapsList"></div></div>
 </section>
-<section id="colors" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Colors</div><div class="sub">Eight distinct palettes.</div><div id="swatches" class="swatches"></div></section>
-<section id="maps" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Maps</div><div class="sub">Choose your atmosphere.</div><div id="mapsList"></div></section>
+
+<section id="customize" class="screen">
+<button class="back" type="button" data-home>‹</button>
+<div class="title">Customize</div><div class="sub">Choose an unlocked dragon and an unlocked skin.</div>
+<div class="customPreview"><canvas id="customPreviewCanvas" width="360" height="150"></canvas><div class="customCurrent" id="customCurrent">Baby Dragon · Ocean</div></div>
+<div class="customSectionTitle">🐉 Dragon</div><div id="customDragonCards" class="cards"></div>
+<div class="customSectionTitle">🎨 Color / Skin</div><div id="customColorSwatches" class="swatches"></div>
+</section>
+
+<section id="dragons" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Dragons</div><div id="dragonCards" class="cards"></div></section>
+<section id="colors" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Colors</div><div id="swatches" class="swatches"></div></section>
+<section id="maps" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Maps</div><div id="mapsList"></div></section>
 </div>
 </div>
 <div id="toast"></div>
@@ -95,8 +101,12 @@ var muted=localStorage.getItem("gn_muted")==="1";
 var selectedDragon=localStorage.getItem("gn_dragon")||"baby";
 var selectedColor=localStorage.getItem("gn_color")||"ocean";
 var selectedMap=localStorage.getItem("gn_map")||"sky";
-var owned;
+var owned,ownedColors,ownedMaps;
 try{owned=new Set(JSON.parse(localStorage.getItem("gn_owned")||'["baby"]'));}catch(e){owned=new Set(["baby"]);}
+try{ownedColors=new Set(JSON.parse(localStorage.getItem("gn_owned_colors")||'["ocean"]'));}catch(e){ownedColors=new Set(["ocean"]);}
+try{ownedMaps=new Set(JSON.parse(localStorage.getItem("gn_owned_maps")||'["sky"]'));}catch(e){ownedMaps=new Set(["sky"]);}
+if(!ownedColors.has(selectedColor))selectedColor="ocean";
+if(!ownedMaps.has(selectedMap))selectedMap="sky";
 
 var dragons=[
 {id:"baby",name:"Baby Dragon",price:0,body:"#263b70",wing:"#ff914d",eye:"#ffd36a",accent:"#b9c9ff",style:"baby",scale:.68},
@@ -169,7 +179,7 @@ function sfxUnlock(){tone(520,.08,"triangle",.035,180);setTimeout(function(){ton
 function save(){
 localStorage.setItem("gn_best",String(best));
 localStorage.setItem("gn_coins",String(coins));
-localStorage.setItem("gn_owned",JSON.stringify(Array.from(owned)));
+localStorage.setItem("gn_owned",JSON.stringify(Array.from(owned)));localStorage.setItem("gn_owned_colors",JSON.stringify(Array.from(ownedColors)));localStorage.setItem("gn_owned_maps",JSON.stringify(Array.from(ownedMaps)));
 localStorage.setItem("gn_dragon",selectedDragon);
 localStorage.setItem("gn_color",selectedColor);
 localStorage.setItem("gn_map",selectedMap);
@@ -311,39 +321,36 @@ if(dragon.x+17*hitScale>q.x&&dragon.x-17*hitScale<q.x+76&&(dragon.y-14*hitScale<
 function loop(t){var dt=Math.min(.035,last?(t-last)/1000:.016);last=t;update(dt);drawBackground();drawGates();drawCoins();drawGround();drawDragon();requestAnimationFrame(loop)}
 
 function show(id){var ss=document.querySelectorAll(".screen");for(var i=0;i<ss.length;i++)ss[i].classList.toggle("active",ss[i].id===id);overlay.classList.remove("hidden")}
+function drawPreviewCanvas(canvas,d,c,scale){
+if(!canvas)return;var cx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;
+cx.clearRect(0,0,w,h);cx.fillStyle="rgba(7,10,24,.96)";cx.fillRect(0,0,w,h);
+cx.save();cx.translate(w*.44,h*.55);cx.scale(scale||1,scale||1);cx.lineJoin="round";cx.lineCap="round";
+var body=(c&&c.body)||d.body,wingCol=(c&&c.wing)||d.wing,eye=d.eye||"#ffd36a",acc=d.accent||"#b9c9ff";
+if(d.style==="void"){body=(c&&c.body)||"#10111b";wingCol=(c&&c.wing)||"#6b35d6";eye="#d78cff";acc="#d6a64a";}
+cx.shadowBlur=14;cx.shadowColor=wingCol;cx.fillStyle=body;cx.beginPath();cx.moveTo(-17,8);cx.quadraticCurveTo(-38,9,-52,23);cx.quadraticCurveTo(-39,18,-29,5);cx.quadraticCurveTo(-20,-1,-10,2);cx.closePath();cx.fill();
+cx.shadowBlur=0;cx.fillStyle=acc;cx.beginPath();cx.moveTo(-18,-7);cx.lineTo(-25,-23);cx.lineTo(-9,-14);cx.lineTo(-5,-30);cx.lineTo(6,-14);cx.lineTo(14,-27);cx.lineTo(19,-8);cx.closePath();cx.fill();
+cx.shadowBlur=12;cx.shadowColor=wingCol;cx.fillStyle=wingCol;cx.beginPath();cx.moveTo(-5,2);cx.lineTo(-4,-35);cx.lineTo(12,-24);cx.lineTo(28,-39);cx.lineTo(23,-8);cx.lineTo(9,8);cx.closePath();cx.fill();
+cx.shadowBlur=0;cx.fillStyle=body;cx.beginPath();cx.ellipse(0,7,25,17,0,0,Math.PI*2);cx.fill();
+cx.fillStyle=d.style==="ice"?"#e4fbff":d.style==="fire"?"#ffc06b":d.style==="forest"?"#c9e79d":d.style==="shadow"?"#a887bf":d.style==="gold"?"#ffeab0":d.style==="void"?"#27243a":"#ffe3c5";cx.beginPath();cx.ellipse(5,11,14,9,0,0,Math.PI*2);cx.fill();
+cx.fillStyle=body;cx.beginPath();cx.ellipse(22,-4,19,16,.03,0,Math.PI*2);cx.fill();cx.beginPath();cx.ellipse(36,2,11,8,.03,0,Math.PI*2);cx.fill();
+cx.fillStyle=acc;cx.beginPath();cx.moveTo(12,-13);cx.lineTo(9,-32);cx.lineTo(19,-18);cx.closePath();cx.fill();cx.beginPath();cx.moveTo(25,-14);cx.lineTo(29,-34);cx.lineTo(34,-10);cx.closePath();cx.fill();
+cx.fillStyle=eye;cx.beginPath();cx.ellipse(27,-6,6.5,7.5,0,0,Math.PI*2);cx.fill();cx.fillStyle="#11101c";cx.beginPath();cx.ellipse(28,-5,2.7,4.5,0,0,Math.PI*2);cx.fill();
+cx.fillStyle="#fff";cx.beginPath();cx.arc(30,-7,1.5,0,Math.PI*2);cx.fill();cx.fillStyle="#17152a";cx.beginPath();cx.arc(42,1,1.5,0,Math.PI*2);cx.fill();
+cx.strokeStyle="#21182b";cx.lineWidth=1.8;cx.beginPath();cx.moveTo(38,6);cx.quadraticCurveTo(42,9,46,6);cx.stroke();
+cx.strokeStyle=body;cx.lineWidth=7;cx.beginPath();cx.moveTo(9,13);cx.quadraticCurveTo(13,22,19,18);cx.moveTo(0,15);cx.quadraticCurveTo(2,24,8,19);cx.stroke();cx.restore();
+}
+function renderPreviewCards(){var els=document.querySelectorAll("[data-preview-dragon]");for(var i=0;i<els.length;i++){var d=dragons.find(function(x){return x.id===els[i].getAttribute("data-preview-dragon")});if(d)drawPreviewCanvas(els[i],d,{body:d.body,wing:d.wing},d.scale||.68);}}
 function render(){
-var dc="",sc="",sw="",ml="",level=getPlayerLevel();
-var levelInfo=document.getElementById("dragonLevelInfo");
-if(levelInfo)levelInfo.textContent="Your level: "+level+" · Voidwatcher: 50,000 coins OR level 100";
-for(var i=0;i<dragons.length;i++){
-var d=dragons[i],o=owned.has(d.id),sel=selectedDragon===d.id,exclusive=d.exclusive?" exclusive":"";
-var canUnlock=d.exclusive?(coins>=50000||level>=100):(coins>=d.price);
-var label=d.exclusive?"50,000 coins OR Level 100":(o?"Owned":d.price+" coins");
-var action=o?(sel?"Selected":"Select"):(d.exclusive&&!canUnlock?"Locked":"Unlock");
-dc+='<div class="card '+(sel?"selected":"")+exclusive+'"><div class="thumb" style="background:linear-gradient(135deg,'+d.body+','+d.wing+')"><div class="dragonArt">🐉</div></div><b>'+d.name+'</b><small>'+label+'</small><button type="button" data-action="dragon" data-id="'+d.id+'" class="'+((!o&&canUnlock)?"buy":"")+'">'+action+'</button></div>';
+var sc="",sw="",ml="",customD="",customC="",level=getPlayerLevel();
+for(var j=1;j<dragons.length;j++){var q=dragons[j],oo=owned.has(q.id),can=q.exclusive?(coins>=50000||level>=100):(coins>=q.price),qlabel=q.exclusive?"50,000 coins OR Level 100":q.price+" coins",qaction=oo?"Select":(q.exclusive&&!can?"Locked":"Unlock");sc+='<div class="card '+(q.exclusive?"exclusive ":"")+(!oo&&!can?"locked":"")+'"><div class="thumb"><canvas class="previewCanvas" width="180" height="78" data-preview-dragon="'+q.id+'"></canvas></div><b>'+q.name+'</b><small>'+qlabel+'</small><button type="button" data-action="dragon" data-id="'+q.id+'" class="'+((!oo&&can)?"buy":"")+'">'+qaction+'</button></div>';}
+for(var k=0;k<colors.length;k++){var col=colors[k],co=ownedColors.has(col.id),cs=selectedColor===col.id;sw+='<button type="button" class="swatch '+(cs?"selected ":"")+(!co?"locked":"")+'" data-action="color" data-id="'+col.id+'"><div class="swatchPreview" style="background:linear-gradient(135deg,'+col.body+','+col.wing+')"></div><span>'+col.name+'</span><em class="priceTag">'+(co?(cs?"Selected":"Owned"):"200 🪙")+'</em></button>';}
+for(var n=0;n<maps.length;n++){var m=maps[n],mo=ownedMaps.has(m.id),ms=selectedMap===m.id;ml+='<button type="button" class="map '+(ms?"selected ":"")+(!mo?"locked":"")+'" data-action="map" data-id="'+m.id+'"><div class="mapPreview" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"></div><b>'+m.name+'</b><small>'+m.desc+'</small><em class="priceTag">'+(mo?(ms?"Selected":"Owned"):"300 🪙")+'</em></button>';}
+for(var cd=0;cd<dragons.length;cd++){var dd=dragons[cd];if(owned.has(dd.id))customD+='<div class="card '+(selectedDragon===dd.id?"selected":"")+'"><div class="thumb"><canvas class="previewCanvas" width="180" height="78" data-preview-dragon="'+dd.id+'"></canvas></div><b>'+dd.name+'</b><button type="button" data-action="custom-dragon" data-id="'+dd.id+'">'+(selectedDragon===dd.id?"Selected":"Use")+'</button></div>';}
+for(var cc=0;cc<colors.length;cc++){var coo=colors[cc];if(ownedColors.has(coo.id))customC+='<button type="button" class="swatch '+(selectedColor===coo.id?"selected":"")+'" data-action="custom-color" data-id="'+coo.id+'"><div class="swatchPreview" style="background:linear-gradient(135deg,'+coo.body+','+coo.wing+')"></div><span>'+coo.name+'</span></button>';}
+document.getElementById("shopCards").innerHTML=sc;document.getElementById("shopSwatches").innerHTML=sw;document.getElementById("shopMapsList").innerHTML=ml;document.getElementById("dragonCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("mapsList").innerHTML=ml;document.getElementById("customDragonCards").innerHTML=customD;document.getElementById("customColorSwatches").innerHTML=customC;document.getElementById("shopCoins").textContent=String(coins);
+var current=document.getElementById("customCurrent"),pc=document.getElementById("customPreviewCanvas");if(current)current.textContent=getDragon().name+" · "+getColor().name;if(pc)drawPreviewCanvas(pc,getDragon(),getColor(),1.35);renderPreviewCards();
 }
-for(var j=1;j<dragons.length;j++){
-var q=dragons[j],oo=owned.has(q.id),can=q.exclusive?(coins>=50000||level>=100):(coins>=q.price);
-var qlabel=q.exclusive?"50,000 coins OR Level 100":q.price+" coins";
-var qaction=oo?"Select":(q.exclusive&&!can?"Locked":"Unlock");
-sc+='<div class="card '+(q.exclusive?"exclusive":"")+'"><div class="thumb" style="background:linear-gradient(135deg,'+q.body+','+q.wing+')"><div class="dragonArt">🐉</div></div><b>'+q.name+'</b><small>'+qlabel+'</small><button type="button" data-action="dragon" data-id="'+q.id+'" class="'+((!oo&&can)?"buy":"")+'">'+qaction+'</button></div>';
-}
-for(var k=0;k<colors.length;k++){var col=colors[k];sw+='<button type="button" class="swatch '+(selectedColor===col.id?"selected":"")+'" data-action="color" data-id="'+col.id+'" style="background:linear-gradient(135deg,'+col.body+','+col.wing+')"><span>'+col.name+'</span></button>'}
-for(var n=0;n<maps.length;n++){var m=maps[n];ml+='<button type="button" class="map '+(selectedMap===m.id?"selected":"")+'" data-action="map" data-id="'+m.id+'" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><b>'+m.name+'</b><small>'+m.desc+'</small></button>'}
-document.getElementById("dragonCards").innerHTML=dc;
-document.getElementById("shopCards").innerHTML=sc;
-document.getElementById("swatches").innerHTML=sw;
-document.getElementById("mapsList").innerHTML=ml;
-document.getElementById("shopSwatches").innerHTML=sw;
-document.getElementById("shopMapsList").innerHTML=ml;
-document.getElementById("shopCoins").textContent=String(coins);
-}
-
-function setShopTab(tab){
-var tabs=document.querySelectorAll(".shopTab"),panels=document.querySelectorAll(".shopPanel");
-for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-shop-tab")===tab);
-for(var j=0;j<panels.length;j++)panels[j].classList.toggle("active",panels[j].id==="shopPanel"+tab.charAt(0).toUpperCase()+tab.slice(1));
-}
+function setShopTab(tab){var tabs=document.querySelectorAll(".shopTab"),panels=document.querySelectorAll(".shopPanel");for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-shop-tab")===tab);for(var j=0;j<panels.length;j++)panels[j].classList.toggle("active",panels[j].id==="shopPanel"+tab.charAt(0).toUpperCase()+tab.slice(1));}
 document.addEventListener("click",function(e){
 var b=e.target.closest?e.target.closest("button"):null;
 if(!b)return;
@@ -392,55 +399,24 @@ return;
 var action=b.getAttribute("data-action"),id=b.getAttribute("data-id");
 
 if(action==="dragon"){
-var d=null;
-for(var i=0;i<dragons.length;i++)if(dragons[i].id===id)d=dragons[i];
-if(!d)return;
-if(owned.has(id)){
-selectedDragon=id;
-save();
-render();
-sfxClick();toast(d.name+" selected");
-return;
-}
+var d=null;for(var i=0;i<dragons.length;i++)if(dragons[i].id===id)d=dragons[i];if(!d)return;
+if(owned.has(id)){selectedDragon=id;save();render();sfxClick();toast(d.name+" selected");return;}
 var level=getPlayerLevel();
-if(d.exclusive){
-if(coins<50000&&level<100){toast("Need 50,000 coins or Level 100");return;}
-if(coins>=50000){coins-=50000;}
-owned.add(id);
-selectedDragon=id;
-save();
-render();
-sfxUnlock();toast("Voidwatcher unlocked!");
-return;
+if(d.exclusive){if(coins<50000&&level<100){toast("Need 50,000 coins or Level 100");return;}if(coins>=50000)coins-=50000;owned.add(id);selectedDragon=id;save();render();sfxUnlock();toast("Voidwatcher unlocked!");return;}
+if(coins<d.price){toast("Not enough coins");return;}coins-=d.price;owned.add(id);selectedDragon=id;save();render();sfxUnlock();toast(d.name+" unlocked!");return;
 }
-if(coins<d.price){
-toast("Not enough coins");
-return;
-}
-coins-=d.price;
-owned.add(id);
-selectedDragon=id;
-save();
-render();
-sfxUnlock();toast(d.name+" unlocked!");
-return;
-}
-
 if(action==="color"){
-selectedColor=id;
-save();
-render();
-sfxClick();toast("Color selected");
-return;
+var col=null;for(var ci=0;ci<colors.length;ci++)if(colors[ci].id===id)col=colors[ci];if(!col)return;
+if(ownedColors.has(id)){selectedColor=id;save();render();sfxClick();toast(col.name+" selected");return;}
+if(coins<200){toast("Need 200 coins");return;}coins-=200;ownedColors.add(id);selectedColor=id;save();render();sfxUnlock();toast(col.name+" unlocked!");return;
 }
-
 if(action==="map"){
-selectedMap=id;
-save();
-render();
-sfxClick();toast("Map selected");
-return;
+var mp=null;for(var mi=0;mi<maps.length;mi++)if(maps[mi].id===id)mp=maps[mi];if(!mp)return;
+if(ownedMaps.has(id)){selectedMap=id;save();render();sfxClick();toast(mp.name+" selected");return;}
+if(coins<300){toast("Need 300 coins");return;}coins-=300;ownedMaps.add(id);selectedMap=id;save();render();sfxUnlock();toast(mp.name+" unlocked!");return;
 }
+if(action==="custom-dragon"){if(owned.has(id)){selectedDragon=id;save();render();sfxClick();toast("Dragon selected");}return;}
+if(action==="custom-color"){if(ownedColors.has(id)){selectedColor=id;save();render();sfxClick();toast("Skin selected");}return;}
 }catch(err){
 console.error("Dragon Tap menu error:",err);
 toast("Menu error - reload the game");
