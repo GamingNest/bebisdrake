@@ -205,6 +205,7 @@ return makeCoinAt(x,(low+high)*0.5);
 function rebuildCoins(){
 /* Keep a rolling supply of coins for the entire run.
    Never clear all coins just because a gate was recycled. */
+if(!gates || gates.length===0)return;
 var wanted=[];
 for(var i=0;i<gates.length;i++){
 wanted.push(makeCoinInGate(gates[i]));
@@ -525,9 +526,6 @@ if(mode!=="playing"||paused)return;
 dragon.vy+=1450*dt;dragon.y+=dragon.vy*dt;scroll+=210*dt;wing=Math.max(0,wing-dt*3);
 var speed=205+Math.min(140,score*5);
 
-/* Continuously ensure the current and upcoming gates have reachable coins. */
-rebuildCoins();
-
 for(var i=0;i<gates.length;i++){
 var p=gates[i];p.x-=speed*dt;
 if(!p.passed&&p.x+76<dragon.x){
@@ -535,6 +533,7 @@ p.passed=true;score++;coins+=2;
 scoreEl.textContent=String(score);coinsEl.textContent=String(coins);save();
 }
 }
+rebuildCoins();
 
 for(var c=0;c<coinItems.length;c++){
 var coin=coinItems[c];
@@ -604,7 +603,7 @@ document.addEventListener("click",function(e){
 var b=e.target.closest?e.target.closest("button"):null;
 if(!b)return;
 if(b.hasAttribute("data-screen")){show(b.getAttribute("data-screen"));render();return}
-if(b.hasAttribute("data-home")){show("home");return}
+if(b.hasAttribute("data-home")){show("home");render();return}
 var action=b.getAttribute("data-action"),id=b.getAttribute("data-id");
 if(action==="dragon"){
 var d=null;for(var i=0;i<dragons.length;i++)if(dragons[i].id===id)d=dragons[i];
