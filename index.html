@@ -27,7 +27,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 .primary{width:100%;padding:15px;border-radius:15px;background:linear-gradient(135deg,#8b4dff,#357fff);font-size:17px;font-weight:950}
 .menu{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.menu button{padding:10px 3px;border-radius:12px;background:#111832;border:1px solid #5e6eb044;font-size:10px;font-weight:900}.menu i{display:block;font-style:normal;font-size:19px;margin-bottom:2px}
 .screen{display:none}.screen.active{display:block}.back{float:left;width:34px;height:34px;border-radius:10px;background:#121936;border:1px solid #5e6eb044;font-size:22px}.title{text-align:center;font-size:21px;font-weight:950}.sub{text-align:center;color:#aab3d2;font-size:10px;margin:3px 0 10px}
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.card{background:#0d1530;border:1px solid #5363a044;border-radius:14px;padding:7px;text-align:center}.card.selected{border-color:#a56cff;box-shadow:0 0 18px #884cff22}.thumb{height:78px;border-radius:9px;display:flex;align-items:center;justify-content:center}.dragonArt{font-size:48px;filter:drop-shadow(0 0 10px #fff5)}.card b{display:block;font-size:11px;margin-top:5px}.card small{display:block;color:#9da8ca;font-size:9px;margin-top:2px}.card button{width:100%;padding:7px;margin-top:6px;border-radius:9px;background:#182043;font-size:10px;font-weight:900}.card button.buy{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.card{background:#0d1530;border:1px solid #5363a044;border-radius:14px;padding:7px;text-align:center}.card.selected{border-color:#a56cff;box-shadow:0 0 18px #884cff22}.card.exclusive{border-color:#d8a83b88;background:linear-gradient(160deg,#171322,#0b0d1d)}.card.exclusive.selected{border-color:#ffd35a;box-shadow:0 0 20px #ffd35a33}.thumb{height:78px;border-radius:9px;display:flex;align-items:center;justify-content:center}.dragonArt{font-size:48px;filter:drop-shadow(0 0 10px #fff5)}.card b{display:block;font-size:11px;margin-top:5px}.card small{display:block;color:#9da8ca;font-size:9px;margin-top:2px}.card button{width:100%;padding:7px;margin-top:6px;border-radius:9px;background:#182043;font-size:10px;font-weight:900}.card button.buy{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
 .swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:55px;border-radius:13px;border:2px solid #ffffff18;position:relative}.swatch.selected{border-color:#fff;box-shadow:0 0 15px #fff4}.swatch span{position:absolute;bottom:3px;left:0;right:0;font-size:8px;font-weight:950;text-shadow:0 1px 4px #000}
 .map{width:100%;height:62px;margin:4px 0;border-radius:13px;text-align:left;padding:9px 12px;border:1px solid #ffffff22}.map.selected{border-color:#a56cff}.map b{display:block;font-size:12px}.map small{color:#c6cee5;font-size:9px}
 #toast{position:fixed;z-index:30;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);opacity:0;transition:.18s;background:#111832ee;border:1px solid #7d6cff55;padding:9px 13px;border-radius:12px;font-size:11px;font-weight:900;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,0)!important}
@@ -58,7 +58,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <button type="button" id="reset"><i>↻</i>Reset</button>
 </div>
 </section>
-<section id="dragons" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Dragons</div><div class="sub">Six distinct dragon identities.</div><div id="dragonCards" class="cards"></div></section>
+<section id="dragons" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Dragons</div><div class="sub" id="dragonLevelInfo">Your level: 1</div><div id="dragonCards" class="cards"></div></section>
 <section id="shop" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Dragon Shop</div><div class="sub">Balance: 🪙 <b id="shopCoins">0</b> · Pass a gate = +2 coins</div><div id="shopCards" class="cards"></div></section>
 <section id="colors" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Colors</div><div class="sub">Eight distinct palettes.</div><div id="swatches" class="swatches"></div></section>
 <section id="maps" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Maps</div><div class="sub">Choose your atmosphere.</div><div id="mapsList"></div></section>
@@ -87,12 +87,13 @@ var owned;
 try{owned=new Set(JSON.parse(localStorage.getItem("gn_owned")||'["baby"]'));}catch(e){owned=new Set(["baby"]);}
 
 var dragons=[
-{id:"baby",name:"Baby Dragon",price:0,body:"#263b70",wing:"#ff914d",eye:"#ffd36a",accent:"#b9c9ff",style:"baby"},
-{id:"fire",name:"Fire Dragon",price:500,body:"#8d211b",wing:"#ff5b24",eye:"#ffe36b",accent:"#ffbd32",style:"fire"},
-{id:"ice",name:"Ice Dragon",price:800,body:"#4c9fc1",wing:"#d9fbff",eye:"#69eaff",accent:"#fff",style:"ice"},
-{id:"forest",name:"Forest Dragon",price:1200,body:"#2c6b43",wing:"#82cf57",eye:"#d9ff73",accent:"#b9df8b",style:"forest"},
-{id:"shadow",name:"Shadow Dragon",price:1500,body:"#30213f",wing:"#9d4cff",eye:"#e5b7ff",accent:"#d080ff",style:"shadow"},
-{id:"gold",name:"Golden Dragon",price:2000,body:"#956018",wing:"#ffd24a",eye:"#fff0a0",accent:"#fff2ae",style:"gold"}
+{id:"baby",name:"Baby Dragon",price:0,body:"#263b70",wing:"#ff914d",eye:"#ffd36a",accent:"#b9c9ff",style:"baby",scale:.68},
+{id:"fire",name:"Fire Dragon",price:500,body:"#8d211b",wing:"#ff5b24",eye:"#ffe36b",accent:"#ffbd32",style:"fire",scale:.68},
+{id:"ice",name:"Ice Dragon",price:800,body:"#4c9fc1",wing:"#d9fbff",eye:"#69eaff",accent:"#fff",style:"ice",scale:.68},
+{id:"forest",name:"Forest Dragon",price:1200,body:"#2c6b43",wing:"#82cf57",eye:"#d9ff73",accent:"#b9df8b",style:"forest",scale:.68},
+{id:"shadow",name:"Shadow Dragon",price:1500,body:"#30213f",wing:"#9d4cff",eye:"#e5b7ff",accent:"#d080ff",style:"shadow",scale:.68},
+{id:"gold",name:"Golden Dragon",price:2000,body:"#956018",wing:"#ffd24a",eye:"#fff0a0",accent:"#fff2ae",style:"gold",scale:.68},
+{id:"voidwatcher",name:"Voidwatcher",price:50000,body:"#10111b",wing:"#6b35d6",eye:"#d78cff",accent:"#d6a64a",style:"void",scale:1,exclusive:true}
 ];
 var colors=[
 {id:"ocean",name:"Ocean",body:"#176aa5",wing:"#4fd5ff"},
@@ -136,6 +137,7 @@ window.addEventListener("resize",resize);resize();
 function getDragon(){for(var i=0;i<dragons.length;i++)if(dragons[i].id===selectedDragon)return dragons[i];return dragons[0]}
 function getColor(){for(var i=0;i<colors.length;i++)if(colors[i].id===selectedColor)return colors[i];return colors[0]}
 function getMap(){for(var i=0;i<maps.length;i++)if(maps[i].id===selectedMap)return maps[i];return maps[0]}
+function getPlayerLevel(){return Math.min(100,1+Math.floor(best/10))}
 function toast(t){toastEl.textContent=t;toastEl.className="show";clearTimeout(toast.timer);toast.timer=setTimeout(function(){toastEl.className=""},1300)}
 
 function makeGate(x){
@@ -184,7 +186,7 @@ function die(){
 if(mode!=="playing")return;
 mode="dead";if(score>best)best=score;
 coins+=score*2;save();
-document.getElementById("status").innerHTML="Score <b>"+score+"</b> · Best <b>"+best+"</b><br>🪙 <b>"+coins+"</b> coins · GamingNest";
+document.getElementById("status").innerHTML="Score <b>"+score+"</b> · Best <b>"+best+"</b> · Level <b>"+getPlayerLevel()+"</b><br>🪙 <b>"+coins+"</b> coins · GamingNest";
 play.textContent="▶ PLAY AGAIN";overlay.classList.remove("hidden");show("home");
 }
 
@@ -213,23 +215,30 @@ ctx.fillStyle="#8b5b00";ctx.font="900 16px Arial";ctx.textAlign="center";ctx.tex
 }
 function drawDragon(){
 var d=getDragon(),c=getColor(),x=dragon.x,y=dragon.y,style=d.style,flapY=Math.sin(wing*Math.PI)*7;
-ctx.save();ctx.translate(x,y);ctx.rotate(Math.max(-.45,Math.min(.8,dragon.vy/850)));ctx.lineJoin="round";ctx.lineCap="round";
-ctx.shadowBlur=18;ctx.shadowColor=c.wing;
-ctx.fillStyle=c.body;ctx.beginPath();ctx.moveTo(-17,8);ctx.quadraticCurveTo(-38,9,-52,23);ctx.quadraticCurveTo(-39,18,-29,5);ctx.quadraticCurveTo(-20,-1,-10,2);ctx.closePath();ctx.fill();
-ctx.shadowBlur=0;ctx.fillStyle=d.accent;ctx.beginPath();ctx.moveTo(-18,-7);ctx.lineTo(-25,-23);ctx.lineTo(-9,-14);ctx.lineTo(-5,-30);ctx.lineTo(6,-14);ctx.lineTo(14,-27);ctx.lineTo(19,-8);ctx.closePath();ctx.fill();
-ctx.shadowBlur=14;ctx.shadowColor=c.wing;ctx.fillStyle=c.wing;ctx.beginPath();
+var scale=d.scale||.68;
+var bodyColor=d.body,wingColor=d.wing,eyeColor=d.eye,accentColor=d.accent;
+if(style==="void"){bodyColor="#10111b";wingColor="#6b35d6";eyeColor="#d78cff";accentColor="#d6a64a";}
+ctx.save();ctx.translate(x,y);ctx.rotate(Math.max(-.45,Math.min(.8,dragon.vy/850)));ctx.scale(scale,scale);ctx.lineJoin="round";ctx.lineCap="round";
+ctx.shadowBlur=18;ctx.shadowColor=wingColor;
+ctx.fillStyle=bodyColor;ctx.beginPath();ctx.moveTo(-17,8);ctx.quadraticCurveTo(-38,9,-52,23);ctx.quadraticCurveTo(-39,18,-29,5);ctx.quadraticCurveTo(-20,-1,-10,2);ctx.closePath();ctx.fill();
+ctx.shadowBlur=0;ctx.fillStyle=accentColor;ctx.beginPath();ctx.moveTo(-18,-7);ctx.lineTo(-25,-23);ctx.lineTo(-9,-14);ctx.lineTo(-5,-30);ctx.lineTo(6,-14);ctx.lineTo(14,-27);ctx.lineTo(19,-8);ctx.closePath();ctx.fill();
+ctx.shadowBlur=14;ctx.shadowColor=wingColor;ctx.fillStyle=wingColor;ctx.beginPath();
 ctx.moveTo(-5,2);ctx.lineTo(-4,-35-flapY);ctx.lineTo(12,-24);ctx.lineTo(28,-39-flapY);ctx.lineTo(23,-8);ctx.lineTo(9,8);ctx.closePath();ctx.fill();
-ctx.shadowBlur=0;ctx.fillStyle=c.body;ctx.beginPath();ctx.ellipse(0,7,25,17,0,0,Math.PI*2);ctx.fill();
-ctx.fillStyle=style==="ice"?"#e4fbff":style==="fire"?"#ffc06b":style==="forest"?"#c9e79d":style==="shadow"?"#a887bf":style==="gold"?"#ffeab0":"#ffe3c5";
+ctx.shadowBlur=0;ctx.fillStyle=bodyColor;ctx.beginPath();ctx.ellipse(0,7,25,17,0,0,Math.PI*2);ctx.fill();
+ctx.fillStyle=style==="ice"?"#e4fbff":style==="fire"?"#ffc06b":style==="forest"?"#c9e79d":style==="shadow"?"#a887bf":style==="gold"?"#ffeab0":style==="void"?"#27243a":"#ffe3c5";
 ctx.beginPath();ctx.ellipse(5,11,14,9,0,0,Math.PI*2);ctx.fill();
-ctx.fillStyle=c.body;ctx.beginPath();ctx.ellipse(22,-4,19,16,.03,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(36,2,11,8,.03,0,Math.PI*2);ctx.fill();
-ctx.fillStyle=d.accent;ctx.beginPath();ctx.moveTo(12,-13);ctx.lineTo(9,-32);ctx.lineTo(19,-18);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(25,-14);ctx.lineTo(29,-34);ctx.lineTo(34,-10);ctx.closePath();ctx.fill();
-ctx.fillStyle=d.eye;ctx.beginPath();ctx.ellipse(27,-6,6.5,7.5,0,0,Math.PI*2);ctx.fill();
+ctx.fillStyle=bodyColor;ctx.beginPath();ctx.ellipse(22,-4,19,16,.03,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(36,2,11,8,.03,0,Math.PI*2);ctx.fill();
+ctx.fillStyle=accentColor;ctx.beginPath();ctx.moveTo(12,-13);ctx.lineTo(9,-32);ctx.lineTo(19,-18);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(25,-14);ctx.lineTo(29,-34);ctx.lineTo(34,-10);ctx.closePath();ctx.fill();
+ctx.fillStyle=eyeColor;ctx.beginPath();ctx.ellipse(27,-6,6.5,7.5,0,0,Math.PI*2);ctx.fill();
 ctx.fillStyle="#11101c";ctx.beginPath();ctx.ellipse(28,-5,2.7,4.5,0,0,Math.PI*2);ctx.fill();
 ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(30,-7,1.5,0,Math.PI*2);ctx.fill();
 ctx.fillStyle="#17152a";ctx.beginPath();ctx.arc(42,1,1.5,0,Math.PI*2);ctx.fill();
 ctx.strokeStyle="#21182b";ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(38,6);ctx.quadraticCurveTo(42,9,46,6);ctx.stroke();
-ctx.strokeStyle=c.body;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(9,13);ctx.quadraticCurveTo(13,22,19,18);ctx.moveTo(0,15);ctx.quadraticCurveTo(2,24,8,19);ctx.stroke();
+if(style==="void"){
+ctx.strokeStyle="#d6a64a";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(8,-10);ctx.lineTo(15,-25);ctx.moveTo(19,-12);ctx.lineTo(25,-28);ctx.stroke();
+ctx.shadowBlur=22;ctx.shadowColor="#8b4dff";ctx.fillStyle="#8b4dff";ctx.beginPath();ctx.arc(42,1,3,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+}
+ctx.strokeStyle=bodyColor;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(9,13);ctx.quadraticCurveTo(13,22,19,18);ctx.moveTo(0,15);ctx.quadraticCurveTo(2,24,8,19);ctx.stroke();
 ctx.restore();
 }
 
@@ -243,19 +252,30 @@ for(var c=0;c<coinItems.length;c++){var coin=coinItems[c];if(coin.collected)cont
 coin.x-=speed*dt;var dx=dragon.x-coin.x,dy=dragon.y-coin.y;
 if(Math.sqrt(dx*dx+dy*dy)<38){coin.collected=true;coins++;coinsEl.textContent=String(coins);save();toast("+1 🪙")}}
 if(gates[0].x<-100){gates.shift();gates.push(makeGate(gates[gates.length-1].x+Math.max(285,W*.55)));addCoinsForCurrentGates()}
-var ground=H-85;if(dragon.y-15<0||dragon.y+15>ground){die();return}
+var hitScale=(getDragon().scale||.68);var ground=H-85;if(dragon.y-15*hitScale<0||dragon.y+15*hitScale>ground){die();return}
 for(var j=0;j<gates.length;j++){var q=gates[j];
-if(dragon.x+17>q.x&&dragon.x-17<q.x+76&&(dragon.y-14<q.top||dragon.y+14>q.top+q.gap)){die();return}}
+if(dragon.x+17*hitScale>q.x&&dragon.x-17*hitScale<q.x+76&&(dragon.y-14*hitScale<q.top||dragon.y+14*hitScale>q.top+q.gap)){die();return}}
 }
 function loop(t){var dt=Math.min(.035,last?(t-last)/1000:.016);last=t;update(dt);drawBackground();drawGates();drawCoins();drawGround();drawDragon();requestAnimationFrame(loop)}
 
 function show(id){var ss=document.querySelectorAll(".screen");for(var i=0;i<ss.length;i++)ss[i].classList.toggle("active",ss[i].id===id);overlay.classList.remove("hidden")}
 function render(){
-var dc="",sc="",sw="",ml="";
-for(var i=0;i<dragons.length;i++){var d=dragons[i],o=owned.has(d.id),s=selectedDragon===d.id;
-dc+='<div class="card '+(s?"selected":"")+'"><div class="thumb" style="background:linear-gradient(135deg,'+d.body+','+d.wing+')"><div class="dragonArt">🐉</div></div><b>'+d.name+'</b><small>'+(o?"Owned":d.price+" coins")+'</small><button type="button" data-action="dragon" data-id="'+d.id+'" class="'+(o?"":"buy")+'">'+(o?(s?"Selected":"Select"):"Unlock")+'</button></div>'}
-for(var j=1;j<dragons.length;j++){var q=dragons[j],oo=owned.has(q.id);
-sc+='<div class="card"><div class="thumb" style="background:linear-gradient(135deg,'+q.body+','+q.wing+')"><div class="dragonArt">🐉</div></div><b>'+q.name+'</b><small>'+q.price+' coins</small><button type="button" data-action="dragon" data-id="'+q.id+'" class="'+(oo?"":"buy")+'">'+(oo?"Select":"Unlock")+'</button></div>'}
+var dc="",sc="",sw="",ml="",level=getPlayerLevel();
+var levelInfo=document.getElementById("dragonLevelInfo");
+if(levelInfo)levelInfo.textContent="Your level: "+level+" · Voidwatcher: 50,000 coins OR level 100";
+for(var i=0;i<dragons.length;i++){
+var d=dragons[i],o=owned.has(d.id),sel=selectedDragon===d.id,exclusive=d.exclusive?" exclusive":"";
+var canUnlock=d.exclusive?(coins>=50000||level>=100):(coins>=d.price);
+var label=d.exclusive?"50,000 coins OR Level 100":(o?"Owned":d.price+" coins");
+var action=o?(sel?"Selected":"Select"):(d.exclusive&&!canUnlock?"Locked":"Unlock");
+dc+='<div class="card '+(sel?"selected":"")+exclusive+'"><div class="thumb" style="background:linear-gradient(135deg,'+d.body+','+d.wing+')"><div class="dragonArt">🐉</div></div><b>'+d.name+'</b><small>'+label+'</small><button type="button" data-action="dragon" data-id="'+d.id+'" class="'+((!o&&canUnlock)?"buy":"")+'">'+action+'</button></div>';
+}
+for(var j=1;j<dragons.length;j++){
+var q=dragons[j],oo=owned.has(q.id),can=q.exclusive?(coins>=50000||level>=100):(coins>=q.price);
+var qlabel=q.exclusive?"50,000 coins OR Level 100":q.price+" coins";
+var qaction=oo?"Select":(q.exclusive&&!can?"Locked":"Unlock");
+sc+='<div class="card '+(q.exclusive?"exclusive":"")+'"><div class="thumb" style="background:linear-gradient(135deg,'+q.body+','+q.wing+')"><div class="dragonArt">🐉</div></div><b>'+q.name+'</b><small>'+qlabel+'</small><button type="button" data-action="dragon" data-id="'+q.id+'" class="'+((!oo&&can)?"buy":"")+'">'+qaction+'</button></div>';
+}
 for(var k=0;k<colors.length;k++){var col=colors[k];sw+='<button type="button" class="swatch '+(selectedColor===col.id?"selected":"")+'" data-action="color" data-id="'+col.id+'" style="background:linear-gradient(135deg,'+col.body+','+col.wing+')"><span>'+col.name+'</span></button>'}
 for(var n=0;n<maps.length;n++){var m=maps[n];ml+='<button type="button" class="map '+(selectedMap===m.id?"selected":"")+'" data-action="map" data-id="'+m.id+'" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><b>'+m.name+'</b><small>'+m.desc+'</small></button>'}
 document.getElementById("dragonCards").innerHTML=dc;document.getElementById("shopCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("mapsList").innerHTML=ml;document.getElementById("shopCoins").textContent=String(coins);
@@ -307,6 +327,17 @@ selectedDragon=id;
 save();
 render();
 toast(d.name+" selected");
+return;
+}
+var level=getPlayerLevel();
+if(d.exclusive){
+if(coins<50000&&level<100){toast("Need 50,000 coins or Level 100");return;}
+if(coins>=50000){coins-=50000;}
+owned.add(id);
+selectedDragon=id;
+save();
+render();
+toast("Voidwatcher unlocked!");
 return;
 }
 if(coins<d.price){
