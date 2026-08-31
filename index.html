@@ -217,10 +217,16 @@ var sc=document.getElementById("shopCoins");if(sc)sc.textContent=String(coins);
 }
 
 function resize(){
-dpr=Math.min(window.devicePixelRatio||1,2);W=window.innerWidth;H=window.innerHeight;
-canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);
-canvas.style.width=W+"px";canvas.style.height=H+"px";
+dpr=Math.min(window.devicePixelRatio||1,2);
+W=window.innerWidth;H=window.innerHeight;
+canvas.width=Math.floor(W*dpr);
+canvas.height=Math.floor(H*dpr);
+canvas.style.width=W+"px";
+canvas.style.height=H+"px";
 ctx.setTransform(dpr,0,0,dpr,0,0);
+ctx.globalAlpha=1;
+ctx.globalCompositeOperation="source-over";
+ctx.clearRect(0,0,W,H);
 }
 window.addEventListener("resize",resize);resize();
 
@@ -491,7 +497,23 @@ var hitScale=(getDragon().scale||.68)*.82;var ground=H-85;if(dragon.y-15*hitScal
 for(var j=0;j<gates.length;j++){var q=gates[j];
 if(dragon.x+17*hitScale>q.x&&dragon.x-17*hitScale<q.x+76&&(dragon.y-14*hitScale<q.top||dragon.y+14*hitScale>q.top+q.gap)){die();return}}
 }
-function loop(t){var dt=Math.min(.035,last?(t-last)/1000:.016);last=t;update(dt);drawBackground();drawGates();drawCoins();drawGround();drawDragon();requestAnimationFrame(loop)}
+function loop(t){
+  var dt=Math.min(.035,last?(t-last)/1000:.016);
+  last=t;
+  update(dt);
+  /* Hard-reset the canvas transform and clear every frame.
+     This prevents Safari/iOS canvas feedback/recursive-frame artifacts. */
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.globalAlpha=1;
+  ctx.globalCompositeOperation="source-over";
+  ctx.clearRect(0,0,W,H);
+  drawBackground();
+  drawGates();
+  drawCoins();
+  drawGround();
+  drawDragon();
+  requestAnimationFrame(loop);
+}
 
 function show(id){var ss=document.querySelectorAll(".screen");for(var i=0;i<ss.length;i++)ss[i].classList.toggle("active",ss[i].id===id);overlay.classList.remove("hidden")}
 function drawPreviewCanvas(canvas,d,c,scale){
