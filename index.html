@@ -8,32 +8,37 @@
 <title>Dragon Tap — GamingNest</title>
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#070311;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080616;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 body{overscroll-behavior:none}
 button{font:inherit;color:#fff;border:0;cursor:pointer}
-#game{position:fixed;inset:0;width:100%;height:100%;touch-action:none;background:#130b29}
+#game{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
 #hud{position:fixed;inset:0;pointer-events:none;z-index:3}
-.hudbox{position:absolute;top:max(12px,env(safe-area-inset-top));padding:7px 13px;border-radius:14px;background:#090616df;border:1px solid #a45cff66;box-shadow:0 5px 20px #0008;text-align:center;backdrop-filter:blur(10px)}
-.hudbox small{display:block;color:#b9a8dc;font-size:8px;font-weight:900;letter-spacing:.13em}.hudbox b{font-size:21px}
-#bestBox{left:12px}#coinBox{right:62px;border-color:#ffd44f77}
-#score{position:absolute;top:max(4px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);font-size:52px;font-weight:1000;text-shadow:0 4px 12px #000,0 0 25px #9c4dff}
-#pause{position:absolute;right:11px;top:max(12px,env(safe-area-inset-top));width:43px;height:43px;border-radius:13px;background:#090616df;border:1px solid #a45cff66;pointer-events:auto;box-shadow:0 5px 20px #0008}
-#overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:14px;background:#020108c9;backdrop-filter:blur(7px)}
+.hudbox{position:absolute;top:max(10px,env(safe-area-inset-top));padding:6px 11px;border-radius:13px;background:#080a1ddd;border:1px solid #a06cff55;text-align:center}
+.hudbox small{display:block;color:#aeb8d7;font-size:8px;font-weight:900;letter-spacing:.12em}.hudbox b{font-size:22px}
+#bestBox{left:10px}#coinBox{right:62px;border-color:#ffd35a55}
+#score{position:absolute;top:max(5px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);font-size:50px;font-weight:950;text-shadow:0 3px 9px #000,0 0 24px #8955ff}
+#pause{position:absolute;right:10px;top:max(10px,env(safe-area-inset-top));width:43px;height:43px;border-radius:13px;background:#080a1ddd;border:1px solid #a06cff55;pointer-events:auto}
+#overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:16px;background:#02030bcc;backdrop-filter:blur(6px)}
 #overlay.hidden{display:none}
-.panel{width:min(440px,95vw);max-height:94vh;overflow:auto;padding:18px 14px 16px;border-radius:30px;border:1px solid #a55cff66;background:linear-gradient(165deg,#171036f7 0%,#0a0718f7 72%);box-shadow:0 30px 100px #000e}
-.logo{text-align:center;font-size:55px;line-height:1;filter:drop-shadow(0 0 18px #a14dff)}.brand{text-align:center;color:#c7a8ff;font-size:9px;font-weight:1000;letter-spacing:.3em}
-h1{text-align:center;margin:5px 0 0;font-size:43px;line-height:.9;letter-spacing:-.06em}h1 span{background:linear-gradient(90deg,#c968ff,#5c9cff);-webkit-background-clip:text;color:transparent}
-.homeHero{margin:2px 0 6px;width:100%;height:145px;border-radius:20px;background:radial-gradient(circle at 50% 45%,#38226b,#0a0b20 72%);border:1px solid #a55cff44;overflow:hidden;box-shadow:inset 0 0 35px #8b4cff18,0 8px 28px #0006}.homeHero canvas{width:100%;height:100%;display:block}.tag{text-align:center;color:#cdd2e8;font-size:11px;line-height:1.45;margin:10px 0 14px}
-.primary{width:100%;padding:16px;border-radius:16px;background:linear-gradient(135deg,#8e43ff,#3d8dff);font-size:18px;font-weight:1000;box-shadow:0 12px 30px #703dff55}
-.menu{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:9px}.menu button{padding:10px 2px;border-radius:13px;background:#11142b;border:1px solid #7d6dba55;font-size:9px;font-weight:950}.menu i{display:block;font-style:normal;font-size:20px;margin-bottom:3px}
-.screen{display:none}.screen.active{display:block}.back{float:left;width:36px;height:36px;border-radius:11px;background:#11142b;border:1px solid #806db855;font-size:24px}.title{text-align:center;font-size:22px;font-weight:1000;letter-spacing:-.02em}.sub{text-align:center;color:#aeb7d6;font-size:10px;margin:4px 0 10px}
-.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}@media(min-width:560px){.cards{grid-template-columns:repeat(3,1fr)}}.card{background:linear-gradient(165deg,#111a39,#0a1026);border:1px solid #5969a055;border-radius:16px;padding:7px;text-align:center;box-shadow:0 8px 25px #0005}.card.selected{border-color:#b45cff;box-shadow:0 0 22px #914cff44}.card.exclusive{grid-column:1/-1;border-color:#ffd64c;background:linear-gradient(165deg,#20172b,#0b0a1d);box-shadow:0 0 28px #ffcf4522}.thumb{height:92px;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:radial-gradient(circle at 50% 48%,#2a2154,#0d1022 72%)}.previewCanvas{width:100%;height:100%;display:block}.card b{display:block;font-size:11px;margin-top:5px}.card small{display:block;color:#aeb7d6;font-size:8px;margin-top:2px}.card button{width:100%;padding:8px;margin-top:6px;border-radius:10px;background:#182448;font-size:10px;font-weight:1000}.card button.buy{background:linear-gradient(135deg,#7449ff,#3e8dff)}
-.customPreview{margin:8px 0 12px;border-radius:17px;border:1px solid #a55cff55;background:radial-gradient(circle at 50% 30%,#322063,#0a0d20);padding:4px;text-align:center;box-shadow:inset 0 0 30px #8b4cff18}.customPreview canvas{width:100%;height:160px;display:block}.customCurrent{font-size:11px;font-weight:1000;padding:6px;color:#dfe3f6}.customSectionTitle{font-size:11px;font-weight:1000;margin:11px 0 6px;color:#d6dbef}
-.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:57px;border-radius:13px;border:2px solid #ffffff18;position:relative;overflow:hidden}.swatch.selected{border-color:#fff;box-shadow:0 0 16px #fff4}.swatch span{position:absolute;bottom:4px;left:0;right:0;font-size:7px;font-weight:1000;text-shadow:0 1px 5px #000}.swatchPreview{height:100%}
-.map{width:100%;height:92px;margin:5px 0;border-radius:14px;text-align:left;padding:8px 11px;border:1px solid #ffffff22;background:#10182e;overflow:hidden}.map.selected{border-color:#b45cff;box-shadow:0 0 18px #914cff33}.mapPreview{height:50px;border-radius:10px;margin-bottom:5px;position:relative;overflow:hidden}.mapPreview:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 25%,rgba(255,255,255,.25),transparent 25%),linear-gradient(155deg,transparent 45%,rgba(0,0,0,.2) 46%,transparent 65%)}.map b{display:block;font-size:11px}.map small{color:#c6cee5;font-size:8px}.locked{opacity:.72}.priceTag{display:inline-block;margin-top:3px;padding:2px 6px;border-radius:7px;background:#151e3a;color:#ffd75a;font-size:8px;font-weight:1000}
-.shopTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0 12px;position:sticky;top:0;z-index:2;background:#151735;padding:5px;border-radius:16px;border:1px solid #ffffff12}.shopTab{min-height:58px;border-radius:12px;background:#10182f;border:1px solid #ffffff12;font-size:10px;font-weight:1000}.shopTab.active{background:linear-gradient(135deg,#7449ff,#3e8dff);border-color:#b45cff;box-shadow:0 6px 18px #5f3cff44}.shopTab span{display:block;margin-top:3px;font-size:9px}.shopPanel{display:none}.shopPanel.active{display:block}.shopPanel .sub{margin-bottom:8px}
-#toast{position:fixed;z-index:30;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);opacity:0;transition:.18s;background:#111832ee;border:1px solid #9b65ff66;padding:10px 14px;border-radius:13px;font-size:11px;font-weight:1000;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,0)!important}
-#confirmOverlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:#02030ccc;backdrop-filter:blur(7px)}#confirmOverlay.showConfirm{display:flex}.confirmBox{width:min(360px,92vw);padding:22px 18px 18px;border-radius:23px;border:1px solid #9e65ff77;background:linear-gradient(160deg,#171c3df8,#080b19f8);box-shadow:0 30px 90px #000d;text-align:center}.confirmIcon{font-size:42px;margin-bottom:6px}.confirmTitle{font-size:20px;font-weight:1000;margin-bottom:8px}.confirmText{color:#cbd3eb;font-size:12px;line-height:1.45;margin-bottom:17px}.confirmButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.confirmButtons button{padding:12px;border-radius:12px;font-size:12px;font-weight:1000}.confirmCancel{background:#151d39;border:1px solid #ffffff18}.confirmBuy{background:linear-gradient(135deg,#7449ff,#3e8dff)}
+.panel{width:min(430px,94vw);max-height:92vh;overflow:auto;padding:22px 16px 18px;border-radius:27px;border:1px solid #9365ff66;background:linear-gradient(160deg,#111736f8,#070a18f8);box-shadow:0 30px 90px #000d}
+.logo{text-align:center;font-size:54px;filter:drop-shadow(0 0 18px #8b55ff)}.brand{text-align:center;color:#bfa8ff;font-size:10px;font-weight:950;letter-spacing:.28em}
+h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacing:-.05em}h1 span{color:#9d61ff}
+.tag{text-align:center;color:#cbd3eb;font-size:12px;line-height:1.45;margin:10px 0 14px}
+.primary{width:100%;padding:15px;border-radius:15px;background:linear-gradient(135deg,#8b4dff,#357fff);font-size:17px;font-weight:950}
+.menu{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.menu button{padding:10px 3px;border-radius:12px;background:#111832;border:1px solid #5e6eb044;font-size:10px;font-weight:900}.menu i{display:block;font-style:normal;font-size:19px;margin-bottom:2px}
+.screen{display:none}.screen.active{display:block}.back{float:left;width:34px;height:34px;border-radius:10px;background:#121936;border:1px solid #5e6eb044;font-size:22px}.title{text-align:center;font-size:21px;font-weight:950}.sub{text-align:center;color:#aab3d2;font-size:10px;margin:3px 0 10px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.card{background:#0d1530;border:1px solid #5363a044;border-radius:14px;padding:7px;text-align:center}.card.selected{border-color:#a56cff;box-shadow:0 0 18px #884cff22}.card.exclusive{border-color:#d8a83b88;background:linear-gradient(160deg,#171322,#0b0d1d)}.card.exclusive.selected{border-color:#ffd35a;box-shadow:0 0 20px #ffd35a33}.thumb{height:78px;border-radius:9px;display:flex;align-items:center;justify-content:center}.dragonArt{font-size:48px;filter:drop-shadow(0 0 10px #fff5)}.card b{display:block;font-size:11px;margin-top:5px}.card small{display:block;color:#9da8ca;font-size:9px;margin-top:2px}.card button{width:100%;padding:7px;margin-top:6px;border-radius:9px;background:#182043;font-size:10px;font-weight:900}.card button.buy{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
+.customPreview{margin:8px 0 12px;border-radius:16px;border:1px solid #a56cff55;background:linear-gradient(135deg,#111832,#0a0d20);padding:4px;text-align:center}.customPreview canvas{width:100%;height:150px;display:block}.customCurrent{font-size:11px;font-weight:950;padding:5px;color:#d9def3}.customSectionTitle{font-size:11px;font-weight:950;margin:10px 0 6px;color:#cbd3eb}.previewCanvas{width:100%;height:100%;display:block}.thumb{overflow:hidden}.swatchPreview{height:42px;border-radius:10px}.mapPreview{height:70px;border-radius:11px;margin-bottom:6px;position:relative;overflow:hidden}.mapPreview:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 25%,rgba(255,255,255,.25),transparent 25%),linear-gradient(155deg,transparent 45%,rgba(0,0,0,.2) 46%,transparent 65%)}.locked{opacity:.72}.priceTag{display:inline-block;margin-top:3px;padding:2px 6px;border-radius:7px;background:#151e3a;color:#ffd75a;font-size:8px;font-weight:950}.shopTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0 12px;position:sticky;top:0;z-index:2;background:#111736;padding:5px;border-radius:15px;border:1px solid #ffffff12}.shopTab{min-height:58px;border-radius:11px;background:#10182f;border:1px solid #ffffff12;font-size:10px;font-weight:900}.shopTab.active{background:linear-gradient(135deg,#6f4cff,#3b8cff);border-color:#a56cff}.shopTab span{display:block;margin-top:3px;font-size:9px}.shopPanel{display:none}.shopPanel.active{display:block}.shopPanel .sub{margin-bottom:8px}.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:55px;border-radius:13px;border:2px solid #ffffff18;position:relative}.swatch.selected{border-color:#fff;box-shadow:0 0 15px #fff4}.swatch span{position:absolute;bottom:3px;left:0;right:0;font-size:8px;font-weight:950;text-shadow:0 1px 4px #000}
+.map{width:100%;height:62px;margin:4px 0;border-radius:13px;text-align:left;padding:9px 12px;border:1px solid #ffffff22}.map.selected{border-color:#a56cff}.map b{display:block;font-size:12px}.map small{color:#c6cee5;font-size:9px}
+#toast{position:fixed;z-index:30;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);opacity:0;transition:.18s;background:#111832ee;border:1px solid #7d6cff55;padding:9px 13px;border-radius:12px;font-size:11px;font-weight:900;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,0)!important}
+
+/* Purchase confirmation */
+#confirmOverlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:#02030ccc;backdrop-filter:blur(7px)}
+#confirmOverlay.showConfirm{display:flex}
+.confirmBox{width:min(360px,92vw);padding:22px 18px 18px;border-radius:22px;border:1px solid #9365ff66;background:linear-gradient(160deg,#151b3cf8,#080b19f8);box-shadow:0 30px 90px #000d;text-align:center}
+.confirmIcon{font-size:42px;margin-bottom:6px}.confirmTitle{font-size:20px;font-weight:950;margin-bottom:8px}.confirmText{color:#cbd3eb;font-size:12px;line-height:1.45;margin-bottom:17px}
+.confirmButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.confirmButtons button{padding:12px;border-radius:12px;font-size:12px;font-weight:950}
+.confirmCancel{background:#151d39;border:1px solid #ffffff18}.confirmBuy{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
 </style>
 </head>
 <body>
@@ -51,7 +56,6 @@ h1{text-align:center;margin:5px 0 0;font-size:43px;line-height:.9;letter-spacing
 <div class="logo">🐉</div><div class="brand">GAMINGNEST PRESENTS</div>
 <h1>DRAGON <span>TAP</span></h1>
 <div class="tag" id="status">Tap to fly. Dodge the gates. Collect the coins.<br><b>Flappy Edition</b><br>🏆 +1 score per gate · 🪙 +2 coins per gate · 🪙 +1 per coin</div>
-<div class="homeHero"><canvas id="homePreviewCanvas" width="720" height="260"></canvas></div>
 <button class="primary" id="play" type="button">▶ PLAY</button>
 <div class="menu">
 <button type="button" data-screen="shop"><i>🛒</i>Shop</button>
@@ -68,7 +72,7 @@ h1{text-align:center;margin:5px 0 0;font-size:43px;line-height:.9;letter-spacing
 <button type="button" class="shopTab" data-shop-tab="colors">🎨<span>Colors / Skins</span></button>
 <button type="button" class="shopTab" data-shop-tab="maps">🗺️<span>Maps</span></button>
 </div>
-<div id="shopPanelDragons" class="shopPanel active"><div class="sub">Preview and unlock the new dragon family.</div><div id="shopCards" class="cards"></div></div>
+<div id="shopPanelDragons" class="shopPanel active"><div class="sub">Preview and unlock dragons.</div><div id="shopCards" class="cards"></div></div>
 <div id="shopPanelColors" class="shopPanel"><div class="sub">Preview and unlock skins · 200 coins each.</div><div id="shopSwatches" class="swatches"></div></div>
 <div id="shopPanelMaps" class="shopPanel"><div class="sub">Preview and unlock maps · 300 coins each.</div><div id="shopMapsList"></div></div>
 </section>
@@ -121,13 +125,13 @@ var best=Number(localStorage.getItem("gn_best")||0);
 var coins=2000000; localStorage.setItem("gn_coins","2000000");
 var muted=localStorage.getItem("gn_muted")==="1";
 var selectedDragon=localStorage.getItem("gn_dragon")||"baby";
-var selectedColor=localStorage.getItem("gn_color")||"ocean";
+var selectedColor=localStorage.getItem("gn_color")||"emerald";
 var selectedMap=localStorage.getItem("gn_map")||"sky";
 var owned,ownedColors,ownedMaps;
 try{owned=new Set(JSON.parse(localStorage.getItem("gn_owned")||'["baby"]'));}catch(e){owned=new Set(["baby"]);}
-try{ownedColors=new Set(JSON.parse(localStorage.getItem("gn_owned_colors")||'["ocean"]'));}catch(e){ownedColors=new Set(["ocean"]);}
+try{ownedColors=new Set(JSON.parse(localStorage.getItem("gn_owned_colors")||'["emerald","ocean"]'));}catch(e){ownedColors=new Set(["emerald","ocean"]);}
 try{ownedMaps=new Set(JSON.parse(localStorage.getItem("gn_owned_maps")||'["sky"]'));}catch(e){ownedMaps=new Set(["sky"]);}
-if(!ownedColors.has(selectedColor))selectedColor="ocean";
+if(!ownedColors.has(selectedColor))selectedColor=ownedColors.has("emerald")?"emerald":"ocean";
 if(!ownedMaps.has(selectedMap))selectedMap="sky";
 
 var dragons=[
@@ -175,6 +179,7 @@ var maps=[
 var dragon={x:0,y:0,vy:0,rot:0,bank:0,stretch:0},gates=[],coinItems=[];
 var crash={active:false,time:0,duration:900,rot:0,scale:1,particles:[]};
 var pendingPurchase=null;
+var voidImg=null;
 var audioCtx=null;
 function ensureAudio(){
 if(muted)return null;
@@ -304,53 +309,42 @@ ctx.fillStyle="#8b5b00";ctx.font="900 16px Arial";ctx.textAlign="center";ctx.tex
 }
 function drawDragon(){
 var d=getDragon(),c=getColor(),x=dragon.x,y=dragon.y;
-var scale=(d.scale||.68)*.92;
+var scale=(d.scale||.68)*.88;
 var t=performance.now()/1000;
-var v=Math.max(-1,Math.min(1,dragon.vy/650)),falling=Math.max(0,v),rising=Math.max(0,-v);
-var beat=Math.sin(t*8.8),beat2=Math.sin(t*8.8+1.9),slow=Math.sin(t*3.4);
-var pitch=Math.max(-.5,Math.min(.8,dragon.rot));
-var body=c.body||d.body, wingCol=c.wing||d.wing, acc=d.accent||"#fff", eye=d.eye||"#fff";
-ctx.save();ctx.translate(x,y);ctx.rotate(pitch+beat*.012);ctx.scale(scale,scale);
-var bob=Math.sin(t*4.4)*1.4;ctx.translate(0,bob);
-function limbStroke(points,width,color){ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap="round";ctx.lineJoin="round";ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(var i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.stroke();}
-// tail, with separate segments and a cute upward curl
-function tailSeg(px,py,len,w,a,detail){ctx.save();ctx.translate(px,py);ctx.rotate(a);ctx.fillStyle=body;ctx.beginPath();ctx.moveTo(0,-w);ctx.quadraticCurveTo(len*.45,-w*.9,len,0);ctx.quadraticCurveTo(len*.45,w*.9,0,w);ctx.closePath();ctx.fill();ctx.fillStyle=detail||acc;ctx.beginPath();ctx.moveTo(len*.25,-w*.45);ctx.lineTo(len*.48,-w*1.25);ctx.lineTo(len*.62,-w*.35);ctx.closePath();ctx.fill();ctx.restore()}
-tailSeg(-27,7,34,10,slow*.10+beat*.035,acc);tailSeg(-57,9,30,8,-slow*.16+beat2*.04,acc);tailSeg(-84,10,25,6,slow*.21-beat*.03,acc);
-// body
-ctx.fillStyle=body;ctx.shadowBlur=12;ctx.shadowColor=wingCol;ctx.beginPath();ctx.ellipse(-2,5,38,24,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
-// belly patch
-ctx.fillStyle=(d.style==="ice"?"#e9fcff":d.style==="fire"?"#ffd08a":d.style==="forest"?"#d7efae":d.style==="shadow"?"#bca1cf":d.style==="gold"?"#fff0b5":d.style==="void"?"#30264a":"#d9efaa");ctx.beginPath();ctx.ellipse(7,11,22,13,0,0,Math.PI*2);ctx.fill();
-// back plates / style details
-for(var sp=0;sp<6;sp++){ctx.save();ctx.translate(-25+sp*10,-14-Math.sin(t*4.7+sp*.5)*1.2);ctx.rotate(-.12+Math.sin(t*4.8+sp)*.05);ctx.fillStyle=acc;ctx.beginPath();ctx.moveTo(-4,3);ctx.lineTo(0,-11-(sp%2)*3);ctx.lineTo(5,3);ctx.closePath();ctx.fill();ctx.restore()}
-// wings: cute rounded bat wings, independently animated
-function wing(side){var ph=side<0?0:1.7;var f=Math.sin(t*8.2+ph),micro=Math.sin(t*15+ph)*.08;ctx.save();ctx.translate(-10,-10);ctx.scale(side,1);ctx.rotate((-.12+f*.34+micro)+pitch*.18*side+(falling*.09));ctx.fillStyle=wingCol;ctx.beginPath();ctx.moveTo(0,4);ctx.quadraticCurveTo(2,-30,18,-42);ctx.quadraticCurveTo(33,-48,48,-35);ctx.quadraticCurveTo(41,-24,47,-12);ctx.quadraticCurveTo(31,-15,27,1);ctx.quadraticCurveTo(13,10,0,4);ctx.closePath();ctx.fill();ctx.strokeStyle=acc;ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(3,2);ctx.lineTo(19,-34);ctx.moveTo(8,4);ctx.lineTo(35,-27);ctx.moveTo(14,5);ctx.lineTo(44,-13);ctx.stroke();ctx.restore()}
+var v=Math.max(-1,Math.min(1,dragon.vy/650));
+var falling=Math.max(0,v),rising=Math.max(0,-v);
+var beat=Math.sin(t*8.8),beat2=Math.sin(t*8.8+1.4),slow=Math.sin(t*3.5);
+var pitch=Math.max(-.48,Math.min(.78,dragon.rot));
+var crashAmt=crash.active?Math.min(1,crash.time/650):0;
+var body=c.body||d.body,wingCol=c.wing||d.wing,eye=d.eye||"#fff",acc=d.accent||"#d7f39a";
+var outline="#172018";
+ctx.save();ctx.translate(x,y);ctx.rotate(pitch+Math.sin(t*4.7)*.022+beat*.010);ctx.scale(scale,scale);ctx.translate(0,Math.sin(t*4.2)*1.4+beat2*.9);ctx.lineJoin="round";ctx.lineCap="round";
+function fillGrad(c1,c2,x0,y0,x1,y1){var g=ctx.createLinearGradient(x0,y0,x1,y1);g.addColorStop(0,c1);g.addColorStop(1,c2);return g;}
+var bodyHi=d.style==="fire"?"#ff7b32":d.style==="ice"?"#75d8ff":d.style==="forest"?"#79a93b":d.style==="shadow"?"#5a3589":d.style==="gold"?"#ffe06a":d.style==="void"?"#5431a0":"#a9e94b";
+function tailSeg(px,py,len,w,a,detail){ctx.save();ctx.translate(px,py);ctx.rotate(a);ctx.fillStyle=fillGrad(body,bodyHi,0,-w,len,w);ctx.beginPath();ctx.moveTo(0,-w);ctx.quadraticCurveTo(len*.42,-w*1.12,len,0);ctx.quadraticCurveTo(len*.45,w*1.05,0,w);ctx.closePath();ctx.fill();ctx.strokeStyle=outline;ctx.lineWidth=2.8;ctx.stroke();if(detail){ctx.fillStyle=detail;ctx.beginPath();ctx.moveTo(len*.35,-w*.45);ctx.lineTo(len*.58,-w*1.05);ctx.lineTo(len*.72,-w*.2);ctx.closePath();ctx.fill();}ctx.restore();}
+var tailDetail=d.style==="forest"?"#e2a83b":d.style==="gold"?"#fff0a8":d.style==="ice"?"#dffbff":d.style==="shadow"||d.style==="void"?wingCol:null;
+tailSeg(-25,7,33,9,slow*.13+beat*.035+falling*.08,tailDetail);tailSeg(-53,9,29,7,-slow*.18+beat2*.04+falling*.12,tailDetail);tailSeg(-78,10,24,5,slow*.22-beat*.03+falling*.17,tailDetail);tailSeg(-99,9,18,3.8,-slow*.25+beat2*.025+falling*.20,tailDetail);
+var plates=d.style==="fire"?5:d.style==="ice"?5:d.style==="forest"?4:d.style==="shadow"?6:d.style==="gold"?5:d.style==="void"?6:3;
+for(var sp=0;sp<plates;sp++){var sx=-28+sp*(52/(plates-1||1)),sy=-12-Math.sin(t*4.8+sp*.65)*1.1;ctx.save();ctx.translate(sx,sy);ctx.rotate(-.12+Math.sin(t*4.5+sp*.7)*.05-falling*.035);ctx.fillStyle=d.style==="forest"?"#e0ad45":d.style==="gold"?"#fff0a5":d.style==="ice"?"#d8faff":d.style==="void"?"#8751dc":acc;ctx.beginPath();if(d.style==="ice")ctx.moveTo(-5,3),ctx.lineTo(0,-13-sp*.5),ctx.lineTo(6,3),ctx.closePath();else ctx.moveTo(-5,3),ctx.quadraticCurveTo(0,-12-sp*.45,6,3),ctx.closePath();ctx.fill();ctx.strokeStyle=outline;ctx.lineWidth=2;ctx.stroke();ctx.restore();}
+function wing(side){var s=side,phase=side<0?.15:2.45,flap=Math.sin(t*7.6+phase),micro=Math.sin(t*15.2+phase)*.06;var a=(side<0?-.50:.50)+flap*(.30+.10*falling)+pitch*.20*s+micro;ctx.save();ctx.translate(-9,-8);ctx.rotate(a*s);ctx.scale(s,1);ctx.fillStyle=fillGrad(wingCol,bodyHi,0,-30,45,14);ctx.shadowBlur=10;ctx.shadowColor=wingCol;ctx.beginPath();if(d.style==="ice")ctx.moveTo(0,5),ctx.quadraticCurveTo(10,-25,31,-33),ctx.lineTo(27,-16),ctx.lineTo(48,-24),ctx.lineTo(39,-6),ctx.lineTo(54,1),ctx.quadraticCurveTo(27,11,8,15),ctx.closePath();else if(d.style==="shadow"||d.style==="void")ctx.moveTo(0,5),ctx.quadraticCurveTo(12,-26,35,-34),ctx.lineTo(29,-17),ctx.lineTo(52,-24),ctx.lineTo(41,-5),ctx.lineTo(59,1),ctx.quadraticCurveTo(28,11,8,15),ctx.closePath();else ctx.moveTo(0,5),ctx.quadraticCurveTo(10,-24,31,-31),ctx.lineTo(27,-16),ctx.lineTo(48,-22),ctx.lineTo(39,-6),ctx.lineTo(55,1),ctx.quadraticCurveTo(27,11,8,15),ctx.closePath();ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=outline;ctx.lineWidth=2.8;ctx.stroke();ctx.strokeStyle=acc;ctx.lineWidth=2;ctx.globalAlpha=.65;ctx.beginPath();ctx.moveTo(8,5);ctx.lineTo(29,-22);ctx.moveTo(17,8);ctx.lineTo(37,-10);ctx.moveTo(27,9);ctx.lineTo(44,-3);ctx.stroke();ctx.globalAlpha=1;ctx.restore();}
 wing(-1);wing(1);
-// legs: four independently moving little feet
-function leg(side,back){var ph=(side<0?0:Math.PI)+(back?1.15:0),w=Math.sin(t*5.9+ph),lift=Math.max(0,w)*3;ctx.save();ctx.translate(back?17:-9,13);ctx.rotate((back?.16:-.14)*side+w*.12*side);limbStroke([[0,0],[side*4,12+lift]],7,body);ctx.translate(side*4,12+lift);ctx.rotate(-.15*side+w*.06);limbStroke([[0,0],[side*4,8]],6,body);ctx.fillStyle=acc;ctx.beginPath();ctx.ellipse(side*6,8,8,5,0,0,Math.PI*2);ctx.fill();for(var cl=0;cl<3;cl++){ctx.save();ctx.translate(side*(6+cl*4),8);ctx.rotate(side*(cl-1)*.18);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(side*5,-2);ctx.lineTo(side*3,2);ctx.closePath();ctx.fill();ctx.restore()}ctx.restore()}
+ctx.save();ctx.rotate(beat*.012+rising*.01-falling*.014);ctx.fillStyle=fillGrad(body,bodyHi,-35,-25,35,25);ctx.shadowBlur=9;ctx.shadowColor=wingCol;ctx.beginPath();if(d.style==="fire")ctx.moveTo(-42,10),ctx.quadraticCurveTo(-38,-16,-8,-22),ctx.quadraticCurveTo(21,-27,41,-5),ctx.quadraticCurveTo(34,20,4,22),ctx.quadraticCurveTo(-26,22,-42,10),ctx.closePath();else if(d.style==="ice")ctx.moveTo(-41,8),ctx.lineTo(-29,-14),ctx.lineTo(-6,-23),ctx.lineTo(23,-17),ctx.lineTo(40,3),ctx.lineTo(27,20),ctx.lineTo(-9,22),ctx.closePath();else if(d.style==="shadow")ctx.moveTo(-42,12),ctx.quadraticCurveTo(-35,-19,-3,-22),ctx.quadraticCurveTo(27,-21,40,3),ctx.quadraticCurveTo(27,22,-6,22),ctx.quadraticCurveTo(-31,20,-42,12),ctx.closePath();else if(d.style==="void")ctx.moveTo(-45,10),ctx.quadraticCurveTo(-39,-21,-5,-24),ctx.quadraticCurveTo(30,-22,43,3),ctx.quadraticCurveTo(28,25,-7,25),ctx.quadraticCurveTo(-34,20,-45,10),ctx.closePath();else ctx.ellipse(-3,4,42,22,0,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=outline;ctx.lineWidth=3;ctx.stroke();
+var belly=d.style==="ice"?"#e7fbff":d.style==="fire"?"#ffd08a":d.style==="forest"?"#d6eaa0":d.style==="shadow"?"#9d7abb":d.style==="gold"?"#fff0bd":d.style==="void"?"#6f57a8":"#dff28f";ctx.fillStyle=belly;ctx.globalAlpha=.9;ctx.beginPath();ctx.ellipse(8,9,18,10,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+if(d.style==="fire"){ctx.fillStyle="#ff9a31";for(var fi=0;fi<3;fi++){ctx.beginPath();ctx.arc(-15+fi*13,1+(fi%2)*5,3.5,0,Math.PI*2);ctx.fill();}}
+if(d.style==="ice"){ctx.strokeStyle="#d8fbff";ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(-23,5);ctx.lineTo(-11,-6);ctx.lineTo(1,4);ctx.lineTo(13,-7);ctx.stroke();}
+if(d.style==="forest"){ctx.fillStyle="#d7a63c";for(var lf=0;lf<3;lf++){ctx.beginPath();ctx.ellipse(-17+lf*13,4+(lf%2)*4,4,2.5,-.45,0,Math.PI*2);ctx.fill();}}
+if(d.style==="shadow"){ctx.strokeStyle="#8c5bc1";ctx.lineWidth=2;ctx.globalAlpha=.7;ctx.beginPath();ctx.arc(-2,4,13,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+if(d.style==="gold"){ctx.strokeStyle="#fff4b0";ctx.lineWidth=2;ctx.globalAlpha=.8;ctx.beginPath();ctx.arc(-3,4,15,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+if(d.style==="void"){ctx.fillStyle="#b277ff";ctx.beginPath();ctx.arc(-11,0,3,0,Math.PI*2);ctx.arc(2,-4,2.5,0,Math.PI*2);ctx.arc(14,3,3,0,Math.PI*2);ctx.fill();}ctx.restore();
+function leg(side,back){var phase=(side<0?0:Math.PI)+(back?1.15:0),w=Math.sin(t*5.3+phase),w2=Math.sin(t*5.3+phase+1.1);var a=((back?.22:-.14)*side)+w*.13*side+pitch*.05*side,b=(-.52*side)+w2*.16*side+falling*.08*side;ctx.save();ctx.translate(back?17:-5,13);ctx.rotate(a);ctx.strokeStyle=body;ctx.lineWidth=9;ctx.shadowBlur=4;ctx.shadowColor=wingCol;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(12,7);ctx.stroke();ctx.translate(11,7);ctx.rotate(b);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(8,5);ctx.stroke();ctx.translate(8,5);ctx.rotate(w*.08);ctx.fillStyle=body;ctx.beginPath();ctx.ellipse(5,3,10,6,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle=outline;ctx.lineWidth=2;ctx.stroke();ctx.fillStyle=acc;for(var cl=0;cl<3;cl++){ctx.beginPath();ctx.ellipse(10+cl*3,4,2.7,1.8,0,0,Math.PI*2);ctx.fill();}ctx.restore();}
 leg(-1,false);leg(1,false);leg(-1,true);leg(1,true);
-// neck and big friendly head
-ctx.save();ctx.translate(25,-2);ctx.rotate(-pitch*.18+Math.sin(t*4.1)*.035);ctx.fillStyle=body;ctx.beginPath();ctx.ellipse(12,-7,22,18,0,0,Math.PI*2);ctx.fill();
-ctx.save();ctx.translate(17,-14);ctx.rotate(-pitch*.13+Math.sin(t*5.8+1)*.05);
-ctx.fillStyle=body;ctx.beginPath();ctx.ellipse(20,-3,25,20,.02,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.ellipse(38,3,13,10,.02,0,Math.PI*2);ctx.fill();
-// cheeks
-ctx.fillStyle=acc;ctx.globalAlpha=.35;ctx.beginPath();ctx.arc(27,5,7,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
-// horns differ by dragon style
-ctx.fillStyle=acc;ctx.beginPath();if(d.style==="fire"){ctx.moveTo(9,-18);ctx.quadraticCurveTo(2,-39,15,-31);ctx.lineTo(21,-18);ctx.closePath();ctx.moveTo(28,-19);ctx.quadraticCurveTo(31,-41,39,-28);ctx.lineTo(38,-17);ctx.closePath()}else if(d.style==="ice"){ctx.moveTo(11,-18);ctx.lineTo(8,-40);ctx.lineTo(19,-24);ctx.closePath();ctx.moveTo(29,-18);ctx.lineTo(35,-40);ctx.lineTo(40,-20);ctx.closePath()}else if(d.style==="forest"){ctx.moveTo(10,-18);ctx.lineTo(2,-34);ctx.lineTo(16,-27);ctx.closePath();ctx.moveTo(29,-18);ctx.lineTo(37,-35);ctx.lineTo(40,-20);ctx.closePath()}else{ctx.moveTo(10,-18);ctx.lineTo(8,-36);ctx.lineTo(18,-24);ctx.closePath();ctx.moveTo(29,-18);ctx.lineTo(34,-35);ctx.lineTo(39,-19);ctx.closePath()}ctx.fill();
-// eyes
-var blink=(Math.sin(t*1.55+1.1)>.987)?0.12:1;ctx.save();ctx.scale(1,blink);ctx.fillStyle=eye;ctx.beginPath();ctx.ellipse(27,-4,7,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#171222";ctx.beginPath();ctx.ellipse(28,-3,2.7,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(30,-6,1.7,0,Math.PI*2);ctx.fill();ctx.restore();
-// nostril and smile
-ctx.fillStyle="#21182b";ctx.beginPath();ctx.arc(47,3,1.7,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#24182d";ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(38,8);ctx.quadraticCurveTo(43,13,49,8);ctx.stroke();
-// style spots / stripes
-if(d.style==="fire"){ctx.fillStyle="#ff8b2f";for(var q=0;q<3;q++){ctx.beginPath();ctx.arc(9+q*8,10,3,0,Math.PI*2);ctx.fill()}}
-if(d.style==="ice"){ctx.fillStyle="#b9f5ff";for(var q2=0;q2<3;q2++){ctx.beginPath();ctx.moveTo(4+q2*10,12);ctx.lineTo(9+q2*10,8);ctx.lineTo(11+q2*10,14);ctx.closePath();ctx.fill()}}
-if(d.style==="forest"){ctx.fillStyle="#9bd85e";for(var q3=0;q3<3;q3++){ctx.beginPath();ctx.arc(5+q3*9,10,3,0,Math.PI*2);ctx.fill()}}
-if(d.style==="shadow"){ctx.fillStyle="#8f4cff";ctx.beginPath();ctx.arc(15,11,3,0,Math.PI*2);ctx.arc(25,9,2.5,0,Math.PI*2);ctx.fill()}
-if(d.style==="gold"){ctx.fillStyle="#fff3a8";ctx.beginPath();ctx.arc(15,9,3,0,Math.PI*2);ctx.arc(26,8,2.5,0,Math.PI*2);ctx.fill()}
-ctx.restore();ctx.restore();
-// exclusive aura, but still same cute family
-if(d.exclusive){ctx.save();ctx.globalAlpha=.25+.08*Math.sin(t*5);ctx.strokeStyle="#b05cff";ctx.lineWidth=4;ctx.shadowBlur=22;ctx.shadowColor="#8b3dff";ctx.beginPath();ctx.arc(0,0,72,0,Math.PI*2);ctx.stroke();ctx.restore()}
-ctx.restore();
+ctx.save();ctx.translate(27,-5);ctx.rotate(-pitch*.18+Math.sin(t*3.8+1.3)*.035+beat2*.018);ctx.fillStyle=body;ctx.shadowBlur=9;ctx.shadowColor=wingCol;ctx.beginPath();ctx.ellipse(12,-3,19,14,.05,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=outline;ctx.lineWidth=2.6;ctx.stroke();ctx.save();var headA=-pitch*.13+Math.sin(t*5.6+2)*.045+beat*.018+falling*.06-rising*.035;ctx.translate(22,-12);ctx.rotate(headA);ctx.fillStyle=fillGrad(body,bodyHi,0,-28,50,16);ctx.shadowBlur=11;ctx.shadowColor=wingCol;ctx.beginPath();if(d.style==="fire")ctx.moveTo(-2,3),ctx.quadraticCurveTo(-3,-20,17,-28),ctx.quadraticCurveTo(41,-31,52,-13),ctx.quadraticCurveTo(59,1,43,14),ctx.quadraticCurveTo(17,22,-2,3),ctx.closePath();else if(d.style==="ice")ctx.moveTo(-2,2),ctx.lineTo(4,-20),ctx.lineTo(22,-28),ctx.lineTo(42,-20),ctx.lineTo(52,-5),ctx.lineTo(42,14),ctx.lineTo(18,18),ctx.closePath();else if(d.style==="shadow")ctx.moveTo(-2,3),ctx.quadraticCurveTo(-1,-23,22,-30),ctx.quadraticCurveTo(47,-28,54,-8),ctx.quadraticCurveTo(55,12,34,17),ctx.quadraticCurveTo(8,17,-2,3),ctx.closePath();else if(d.style==="void")ctx.moveTo(-2,3),ctx.quadraticCurveTo(-1,-25,23,-32),ctx.quadraticCurveTo(50,-29,58,-7),ctx.quadraticCurveTo(57,14,32,19),ctx.quadraticCurveTo(8,18,-2,3),ctx.closePath();else ctx.ellipse(24,-5,28,22,.02,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;ctx.strokeStyle=outline;ctx.lineWidth=3;ctx.stroke();ctx.fillStyle=acc;
+if(d.style==="fire"){ctx.beginPath();ctx.moveTo(8,-23);ctx.quadraticCurveTo(4,-39,12,-45);ctx.quadraticCurveTo(19,-35,18,-24);ctx.moveTo(29,-25);ctx.quadraticCurveTo(32,-41,40,-44);ctx.quadraticCurveTo(44,-31,38,-22);ctx.fill();}else if(d.style==="ice"){ctx.beginPath();ctx.moveTo(7,-22);ctx.lineTo(5,-41);ctx.lineTo(15,-31);ctx.lineTo(20,-45);ctx.lineTo(25,-24);ctx.closePath();ctx.fill();}else if(d.style==="forest"){ctx.fillStyle="#d7a63c";ctx.beginPath();ctx.ellipse(5,-23,5,12,-.5,0,Math.PI*2);ctx.ellipse(25,-25,5,13,.45,0,Math.PI*2);ctx.fill();}else if(d.style==="shadow"){ctx.beginPath();ctx.moveTo(8,-23);ctx.lineTo(10,-44);ctx.lineTo(17,-27);ctx.moveTo(28,-25);ctx.lineTo(40,-43);ctx.lineTo(37,-22);ctx.fill();}else if(d.style==="gold"){ctx.beginPath();ctx.moveTo(7,-23);ctx.lineTo(9,-40);ctx.lineTo(16,-28);ctx.moveTo(28,-25);ctx.lineTo(36,-41);ctx.lineTo(38,-22);ctx.fill();}else if(d.style==="void"){ctx.fillStyle="#9b6aff";ctx.beginPath();ctx.moveTo(7,-23);ctx.lineTo(10,-45);ctx.lineTo(18,-27);ctx.moveTo(28,-25);ctx.lineTo(39,-44);ctx.lineTo(38,-22);ctx.fill();}else{ctx.beginPath();ctx.ellipse(7,-23,5,9,-.55,0,Math.PI*2);ctx.ellipse(21,-27,5,10,.15,0,Math.PI*2);ctx.fill();}
+var blinkL=(Math.sin(t*1.55+1.1)>.985)?.14:1,blinkR=(Math.sin(t*1.67+2.1)>.988)?.14:1;ctx.save();ctx.scale(1,blinkL);ctx.fillStyle=eye;ctx.beginPath();ctx.ellipse(16,-6,6.8,7.5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#10141a";ctx.beginPath();ctx.ellipse(17,-5,2.5,4.2,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(19,-7,1.8,0,Math.PI*2);ctx.fill();ctx.restore();ctx.save();ctx.translate(19,0);ctx.scale(1,blinkR);ctx.fillStyle=eye;ctx.beginPath();ctx.ellipse(16,-6,6.8,7.5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#10141a";ctx.beginPath();ctx.ellipse(17,-5,2.5,4.2,0,0,Math.PI*2);ctx.fill();ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(19,-7,1.8,0,Math.PI*2);ctx.fill();ctx.restore();ctx.globalAlpha=.22;ctx.fillStyle=d.style==="fire"?"#ffb06b":d.style==="ice"?"#dffcff":d.style==="shadow"?"#c58aff":"#e8f39b";ctx.beginPath();ctx.arc(8,0,6.5,0,Math.PI*2);ctx.arc(39,0,6.5,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;ctx.fillStyle=acc;ctx.beginPath();ctx.ellipse(49,2,4,3,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=outline;ctx.beginPath();ctx.arc(48,2,1.3,0,Math.PI*2);ctx.fill();ctx.strokeStyle=outline;ctx.lineWidth=2.8;ctx.beginPath();ctx.moveTo(22,6);ctx.quadraticCurveTo(28,12,35,6);ctx.stroke();ctx.save();ctx.translate(35,8);ctx.rotate(Math.sin(t*5.2+.5)*.055+falling*.04+crashAmt*.28);ctx.strokeStyle=outline;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(-2,0);ctx.quadraticCurveTo(6,5,13,1);ctx.stroke();ctx.restore();ctx.restore();ctx.restore();
+if(d.exclusive){ctx.save();ctx.globalAlpha=.28+.10*Math.sin(t*4.5);ctx.strokeStyle="#a96bff";ctx.lineWidth=3;ctx.setLineDash([5,7]);ctx.beginPath();ctx.arc(x,y-4,58+Math.sin(t*3)*3,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
+if(crash.active){for(var pi=0;pi<crash.particles.length;pi++){var pp=crash.particles[pi];if(pp.life<=0)continue;ctx.save();ctx.globalAlpha=Math.max(0,pp.life/.9);ctx.fillStyle=pi%3===0?"#ffd34d":(pi%3===1?"#ff5a18":"#ff2414");ctx.shadowBlur=16;ctx.shadowColor="#ff5a18";ctx.beginPath();ctx.arc(pp.x,pp.y,pp.size*Math.max(.3,pp.life),0,Math.PI*2);ctx.fill();ctx.restore();}}
 }
+
 function update(dt){
 if(mode==="crashing"){
   if(paused)return;
@@ -387,32 +381,21 @@ function loop(t){var dt=Math.min(.035,last?(t-last)/1000:.016);last=t;update(dt)
 
 function show(id){var ss=document.querySelectorAll(".screen");for(var i=0;i<ss.length;i++)ss[i].classList.toggle("active",ss[i].id===id);overlay.classList.remove("hidden")}
 function drawPreviewCanvas(canvas,d,c,scale){
-if(!canvas)return;var cx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;cx.clearRect(0,0,w,h);cx.fillStyle="rgba(8,9,23,.98)";cx.fillRect(0,0,w,h);cx.save();cx.translate(w*.46,h*.57);cx.scale((scale||1)*.9,(scale||1)*.9);cx.lineJoin="round";cx.lineCap="round";
-var body=(c&&c.body)||d.body,wingCol=(c&&c.wing)||d.wing,eye=d.eye||"#fff",acc=d.accent||"#fff";
-// shadow / glow
-cx.globalAlpha=.18;cx.fillStyle=wingCol;cx.beginPath();cx.ellipse(0,20,52,16,0,0,Math.PI*2);cx.fill();cx.globalAlpha=1;
-function seg(px,py,len,w,a){cx.save();cx.translate(px,py);cx.rotate(a);cx.fillStyle=body;cx.beginPath();cx.moveTo(0,-w);cx.quadraticCurveTo(len*.45,-w*.9,len,0);cx.quadraticCurveTo(len*.45,w*.9,0,w);cx.closePath();cx.fill();cx.fillStyle=acc;cx.beginPath();cx.moveTo(len*.25,-w*.4);cx.lineTo(len*.5,-w*1.1);cx.lineTo(len*.62,-w*.25);cx.closePath();cx.fill();cx.restore()}
-seg(-27,8,34,10,0);seg(-57,10,30,8,.04);seg(-83,10,24,6,-.05);
-// body
-cx.fillStyle=body;cx.beginPath();cx.ellipse(-1,5,39,24,0,0,Math.PI*2);cx.fill();cx.fillStyle=d.style==="ice"?"#e9fcff":d.style==="fire"?"#ffd08a":d.style==="forest"?"#d7efae":d.style==="shadow"?"#bca1cf":d.style==="gold"?"#fff0b5":d.style==="void"?"#30264a":"#d9efaa";cx.beginPath();cx.ellipse(7,11,22,13,0,0,Math.PI*2);cx.fill();
-// wings
-function wng(side){cx.save();cx.translate(-10,-10);cx.scale(side,1);cx.fillStyle=wingCol;cx.beginPath();cx.moveTo(0,4);cx.quadraticCurveTo(2,-30,18,-42);cx.quadraticCurveTo(34,-48,48,-35);cx.quadraticCurveTo(41,-22,47,-12);cx.quadraticCurveTo(30,-14,27,1);cx.quadraticCurveTo(12,10,0,4);cx.closePath();cx.fill();cx.strokeStyle=acc;cx.lineWidth=1.7;cx.beginPath();cx.moveTo(3,2);cx.lineTo(19,-34);cx.moveTo(8,4);cx.lineTo(35,-27);cx.moveTo(14,5);cx.lineTo(44,-13);cx.stroke();cx.restore()}wng(-1);wng(1);
-// feet
-cx.strokeStyle=body;cx.lineWidth=7;cx.beginPath();cx.moveTo(-11,15);cx.lineTo(-14,28);cx.moveTo(8,15);cx.lineTo(13,28);cx.moveTo(18,14);cx.lineTo(21,25);cx.stroke();cx.fillStyle=acc;cx.beginPath();cx.ellipse(-14,29,8,5,0,0,Math.PI*2);cx.ellipse(13,29,8,5,0,0,Math.PI*2);cx.fill();
-// neck/head
-cx.fillStyle=body;cx.beginPath();cx.ellipse(17,-4,23,19,0,0,Math.PI*2);cx.fill();cx.beginPath();cx.ellipse(38,1,25,20,.02,0,Math.PI*2);cx.fill();cx.beginPath();cx.ellipse(56,7,13,10,0,0,Math.PI*2);cx.fill();
-// horns
-cx.fillStyle=acc;cx.beginPath();if(d.style==="fire"){cx.moveTo(26,-14);cx.quadraticCurveTo(18,-35,31,-28);cx.lineTo(37,-14);cx.closePath();cx.moveTo(46,-15);cx.quadraticCurveTo(49,-37,57,-24);cx.lineTo(56,-14);cx.closePath()}else{cx.moveTo(27,-14);cx.lineTo(24,-34);cx.lineTo(35,-21);cx.closePath();cx.moveTo(46,-14);cx.lineTo(52,-34);cx.lineTo(57,-15);cx.closePath()}cx.fill();
-// eye and smile
-cx.fillStyle=eye;cx.beginPath();cx.ellipse(48,-2,7,8,0,0,Math.PI*2);cx.fill();cx.fillStyle="#171222";cx.beginPath();cx.ellipse(49,-1,2.7,5,0,0,Math.PI*2);cx.fill();cx.fillStyle="#fff";cx.beginPath();cx.arc(51,-4,1.7,0,Math.PI*2);cx.fill();cx.fillStyle="#21182b";cx.beginPath();cx.arc(67,7,1.7,0,Math.PI*2);cx.fill();cx.strokeStyle="#24182d";cx.lineWidth=2;cx.beginPath();cx.moveTo(58,11);cx.quadraticCurveTo(63,15,69,10);cx.stroke();
-// style-specific decorations
-if(d.style==="fire"){cx.fillStyle="#ff8b2f";for(var i=0;i<3;i++){cx.beginPath();cx.arc(9+i*9,9,3,0,Math.PI*2);cx.fill()}}
-if(d.style==="ice"){cx.fillStyle="#b9f5ff";for(var i2=0;i2<3;i2++){cx.beginPath();cx.moveTo(7+i2*9,10);cx.lineTo(11+i2*9,7);cx.lineTo(13+i2*9,12);cx.closePath();cx.fill()}}
-if(d.style==="forest"){cx.fillStyle="#9bd85e";for(var i3=0;i3<3;i3++){cx.beginPath();cx.arc(8+i3*9,10,3,0,Math.PI*2);cx.fill()}}
-if(d.style==="shadow"){cx.fillStyle="#9b55ff";cx.beginPath();cx.arc(18,10,3,0,Math.PI*2);cx.arc(29,9,2.5,0,Math.PI*2);cx.fill()}
-if(d.style==="gold"){cx.fillStyle="#fff3a8";cx.beginPath();cx.arc(18,10,3,0,Math.PI*2);cx.arc(29,9,2.5,0,Math.PI*2);cx.fill()}
-if(d.exclusive){cx.strokeStyle="#b05cff";cx.globalAlpha=.45;cx.lineWidth=3;cx.beginPath();cx.arc(20,0,63,0,Math.PI*2);cx.stroke();cx.globalAlpha=1}
-cx.restore();
+if(!canvas)return;var cx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;
+cx.clearRect(0,0,w,h);cx.fillStyle="rgba(7,10,24,.96)";cx.fillRect(0,0,w,h);
+cx.save();cx.translate(w*.44,h*.55);cx.scale(scale||1,scale||1);cx.lineJoin="round";cx.lineCap="round";
+var body=(c&&c.body)||d.body,wingCol=(c&&c.wing)||d.wing,eye=d.eye||"#ffd36a",acc=d.accent||"#b9c9ff";
+cx.shadowBlur=14;cx.shadowColor=wingCol;cx.fillStyle=body;cx.beginPath();cx.moveTo(-17,8);cx.quadraticCurveTo(-38,9,-52,23);cx.quadraticCurveTo(-39,18,-29,5);cx.quadraticCurveTo(-20,-1,-10,2);cx.closePath();cx.fill();
+cx.shadowBlur=0;cx.fillStyle=acc;cx.beginPath();cx.moveTo(-18,-7);cx.lineTo(-25,-23);cx.lineTo(-9,-14);cx.lineTo(-5,-30);cx.lineTo(6,-14);cx.lineTo(14,-27);cx.lineTo(19,-8);cx.closePath();cx.fill();
+cx.shadowBlur=12;cx.shadowColor=wingCol;cx.fillStyle=wingCol;cx.beginPath();cx.moveTo(-5,2);cx.lineTo(-4,-35);cx.lineTo(12,-24);cx.lineTo(28,-39);cx.lineTo(23,-8);cx.lineTo(9,8);cx.closePath();cx.fill();
+cx.shadowBlur=0;cx.fillStyle=body;cx.beginPath();cx.ellipse(0,7,25,17,0,0,Math.PI*2);cx.fill();
+cx.fillStyle=d.style==="ice"?"#e4fbff":d.style==="fire"?"#ffc06b":d.style==="forest"?"#c9e79d":d.style==="shadow"?"#a887bf":d.style==="gold"?"#ffeab0":d.style==="void"?"#27243a":"#ffe3c5";cx.beginPath();cx.ellipse(5,11,14,9,0,0,Math.PI*2);cx.fill();
+cx.fillStyle=body;cx.beginPath();cx.ellipse(22,-4,19,16,.03,0,Math.PI*2);cx.fill();cx.beginPath();cx.ellipse(36,2,11,8,.03,0,Math.PI*2);cx.fill();
+cx.fillStyle=acc;cx.beginPath();cx.moveTo(12,-13);cx.lineTo(9,-32);cx.lineTo(19,-18);cx.closePath();cx.fill();cx.beginPath();cx.moveTo(25,-14);cx.lineTo(29,-34);cx.lineTo(34,-10);cx.closePath();cx.fill();
+cx.fillStyle=eye;cx.beginPath();cx.ellipse(27,-6,6.5,7.5,0,0,Math.PI*2);cx.fill();cx.fillStyle="#11101c";cx.beginPath();cx.ellipse(28,-5,2.7,4.5,0,0,Math.PI*2);cx.fill();
+cx.fillStyle="#fff";cx.beginPath();cx.arc(30,-7,1.5,0,Math.PI*2);cx.fill();cx.fillStyle="#17152a";cx.beginPath();cx.arc(42,1,1.5,0,Math.PI*2);cx.fill();
+cx.strokeStyle="#21182b";cx.lineWidth=1.8;cx.beginPath();cx.moveTo(38,6);cx.quadraticCurveTo(42,9,46,6);cx.stroke();
+cx.strokeStyle=body;cx.lineWidth=7;cx.beginPath();cx.moveTo(9,13);cx.quadraticCurveTo(13,22,19,18);cx.moveTo(0,15);cx.quadraticCurveTo(2,24,8,19);cx.stroke();cx.restore();
 }
 function renderPreviewCards(){var els=document.querySelectorAll("[data-preview-dragon]");for(var i=0;i<els.length;i++){var d=dragons.find(function(x){return x.id===els[i].getAttribute("data-preview-dragon")});if(d)drawPreviewCanvas(els[i],d,{body:d.body,wing:d.wing,id:"ocean"},d.scale||.68);}}
 function render(){
@@ -423,7 +406,7 @@ for(var n=0;n<maps.length;n++){var m=maps[n],mo=ownedMaps.has(m.id),ms=selectedM
 for(var cd=0;cd<dragons.length;cd++){var dd=dragons[cd];if(owned.has(dd.id))customD+='<div class="card '+(selectedDragon===dd.id?"selected":"")+'"><div class="thumb"><canvas class="previewCanvas" width="180" height="78" data-preview-dragon="'+dd.id+'"></canvas></div><b>'+dd.name+'</b><button type="button" data-action="custom-dragon" data-id="'+dd.id+'">'+(selectedDragon===dd.id?"Selected":"Use")+'</button></div>';}
 for(var cc=0;cc<colors.length;cc++){var coo=colors[cc];if(ownedColors.has(coo.id))customC+='<button type="button" class="swatch '+(selectedColor===coo.id?"selected":"")+'" data-action="custom-color" data-id="'+coo.id+'"><div class="swatchPreview" style="background:linear-gradient(135deg,'+coo.body+','+coo.wing+')"></div><span>'+coo.name+'</span></button>';}
 document.getElementById("shopCards").innerHTML=sc;document.getElementById("shopSwatches").innerHTML=sw;document.getElementById("shopMapsList").innerHTML=ml;document.getElementById("dragonCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("mapsList").innerHTML=ml;document.getElementById("customDragonCards").innerHTML=customD;document.getElementById("customColorSwatches").innerHTML=customC;document.getElementById("shopCoins").textContent=String(coins);
-var current=document.getElementById("customCurrent"),pc=document.getElementById("customPreviewCanvas"),hp=document.getElementById("homePreviewCanvas");if(current)current.textContent=getDragon().name+" · "+getColor().name;if(pc)drawPreviewCanvas(pc,getDragon(),getColor(),1.35);if(hp)drawPreviewCanvas(hp,getDragon(),getColor(),2.15);renderPreviewCards();
+var current=document.getElementById("customCurrent"),pc=document.getElementById("customPreviewCanvas");if(current)current.textContent=getDragon().name+" · "+getColor().name;if(pc)drawPreviewCanvas(pc,getDragon(),getColor(),1.35);renderPreviewCards();
 }
 function setShopTab(tab){var tabs=document.querySelectorAll(".shopTab"),panels=document.querySelectorAll(".shopPanel");for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-shop-tab")===tab);for(var j=0;j<panels.length;j++)panels[j].classList.toggle("active",panels[j].id==="shopPanel"+tab.charAt(0).toUpperCase()+tab.slice(1));}
 
