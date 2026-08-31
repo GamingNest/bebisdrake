@@ -156,7 +156,7 @@ return{x:x,top:min+Math.random()*(max-min),gap:gap,passed:false};
 
 function makeCoinAt(x,y){
 var ground=H-85;
-var safeY=Math.max(70,Math.min(ground-70,y));
+var safeY=Math.max(85,Math.min(ground-85,y));
 return{
 x:x,
 y:safeY,
@@ -167,42 +167,78 @@ bob:Math.random()*Math.PI*2
 };
 }
 
-function gateCenterY(gate){
-return gate.top+(gate.gap*0.5);
+function gateSafeY(gate){
+/* Stay well inside the opening, never near a pillar edge. */
+var margin=55;
+var low=gate.top+margin;
+var high=gate.top+gate.gap-margin;
+return(low+high)*0.5;
 }
 
 function makeCoinInGate(gate){
-/* Coin is placed in the middle third of the opening,
-   well away from both pillar edges. */
-var center=gateCenterY(gate);
-var offset=(Math.random()-0.5)*Math.min(35,gate.gap*0.12);
-return makeCoinAt(gate.x+38,center+offset);
+return makeCoinAt(gate.x+38,gateSafeY(gate));
 }
 
 function makeCoinBetween(gateA,gateB){
-/* Place the coin halfway between pillars, using the
-   midpoint of their two openings and keeping it reachable. */
-var x=(gateA.x+76+gateB.x)*0.5;
-var y=(gateCenterY(gateA)+gateCenterY(gateB))*0.5;
-var minY=Math.max(gateA.top+48,gateB.top+48,80);
-var maxY=Math.min(
-gateA.top+gateA.gap-48,
-gateB.top+gateB.gap-48,
-H-85-70
+/* The coin is placed only if there is real open space between
+   the two pillars. Use the overlap of their safe vertical ranges. */
+var x=gateA.x+76+(gateB.x-(gateA.x+76))*0.5;
+var margin=55;
+
+var low=Math.max(gateA.top+margin,gateB.top+margin,85);
+var high=Math.min(
+gateA.top+gateA.gap-margin,
+gateB.top+gateB.gap-margin,
+H-85-margin
 );
-if(maxY<minY)y=(gateCenterY(gateA)+gateCenterY(gateB))*0.5;
-else y=Math.max(minY,Math.min(maxY,y));
-return makeCoinAt(x,y);
+
+if(high<low){
+/* If the openings do not overlap, use the current gate's
+   center because the coin is still reached while crossing
+   the open space before the next gate. */
+return makeCoinAt(x,gateSafeY(gateA));
+}
+
+return makeCoinAt(x,(low+high)*0.5);
+}
+
+function rebuildCoins(){
+/* Keep a rolling supply of coins for the entire run.
+   Never clear all coins just because a gate was recycled. */
+var wanted=[];
+for(var i=0;i<gates.length;i++){
+wanted.push(makeCoinInGate(gates[i]));
+if(i<gates.length-1){
+wanted.push(makeCoinBetween(gates[i],gates[i+1]));
+}
+}
+
+for(var j=0;j<wanted.length;j++){
+var w=wanted[j];
+var duplicate=false;
+for(var k=0;k<coinItems.length;k++){
+var old=coinItems[k];
+if(!old.collected && Math.abs(old.x-w.x)<45){
+duplicate=true;
+break;
+}
+}
+if(!duplicate)coinItems.push(w);
+}
+
+/* Remove only coins that are far behind the player. */
+for(var r=coinItems.length-1;r>=0;r--){
+if(coinItems[r].x<dragon.x-180){
+coinItems.splice(r,1);
+}
+}
 }
 function resetGame(){
 score=0;scroll=0;wing=0;
 dragon.x=W*.28;dragon.y=H*.42;dragon.vy=0;dragon.rot=0;
 gates=[makeGate(W+100),makeGate(W+100+Math.max(285,W*.55))];
-coinItems=[
-makeCoinInGate(gates[0]),
-makeCoinBetween(gates[0],gates[1]),
-makeCoinInGate(gates[1])
-];
+coinItems=[];
+rebuildCoins();
 scoreEl.textContent="0";
 coinsEl.textContent=String(coins);
 }
@@ -489,6 +525,9 @@ if(mode!=="playing"||paused)return;
 dragon.vy+=1450*dt;dragon.y+=dragon.vy*dt;scroll+=210*dt;wing=Math.max(0,wing-dt*3);
 var speed=205+Math.min(140,score*5);
 
+/* Continuously ensure the current and upcoming gates have reachable coins. */
+rebuildCoins();
+
 for(var i=0;i<gates.length;i++){
 var p=gates[i];p.x-=speed*dt;
 if(!p.passed&&p.x+76<dragon.x){
@@ -514,16 +553,7 @@ toast("+1 🪙");
 if(gates[0].x<-100){
 gates.shift();
 gates.push(makeGate(gates[gates.length-1].x+Math.max(285,W*.55)));
-
-/* Rebuild coins from the current gates:
-   one mandatory coin in every opening and one safe coin
-   in the open space between consecutive gates. */
-coinItems=[];
-for(var gi=0;gi<gates.length;gi++){
-coinItems.push(makeCoinInGate(gates[gi]));
-if(gi<gates.length-1){
-coinItems.push(makeCoinBetween(gates[gi],gates[gi+1]));
-}
+rebuildCoins();
 }
 }
 
