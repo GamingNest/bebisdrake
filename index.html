@@ -31,6 +31,14 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 .customPreview{margin:8px 0 12px;border-radius:16px;border:1px solid #a56cff55;background:linear-gradient(135deg,#111832,#0a0d20);padding:4px;text-align:center}.customPreview canvas{width:100%;height:150px;display:block}.customCurrent{font-size:11px;font-weight:950;padding:5px;color:#d9def3}.customSectionTitle{font-size:11px;font-weight:950;margin:10px 0 6px;color:#cbd3eb}.previewCanvas{width:100%;height:100%;display:block}.thumb{overflow:hidden}.swatchPreview{height:42px;border-radius:10px}.mapPreview{height:70px;border-radius:11px;margin-bottom:6px;position:relative;overflow:hidden}.mapPreview:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 70% 25%,rgba(255,255,255,.25),transparent 25%),linear-gradient(155deg,transparent 45%,rgba(0,0,0,.2) 46%,transparent 65%)}.locked{opacity:.72}.priceTag{display:inline-block;margin-top:3px;padding:2px 6px;border-radius:7px;background:#151e3a;color:#ffd75a;font-size:8px;font-weight:950}.shopTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0 12px;position:sticky;top:0;z-index:2;background:#111736;padding:5px;border-radius:15px;border:1px solid #ffffff12}.shopTab{min-height:58px;border-radius:11px;background:#10182f;border:1px solid #ffffff12;font-size:10px;font-weight:900}.shopTab.active{background:linear-gradient(135deg,#6f4cff,#3b8cff);border-color:#a56cff}.shopTab span{display:block;margin-top:3px;font-size:9px}.shopPanel{display:none}.shopPanel.active{display:block}.shopPanel .sub{margin-bottom:8px}.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:55px;border-radius:13px;border:2px solid #ffffff18;position:relative}.swatch.selected{border-color:#fff;box-shadow:0 0 15px #fff4}.swatch span{position:absolute;bottom:3px;left:0;right:0;font-size:8px;font-weight:950;text-shadow:0 1px 4px #000}
 .map{width:100%;height:62px;margin:4px 0;border-radius:13px;text-align:left;padding:9px 12px;border:1px solid #ffffff22}.map.selected{border-color:#a56cff}.map b{display:block;font-size:12px}.map small{color:#c6cee5;font-size:9px}
 #toast{position:fixed;z-index:30;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);opacity:0;transition:.18s;background:#111832ee;border:1px solid #7d6cff55;padding:9px 13px;border-radius:12px;font-size:11px;font-weight:900;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,0)!important}
+
+/* Purchase confirmation */
+#confirmOverlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:#02030ccc;backdrop-filter:blur(7px)}
+#confirmOverlay.showConfirm{display:flex}
+.confirmBox{width:min(360px,92vw);padding:22px 18px 18px;border-radius:22px;border:1px solid #9365ff66;background:linear-gradient(160deg,#151b3cf8,#080b19f8);box-shadow:0 30px 90px #000d;text-align:center}
+.confirmIcon{font-size:42px;margin-bottom:6px}.confirmTitle{font-size:20px;font-weight:950;margin-bottom:8px}.confirmText{color:#cbd3eb;font-size:12px;line-height:1.45;margin-bottom:17px}
+.confirmButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.confirmButtons button{padding:12px;border-radius:12px;font-size:12px;font-weight:950}
+.confirmCancel{background:#151d39;border:1px solid #ffffff18}.confirmBuy{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
 </style>
 </head>
 <body>
@@ -82,6 +90,19 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <section id="maps" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Maps</div><div id="mapsList"></div></section>
 </div>
 </div>
+
+<div id="confirmOverlay">
+  <div class="confirmBox">
+    <div class="confirmIcon">🛒</div>
+    <div class="confirmTitle">Confirm Purchase</div>
+    <div class="confirmText" id="confirmText">Are you sure you want to buy this item?</div>
+    <div class="confirmButtons">
+      <button type="button" class="confirmCancel" id="confirmCancel">Cancel</button>
+      <button type="button" class="confirmBuy" id="confirmBuy">Buy</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -93,10 +114,15 @@ var overlay=document.getElementById("overlay"),play=document.getElementById("pla
 var pause=document.getElementById("pause"),scoreEl=document.getElementById("score");
 var bestEl=document.getElementById("best"),coinsEl=document.getElementById("coins");
 var toastEl=document.getElementById("toast");
+var confirmOverlay=document.getElementById("confirmOverlay");
+var confirmText=document.getElementById("confirmText");
+var confirmBuy=document.getElementById("confirmBuy");
+var confirmCancel=document.getElementById("confirmCancel");
 
 var W=0,H=0,dpr=1,last=0,mode="menu",paused=false,score=0,scroll=0,wing=0,lastInput=0;
 var best=Number(localStorage.getItem("gn_best")||0);
-var coins=Number(localStorage.getItem("gn_coins")||0);
+/* Personal build: starts with 2,000,000 coins when no saved balance exists. */
+var coins=Number(localStorage.getItem("gn_coins")||2000000);
 var muted=localStorage.getItem("gn_muted")==="1";
 var selectedDragon=localStorage.getItem("gn_dragon")||"baby";
 var selectedColor=localStorage.getItem("gn_color")||"ocean";
@@ -151,6 +177,7 @@ var maps=[
 ];
 
 var dragon={x:0,y:0,vy:0,rot:0},gates=[],coinItems=[];
+var pendingPurchase=null;
 var audioCtx=null;
 function ensureAudio(){
 if(muted)return null;
@@ -174,7 +201,6 @@ function sfxGate(){tone(520,.07,"square",.018,-100)}
 function sfxDie(){tone(240,.22,"sawtooth",.045,-170)}
 function sfxClick(){tone(300,.045,"sine",.018,80)}
 function sfxUnlock(){tone(520,.08,"triangle",.035,180);setTimeout(function(){tone(780,.12,"triangle",.04,220)},70)}
-
 
 function save(){
 localStorage.setItem("gn_best",String(best));
@@ -206,15 +232,11 @@ function makeGate(x){
 var gap=190,ground=H-85,min=58,max=Math.max(min+1,ground-gap-58);
 return{x:x,top:min+Math.random()*(max-min),gap:gap,passed:false};
 }
-
-/* Coins are deliberately placed on the flyable route, not at random Y values. */
 function makeCoin(x,y){
 var ground=H-85;
 return{x:x,y:Math.max(85,Math.min(ground-85,y)),r:15,collected:false,spin:Math.random()*6.28,bob:Math.random()*6.28};
 }
-function gateCoin(g){
-return makeCoin(g.x+38,g.top+g.gap/2);
-}
+function gateCoin(g){return makeCoin(g.x+38,g.top+g.gap/2)}
 function betweenCoin(a,b){
 var x=a.x+76+(b.x-(a.x+76))*0.5;
 var y=(a.top+a.gap/2+b.top+b.gap/2)*0.5;
@@ -230,7 +252,6 @@ coinItems.push(gateCoin(gates[i]));
 if(i<gates.length-1)coinItems.push(betweenCoin(gates[i],gates[i+1]));
 }
 }
-
 function resetGame(){
 score=0;scroll=0;wing=0;
 dragon.x=W*.28;dragon.y=H*.42;dragon.vy=0;dragon.rot=0;
@@ -238,7 +259,6 @@ gates=[makeGate(W+100),makeGate(W+100+Math.max(285,W*.55))];
 addCoinsForCurrentGates();
 scoreEl.textContent="0";coinsEl.textContent=String(coins);
 }
-
 function startGame(){resetGame();mode="playing";paused=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");flap()}
 function flap(){
 if(mode==="playing"){if(paused)return;dragon.vy=-455;wing=1;sfxFlap()}
@@ -251,7 +271,6 @@ coins+=score*2;save();
 document.getElementById("status").innerHTML="Score <b>"+score+"</b> · Best <b>"+best+"</b> · Level <b>"+getPlayerLevel()+"</b><br>🪙 <b>"+coins+"</b> coins · GamingNest";
 play.textContent="▶ PLAY AGAIN";overlay.classList.remove("hidden");show("home");
 }
-
 function drawBackground(){
 var m=getMap(),g=ctx.createLinearGradient(0,0,0,H);
 g.addColorStop(0,m.a);g.addColorStop(1,m.b);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -278,8 +297,8 @@ ctx.fillStyle="#8b5b00";ctx.font="900 16px Arial";ctx.textAlign="center";ctx.tex
 function drawDragon(){
 var d=getDragon(),c=getColor(),x=dragon.x,y=dragon.y,style=d.style,flapY=Math.sin(wing*Math.PI)*7;
 var scale=d.scale||.68;
-var bodyColor=d.body,wingColor=d.wing,eyeColor=d.eye,accentColor=d.accent;
-if(style==="void"){bodyColor="#10111b";wingColor="#6b35d6";eyeColor="#d78cff";accentColor="#d6a64a";}
+var bodyColor=c.body,wingColor=c.wing,eyeColor=d.eye,accentColor=d.accent;
+if(style==="void"&&selectedColor==="ocean"){bodyColor="#10111b";wingColor="#6b35d6";eyeColor="#d78cff";accentColor="#d6a64a";}
 ctx.save();ctx.translate(x,y);ctx.rotate(Math.max(-.45,Math.min(.8,dragon.vy/850)));ctx.scale(scale,scale);ctx.lineJoin="round";ctx.lineCap="round";
 ctx.shadowBlur=18;ctx.shadowColor=wingColor;
 ctx.fillStyle=bodyColor;ctx.beginPath();ctx.moveTo(-17,8);ctx.quadraticCurveTo(-38,9,-52,23);ctx.quadraticCurveTo(-39,18,-29,5);ctx.quadraticCurveTo(-20,-1,-10,2);ctx.closePath();ctx.fill();
@@ -303,7 +322,6 @@ ctx.shadowBlur=22;ctx.shadowColor="#8b4dff";ctx.fillStyle="#8b4dff";ctx.beginPat
 ctx.strokeStyle=bodyColor;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(9,13);ctx.quadraticCurveTo(13,22,19,18);ctx.moveTo(0,15);ctx.quadraticCurveTo(2,24,8,19);ctx.stroke();
 ctx.restore();
 }
-
 function update(dt){
 if(mode!=="playing"||paused)return;
 dragon.vy+=1450*dt;dragon.y+=dragon.vy*dt;scroll+=210*dt;wing=Math.max(0,wing-dt*3);
@@ -326,7 +344,7 @@ if(!canvas)return;var cx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;
 cx.clearRect(0,0,w,h);cx.fillStyle="rgba(7,10,24,.96)";cx.fillRect(0,0,w,h);
 cx.save();cx.translate(w*.44,h*.55);cx.scale(scale||1,scale||1);cx.lineJoin="round";cx.lineCap="round";
 var body=(c&&c.body)||d.body,wingCol=(c&&c.wing)||d.wing,eye=d.eye||"#ffd36a",acc=d.accent||"#b9c9ff";
-if(d.style==="void"){body=(c&&c.body)||"#10111b";wingCol=(c&&c.wing)||"#6b35d6";eye="#d78cff";acc="#d6a64a";}
+if(d.style==="void"&&(!c||c.id==="ocean")){body="#10111b";wingCol="#6b35d6";eye="#d78cff";acc="#d6a64a";}
 cx.shadowBlur=14;cx.shadowColor=wingCol;cx.fillStyle=body;cx.beginPath();cx.moveTo(-17,8);cx.quadraticCurveTo(-38,9,-52,23);cx.quadraticCurveTo(-39,18,-29,5);cx.quadraticCurveTo(-20,-1,-10,2);cx.closePath();cx.fill();
 cx.shadowBlur=0;cx.fillStyle=acc;cx.beginPath();cx.moveTo(-18,-7);cx.lineTo(-25,-23);cx.lineTo(-9,-14);cx.lineTo(-5,-30);cx.lineTo(6,-14);cx.lineTo(14,-27);cx.lineTo(19,-8);cx.closePath();cx.fill();
 cx.shadowBlur=12;cx.shadowColor=wingCol;cx.fillStyle=wingCol;cx.beginPath();cx.moveTo(-5,2);cx.lineTo(-4,-35);cx.lineTo(12,-24);cx.lineTo(28,-39);cx.lineTo(23,-8);cx.lineTo(9,8);cx.closePath();cx.fill();
@@ -339,7 +357,7 @@ cx.fillStyle="#fff";cx.beginPath();cx.arc(30,-7,1.5,0,Math.PI*2);cx.fill();cx.fi
 cx.strokeStyle="#21182b";cx.lineWidth=1.8;cx.beginPath();cx.moveTo(38,6);cx.quadraticCurveTo(42,9,46,6);cx.stroke();
 cx.strokeStyle=body;cx.lineWidth=7;cx.beginPath();cx.moveTo(9,13);cx.quadraticCurveTo(13,22,19,18);cx.moveTo(0,15);cx.quadraticCurveTo(2,24,8,19);cx.stroke();cx.restore();
 }
-function renderPreviewCards(){var els=document.querySelectorAll("[data-preview-dragon]");for(var i=0;i<els.length;i++){var d=dragons.find(function(x){return x.id===els[i].getAttribute("data-preview-dragon")});if(d)drawPreviewCanvas(els[i],d,{body:d.body,wing:d.wing},d.scale||.68);}}
+function renderPreviewCards(){var els=document.querySelectorAll("[data-preview-dragon]");for(var i=0;i<els.length;i++){var d=dragons.find(function(x){return x.id===els[i].getAttribute("data-preview-dragon")});if(d)drawPreviewCanvas(els[i],d,{body:d.body,wing:d.wing,id:"ocean"},d.scale||.68);}}
 function render(){
 var sc="",sw="",ml="",customD="",customC="",level=getPlayerLevel();
 for(var j=1;j<dragons.length;j++){var q=dragons[j],oo=owned.has(q.id),can=q.exclusive?(coins>=50000||level>=100):(coins>=q.price),qlabel=q.exclusive?"50,000 coins OR Level 100":q.price+" coins",qaction=oo?"Select":(q.exclusive&&!can?"Locked":"Unlock");sc+='<div class="card '+(q.exclusive?"exclusive ":"")+(!oo&&!can?"locked":"")+'"><div class="thumb"><canvas class="previewCanvas" width="180" height="78" data-preview-dragon="'+q.id+'"></canvas></div><b>'+q.name+'</b><small>'+qlabel+'</small><button type="button" data-action="dragon" data-id="'+q.id+'" class="'+((!oo&&can)?"buy":"")+'">'+qaction+'</button></div>';}
@@ -351,94 +369,90 @@ document.getElementById("shopCards").innerHTML=sc;document.getElementById("shopS
 var current=document.getElementById("customCurrent"),pc=document.getElementById("customPreviewCanvas");if(current)current.textContent=getDragon().name+" · "+getColor().name;if(pc)drawPreviewCanvas(pc,getDragon(),getColor(),1.35);renderPreviewCards();
 }
 function setShopTab(tab){var tabs=document.querySelectorAll(".shopTab"),panels=document.querySelectorAll(".shopPanel");for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-shop-tab")===tab);for(var j=0;j<panels.length;j++)panels[j].classList.toggle("active",panels[j].id==="shopPanel"+tab.charAt(0).toUpperCase()+tab.slice(1));}
+
+function askPurchase(type,id,name,price){
+pendingPurchase={type:type,id:id,name:name,price:price};
+confirmText.innerHTML='Are you sure you want to buy <b>'+name+'</b> for <b>'+price.toLocaleString()+" coins</b>?";
+confirmOverlay.classList.add("showConfirm");
+}
+function closePurchase(){
+pendingPurchase=null;
+confirmOverlay.classList.remove("showConfirm");
+}
+function completePurchase(){
+if(!pendingPurchase)return;
+var p=pendingPurchase;
+closePurchase();
+
+if(p.type==="dragon"){
+var d=dragons.find(function(x){return x.id===p.id});if(!d)return;
+var level=getPlayerLevel();
+if(owned.has(p.id)){selectedDragon=p.id;save();render();sfxClick();toast(d.name+" selected");return;}
+if(d.exclusive){
+if(coins<50000&&level<100){toast("Need 50,000 coins or Level 100");return;}
+if(coins>=50000)coins-=50000;
+owned.add(p.id);selectedDragon=p.id;save();render();sfxUnlock();toast("Voidwatcher unlocked!");return;
+}
+if(coins<d.price){toast("Not enough coins");return;}
+coins-=d.price;owned.add(p.id);selectedDragon=p.id;save();render();sfxUnlock();toast(d.name+" unlocked!");return;
+}
+if(p.type==="color"){
+var col=colors.find(function(x){return x.id===p.id});if(!col)return;
+if(ownedColors.has(p.id)){selectedColor=p.id;save();render();sfxClick();toast(col.name+" selected");return;}
+if(coins<200){toast("Need 200 coins");return;}
+coins-=200;ownedColors.add(p.id);selectedColor=p.id;save();render();sfxUnlock();toast(col.name+" unlocked!");return;
+}
+if(p.type==="map"){
+var mp=maps.find(function(x){return x.id===p.id});if(!mp)return;
+if(ownedMaps.has(p.id)){selectedMap=p.id;save();render();sfxClick();toast(mp.name+" selected");return;}
+if(coins<300){toast("Need 300 coins");return;}
+coins-=300;ownedMaps.add(p.id);selectedMap=p.id;save();render();sfxUnlock();toast(mp.name+" unlocked!");return;
+}
+}
+
 document.addEventListener("click",function(e){
 var b=e.target.closest?e.target.closest("button"):null;
 if(!b)return;
-
 try{
-if(b.id==="play"){
-ensureAudio();sfxClick();
-e.preventDefault();
-e.stopPropagation();
-startGame();
-return;
-}
-
-if(b.id==="pause"){
-ensureAudio();sfxClick();
-e.preventDefault();
-e.stopPropagation();
-if(mode==="playing"){
-paused=!paused;
-pause.textContent=paused?"▶":"Ⅱ";
-toast(paused?"Paused":"Resumed");
-}
-return;
-}
-
-if(b.hasAttribute("data-screen")){
-var targetScreen=b.getAttribute("data-screen");
-show(targetScreen);
-render();
-if(targetScreen==="shop"){setShopTab(b.getAttribute("data-open-shop-tab")||"dragons");}
-return;
-}
-
-if(b.hasAttribute("data-shop-tab")){
-setShopTab(b.getAttribute("data-shop-tab"));
-sfxClick();
-return;
-}
-
-if(b.hasAttribute("data-home")){
-show("home");
-render();
-return;
-}
+if(b.id==="play"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();startGame();return;}
+if(b.id==="pause"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}return;}
+if(b.id==="confirmCancel"){e.preventDefault();e.stopPropagation();sfxClick();closePurchase();return;}
+if(b.id==="confirmBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();completePurchase();return;}
+if(b.hasAttribute("data-screen")){var targetScreen=b.getAttribute("data-screen");show(targetScreen);render();if(targetScreen==="shop")setShopTab(b.getAttribute("data-open-shop-tab")||"dragons");return;}
+if(b.hasAttribute("data-shop-tab")){setShopTab(b.getAttribute("data-shop-tab"));sfxClick();return;}
+if(b.hasAttribute("data-home")){show("home");render();return;}
 
 var action=b.getAttribute("data-action"),id=b.getAttribute("data-id");
-
 if(action==="dragon"){
-var d=null;for(var i=0;i<dragons.length;i++)if(dragons[i].id===id)d=dragons[i];if(!d)return;
+var d=dragons.find(function(x){return x.id===id});if(!d)return;
 if(owned.has(id)){selectedDragon=id;save();render();sfxClick();toast(d.name+" selected");return;}
 var level=getPlayerLevel();
-if(d.exclusive){if(coins<50000&&level<100){toast("Need 50,000 coins or Level 100");return;}if(coins>=50000)coins-=50000;owned.add(id);selectedDragon=id;save();render();sfxUnlock();toast("Voidwatcher unlocked!");return;}
-if(coins<d.price){toast("Not enough coins");return;}coins-=d.price;owned.add(id);selectedDragon=id;save();render();sfxUnlock();toast(d.name+" unlocked!");return;
+if(d.exclusive&&coins<50000&&level<100){toast("Need 50,000 coins or Level 100");return;}
+var dragonPrice=d.exclusive?"50,000":d.price.toLocaleString();
+askPurchase("dragon",id,d.name,d.exclusive?"50,000":d.price);
+return;
 }
 if(action==="color"){
-var col=null;for(var ci=0;ci<colors.length;ci++)if(colors[ci].id===id)col=colors[ci];if(!col)return;
+var col=colors.find(function(x){return x.id===id});if(!col)return;
 if(ownedColors.has(id)){selectedColor=id;save();render();sfxClick();toast(col.name+" selected");return;}
-if(coins<200){toast("Need 200 coins");return;}coins-=200;ownedColors.add(id);selectedColor=id;save();render();sfxUnlock();toast(col.name+" unlocked!");return;
+if(coins<200){toast("Need 200 coins");return;}
+askPurchase("color",id,col.name,200);return;
 }
 if(action==="map"){
-var mp=null;for(var mi=0;mi<maps.length;mi++)if(maps[mi].id===id)mp=maps[mi];if(!mp)return;
+var mp=maps.find(function(x){return x.id===id});if(!mp)return;
 if(ownedMaps.has(id)){selectedMap=id;save();render();sfxClick();toast(mp.name+" selected");return;}
-if(coins<300){toast("Need 300 coins");return;}coins-=300;ownedMaps.add(id);selectedMap=id;save();render();sfxUnlock();toast(mp.name+" unlocked!");return;
+if(coins<300){toast("Need 300 coins");return;}
+askPurchase("map",id,mp.name,300);return;
 }
-if(action==="custom-dragon"){if(owned.has(id)){selectedDragon=id;save();render();sfxClick();toast("Dragon selected");}return;}
-if(action==="custom-color"){if(ownedColors.has(id)){selectedColor=id;save();render();sfxClick();toast("Skin selected");}return;}
-}catch(err){
-console.error("Dragon Tap menu error:",err);
-toast("Menu error - reload the game");
-}
-});
-play.addEventListener("click",function(e){
-e.preventDefault();
-e.stopPropagation();
-startGame();
+if(action==="custom-dragon"){if(owned.has(id)){selectedDragon=id;save();render();sfxClick();toast("Dragon selected")}return;}
+if(action==="custom-color"){if(ownedColors.has(id)){selectedColor=id;save();render();sfxClick();toast("Skin selected")}return;}
+}catch(err){console.error("Dragon Tap menu error:",err);toast("Menu error - reload the game");}
 });
 
-pause.addEventListener("click",function(e){
-e.preventDefault();
-e.stopPropagation();
-if(mode==="playing"){
-paused=!paused;
-pause.textContent=paused?"▶":"Ⅱ";
-toast(paused?"Paused":"Resumed");
-}
-});
+play.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();startGame()});
+pause.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}});
 
-document.getElementById("sound").addEventListener("click",function(){muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound";if(!muted){ensureAudio();sfxClick();}});
+document.getElementById("sound").addEventListener("click",function(){muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound";if(!muted){ensureAudio();sfxClick()}});
 document.getElementById("reset").addEventListener("click",function(){localStorage.clear();location.reload()});
 function input(e){if(e)e.preventDefault();var now=Date.now();if(now-lastInput<100)return;lastInput=now;flap()}
 canvas.addEventListener("pointerdown",input,{passive:false});
