@@ -28,7 +28,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 .menu{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.menu button{padding:10px 3px;border-radius:12px;background:#111832;border:1px solid #5e6eb044;font-size:10px;font-weight:900}.menu i{display:block;font-style:normal;font-size:19px;margin-bottom:2px}
 .screen{display:none}.screen.active{display:block}.back{float:left;width:34px;height:34px;border-radius:10px;background:#121936;border:1px solid #5e6eb044;font-size:22px}.title{text-align:center;font-size:21px;font-weight:950}.sub{text-align:center;color:#aab3d2;font-size:10px;margin:3px 0 10px}
 .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.card{background:#0d1530;border:1px solid #5363a044;border-radius:14px;padding:7px;text-align:center}.card.selected{border-color:#a56cff;box-shadow:0 0 18px #884cff22}.card.exclusive{border-color:#d8a83b88;background:linear-gradient(160deg,#171322,#0b0d1d)}.card.exclusive.selected{border-color:#ffd35a;box-shadow:0 0 20px #ffd35a33}.thumb{height:78px;border-radius:9px;display:flex;align-items:center;justify-content:center}.dragonArt{font-size:48px;filter:drop-shadow(0 0 10px #fff5)}.card b{display:block;font-size:11px;margin-top:5px}.card small{display:block;color:#9da8ca;font-size:9px;margin-top:2px}.card button{width:100%;padding:7px;margin-top:6px;border-radius:9px;background:#182043;font-size:10px;font-weight:900}.card button.buy{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
-.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:55px;border-radius:13px;border:2px solid #ffffff18;position:relative}.swatch.selected{border-color:#fff;box-shadow:0 0 15px #fff4}.swatch span{position:absolute;bottom:3px;left:0;right:0;font-size:8px;font-weight:950;text-shadow:0 1px 4px #000}
+.shopTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0 12px;position:sticky;top:0;z-index:2;background:#111736;padding:5px;border-radius:15px;border:1px solid #ffffff12}.shopTab{min-height:58px;border-radius:11px;background:#10182f;border:1px solid #ffffff12;font-size:10px;font-weight:900}.shopTab.active{background:linear-gradient(135deg,#6f4cff,#3b8cff);border-color:#a56cff}.shopTab span{display:block;margin-top:3px;font-size:9px}.shopPanel{display:none}.shopPanel.active{display:block}.shopPanel .sub{margin-bottom:8px}.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:55px;border-radius:13px;border:2px solid #ffffff18;position:relative}.swatch.selected{border-color:#fff;box-shadow:0 0 15px #fff4}.swatch span{position:absolute;bottom:3px;left:0;right:0;font-size:8px;font-weight:950;text-shadow:0 1px 4px #000}
 .map{width:100%;height:62px;margin:4px 0;border-radius:13px;text-align:left;padding:9px 12px;border:1px solid #ffffff22}.map.selected{border-color:#a56cff}.map b{display:block;font-size:12px}.map small{color:#c6cee5;font-size:9px}
 #toast{position:fixed;z-index:30;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);opacity:0;transition:.18s;background:#111832ee;border:1px solid #7d6cff55;padding:9px 13px;border-radius:12px;font-size:11px;font-weight:900;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,0)!important}
 </style>
@@ -51,15 +51,27 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <button class="primary" id="play" type="button">▶ PLAY</button>
 <div class="menu">
 <button type="button" data-screen="dragons"><i>🐲</i>Dragons</button>
-<button type="button" data-screen="colors"><i>🎨</i>Colors</button>
-<button type="button" data-screen="maps"><i>🗺️</i>Maps</button>
+<button type="button" data-screen="shop" data-open-shop-tab="colors"><i>🎨</i>Colors</button>
+<button type="button" data-screen="shop" data-open-shop-tab="maps"><i>🗺️</i>Maps</button>
 <button type="button" data-screen="shop"><i>🛒</i>Shop</button>
 <button type="button" id="sound"><i>🔊</i>Sound</button>
 <button type="button" id="reset"><i>↻</i>Reset</button>
 </div>
 </section>
 <section id="dragons" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Dragons</div><div class="sub" id="dragonLevelInfo">Your level: 1</div><div id="dragonCards" class="cards"></div></section>
-<section id="shop" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Dragon Shop</div><div class="sub">Balance: 🪙 <b id="shopCoins">0</b> · Pass a gate = +2 coins</div><div id="shopCards" class="cards"></div></section>
+<section id="shop" class="screen">
+<button class="back" type="button" data-home>‹</button>
+<div class="title">Shop</div>
+<div class="sub">Balance: 🪙 <b id="shopCoins">0</b></div>
+<div class="shopTabs">
+<button type="button" class="shopTab active" data-shop-tab="dragons">🐉<span>Dragons</span></button>
+<button type="button" class="shopTab" data-shop-tab="colors">🎨<span>Colors / Skins</span></button>
+<button type="button" class="shopTab" data-shop-tab="maps">🗺️<span>Maps</span></button>
+</div>
+<div id="shopPanelDragons" class="shopPanel active"><div class="sub">Unlock and select your dragons.</div><div id="shopCards" class="cards"></div></div>
+<div id="shopPanelColors" class="shopPanel"><div class="sub">Customize your dragon with different skins.</div><div id="shopSwatches" class="swatches"></div></div>
+<div id="shopPanelMaps" class="shopPanel"><div class="sub">Choose your atmosphere.</div><div id="shopMapsList"></div></div>
+</section>
 <section id="colors" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Colors</div><div class="sub">Eight distinct palettes.</div><div id="swatches" class="swatches"></div></section>
 <section id="maps" class="screen"><button class="back" type="button" data-home>‹</button><div class="title">Maps</div><div class="sub">Choose your atmosphere.</div><div id="mapsList"></div></section>
 </div>
@@ -103,16 +115,56 @@ var colors=[
 {id:"sunrise",name:"Sunrise",body:"#c66a22",wing:"#ffd25a"},
 {id:"frost",name:"Frost",body:"#75b9d5",wing:"#d8fbff"},
 {id:"midnight",name:"Midnight",body:"#20263a",wing:"#65738f"},
-{id:"royal",name:"Royal",body:"#5b3a9d",wing:"#f08cff"}
+{id:"royal",name:"Royal",body:"#5b3a9d",wing:"#f08cff"},
+{id:"crimson",name:"Crimson",body:"#8f1838",wing:"#ff3f6f"},
+{id:"toxic",name:"Toxic",body:"#35551d",wing:"#b6ff3b"},
+{id:"aqua",name:"Aqua",body:"#126f78",wing:"#35f0d0"},
+{id:"lava",name:"Lava",body:"#6e180f",wing:"#ffb000"},
+{id:"rose",name:"Rose",body:"#8f3d70",wing:"#ff9edb"},
+{id:"void",name:"Void",body:"#17131f",wing:"#9a55ff"},
+{id:"plasma",name:"Plasma",body:"#2549a3",wing:"#ff4dff"},
+{id:"obsidian",name:"Obsidian",body:"#161a21",wing:"#b5c0d0"}
 ];
 var maps=[
 {id:"sky",name:"Sky Kingdom",desc:"Bright skies & floating islands",a:"#78bfff",b:"#f5d3e6"},
 {id:"night",name:"Neon Night",desc:"Purple clouds & city lights",a:"#0a0c3a",b:"#6a2a9a"},
 {id:"sunset",name:"Dragon Sunset",desc:"Warm mountains & golden skies",a:"#ef754e",b:"#542d74"},
-{id:"ice",name:"Frozen Peaks",desc:"Cold air & crystal mountains",a:"#a9e7ff",b:"#6d7de0"}
+{id:"ice",name:"Frozen Peaks",desc:"Cold air & crystal mountains",a:"#a9e7ff",b:"#6d7de0"},
+{id:"volcano",name:"Volcanic Realm",desc:"Lava skies & burning peaks",a:"#401014",b:"#e04a18"},
+{id:"forest",name:"Mystic Forest",desc:"Ancient trees & emerald mist",a:"#123d2c",b:"#4c9a68"},
+{id:"crystal",name:"Crystal Caves",desc:"Glowing crystals & deep blue",a:"#15174d",b:"#3d8fd6"},
+{id:"storm",name:"Stormfront",desc:"Dark clouds & electric skies",a:"#151b2d",b:"#6877a8"},
+{id:"desert",name:"Golden Desert",desc:"Endless dunes & amber light",a:"#d08a35",b:"#f3d88a"},
+{id:"void",name:"The Void",desc:"Dark space & purple energy",a:"#05030e",b:"#3c1268"},
+{id:"cherry",name:"Cherry Blossom",desc:"Pink skies & drifting petals",a:"#d96c9d",b:"#f7c7d8"},
+{id:"aurora",name:"Aurora Realm",desc:"Frozen night beneath the aurora",a:"#071c39",b:"#36b6a3"}
 ];
 
 var dragon={x:0,y:0,vy:0,rot:0},gates=[],coinItems=[];
+var audioCtx=null;
+function ensureAudio(){
+if(muted)return null;
+try{
+if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+if(audioCtx.state==="suspended")audioCtx.resume();
+return audioCtx;
+}catch(e){return null}
+}
+function tone(freq,duration,type,volume,slide){
+var ac=ensureAudio();if(!ac)return;
+var o=ac.createOscillator(),g=ac.createGain(),now=ac.currentTime;
+o.type=type||"sine";o.frequency.setValueAtTime(freq,now);
+if(slide)o.frequency.linearRampToValueAtTime(Math.max(30,freq+slide),now+duration);
+g.gain.setValueAtTime(0.0001,now);g.gain.exponentialRampToValueAtTime(volume||0.05,now+0.008);g.gain.exponentialRampToValueAtTime(0.0001,now+duration);
+o.connect(g);g.connect(ac.destination);o.start(now);o.stop(now+duration+0.02);
+}
+function sfxFlap(){tone(430,.08,"triangle",.035,180)}
+function sfxCoin(){tone(760,.09,"sine",.05,300);setTimeout(function(){tone(1050,.10,"sine",.035,120)},45)}
+function sfxGate(){tone(520,.07,"square",.018,-100)}
+function sfxDie(){tone(240,.22,"sawtooth",.045,-170)}
+function sfxClick(){tone(300,.045,"sine",.018,80)}
+function sfxUnlock(){tone(520,.08,"triangle",.035,180);setTimeout(function(){tone(780,.12,"triangle",.04,220)},70)}
+
 
 function save(){
 localStorage.setItem("gn_best",String(best));
@@ -179,12 +231,12 @@ scoreEl.textContent="0";coinsEl.textContent=String(coins);
 
 function startGame(){resetGame();mode="playing";paused=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");flap()}
 function flap(){
-if(mode==="playing"){if(paused)return;dragon.vy=-455;wing=1}
+if(mode==="playing"){if(paused)return;dragon.vy=-455;wing=1;sfxFlap()}
 else if(mode==="menu"||mode==="dead")startGame();
 }
 function die(){
 if(mode!=="playing")return;
-mode="dead";if(score>best)best=score;
+mode="dead";sfxDie();if(score>best)best=score;
 coins+=score*2;save();
 document.getElementById("status").innerHTML="Score <b>"+score+"</b> · Best <b>"+best+"</b> · Level <b>"+getPlayerLevel()+"</b><br>🪙 <b>"+coins+"</b> coins · GamingNest";
 play.textContent="▶ PLAY AGAIN";overlay.classList.remove("hidden");show("home");
@@ -247,10 +299,10 @@ if(mode!=="playing"||paused)return;
 dragon.vy+=1450*dt;dragon.y+=dragon.vy*dt;scroll+=210*dt;wing=Math.max(0,wing-dt*3);
 var speed=205+Math.min(140,score*5);
 for(var i=0;i<gates.length;i++){var p=gates[i];p.x-=speed*dt;
-if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=2;scoreEl.textContent=String(score);coinsEl.textContent=String(coins);save()}}
+if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=2;scoreEl.textContent=String(score);sfxGate();coinsEl.textContent=String(coins);save()}}
 for(var c=0;c<coinItems.length;c++){var coin=coinItems[c];if(coin.collected)continue;
 coin.x-=speed*dt;var dx=dragon.x-coin.x,dy=dragon.y-coin.y;
-if(Math.sqrt(dx*dx+dy*dy)<38){coin.collected=true;coins++;coinsEl.textContent=String(coins);save();toast("+1 🪙")}}
+if(Math.sqrt(dx*dx+dy*dy)<38){coin.collected=true;coins++;sfxCoin();coinsEl.textContent=String(coins);save();toast("+1 🪙")}}
 if(gates[0].x<-100){gates.shift();gates.push(makeGate(gates[gates.length-1].x+Math.max(285,W*.55)));addCoinsForCurrentGates()}
 var hitScale=(getDragon().scale||.68);var ground=H-85;if(dragon.y-15*hitScale<0||dragon.y+15*hitScale>ground){die();return}
 for(var j=0;j<gates.length;j++){var q=gates[j];
@@ -278,15 +330,27 @@ sc+='<div class="card '+(q.exclusive?"exclusive":"")+'"><div class="thumb" style
 }
 for(var k=0;k<colors.length;k++){var col=colors[k];sw+='<button type="button" class="swatch '+(selectedColor===col.id?"selected":"")+'" data-action="color" data-id="'+col.id+'" style="background:linear-gradient(135deg,'+col.body+','+col.wing+')"><span>'+col.name+'</span></button>'}
 for(var n=0;n<maps.length;n++){var m=maps[n];ml+='<button type="button" class="map '+(selectedMap===m.id?"selected":"")+'" data-action="map" data-id="'+m.id+'" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><b>'+m.name+'</b><small>'+m.desc+'</small></button>'}
-document.getElementById("dragonCards").innerHTML=dc;document.getElementById("shopCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("mapsList").innerHTML=ml;document.getElementById("shopCoins").textContent=String(coins);
+document.getElementById("dragonCards").innerHTML=dc;
+document.getElementById("shopCards").innerHTML=sc;
+document.getElementById("swatches").innerHTML=sw;
+document.getElementById("mapsList").innerHTML=ml;
+document.getElementById("shopSwatches").innerHTML=sw;
+document.getElementById("shopMapsList").innerHTML=ml;
+document.getElementById("shopCoins").textContent=String(coins);
 }
 
+function setShopTab(tab){
+var tabs=document.querySelectorAll(".shopTab"),panels=document.querySelectorAll(".shopPanel");
+for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-shop-tab")===tab);
+for(var j=0;j<panels.length;j++)panels[j].classList.toggle("active",panels[j].id==="shopPanel"+tab.charAt(0).toUpperCase()+tab.slice(1));
+}
 document.addEventListener("click",function(e){
 var b=e.target.closest?e.target.closest("button"):null;
 if(!b)return;
 
 try{
 if(b.id==="play"){
+ensureAudio();sfxClick();
 e.preventDefault();
 e.stopPropagation();
 startGame();
@@ -294,6 +358,7 @@ return;
 }
 
 if(b.id==="pause"){
+ensureAudio();sfxClick();
 e.preventDefault();
 e.stopPropagation();
 if(mode==="playing"){
@@ -305,8 +370,16 @@ return;
 }
 
 if(b.hasAttribute("data-screen")){
-show(b.getAttribute("data-screen"));
+var targetScreen=b.getAttribute("data-screen");
+show(targetScreen);
 render();
+if(targetScreen==="shop"){setShopTab(b.getAttribute("data-open-shop-tab")||"dragons");}
+return;
+}
+
+if(b.hasAttribute("data-shop-tab")){
+setShopTab(b.getAttribute("data-shop-tab"));
+sfxClick();
 return;
 }
 
@@ -326,7 +399,7 @@ if(owned.has(id)){
 selectedDragon=id;
 save();
 render();
-toast(d.name+" selected");
+sfxClick();toast(d.name+" selected");
 return;
 }
 var level=getPlayerLevel();
@@ -337,7 +410,7 @@ owned.add(id);
 selectedDragon=id;
 save();
 render();
-toast("Voidwatcher unlocked!");
+sfxUnlock();toast("Voidwatcher unlocked!");
 return;
 }
 if(coins<d.price){
@@ -349,7 +422,7 @@ owned.add(id);
 selectedDragon=id;
 save();
 render();
-toast(d.name+" unlocked!");
+sfxUnlock();toast(d.name+" unlocked!");
 return;
 }
 
@@ -357,7 +430,7 @@ if(action==="color"){
 selectedColor=id;
 save();
 render();
-toast("Color selected");
+sfxClick();toast("Color selected");
 return;
 }
 
@@ -365,7 +438,7 @@ if(action==="map"){
 selectedMap=id;
 save();
 render();
-toast("Map selected");
+sfxClick();toast("Map selected");
 return;
 }
 }catch(err){
@@ -389,13 +462,13 @@ toast(paused?"Paused":"Resumed");
 }
 });
 
-document.getElementById("sound").addEventListener("click",function(){muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound"});
+document.getElementById("sound").addEventListener("click",function(){muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound";if(!muted){ensureAudio();sfxClick();}});
 document.getElementById("reset").addEventListener("click",function(){localStorage.clear();location.reload()});
 function input(e){if(e)e.preventDefault();var now=Date.now();if(now-lastInput<100)return;lastInput=now;flap()}
 canvas.addEventListener("pointerdown",input,{passive:false});
 window.addEventListener("keydown",function(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();input(e)}});
 
-bestEl.textContent=String(best);coinsEl.textContent=String(coins);render();resetGame();requestAnimationFrame(loop);
+bestEl.textContent=String(best);coinsEl.textContent=String(coins);render();setShopTab("dragons");resetGame();requestAnimationFrame(loop);
 })();
 </script>
 </body>
