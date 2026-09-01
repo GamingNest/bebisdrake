@@ -583,15 +583,15 @@ var flapR=Math.sin(tm*12+0.85)*0.44*beat;
 var tailA=Math.sin(tm*6.2)*0.16 + pitch*0.18 - tuck*0.08;
 var legF=0.18*tuck + Math.sin(tm*8.5)*0.16*(1-Math.abs(tuck)*0.4);
 var legB=-0.12*tuck + Math.sin(tm*8.5+Math.PI)*0.14*(1-Math.abs(tuck)*0.4);
-var headN=Math.sin(tm*4.6)*0.05 - pitch*0.12;
+var headN=Math.sin(tm*4.6)*0.03 - pitch*0.06;
 /* far wing, tail, hind legs, body, front legs, near wing, head */
-part(IW*0.04,IH*0.02,IW*0.48,IH*0.46, IW*0.38,IH*0.30, -0.18+flapL);
-part(0,IH*0.28,IW*0.46,IH*0.52, IW*0.36,IH*0.54, tailA);
-part(IW*0.18,IH*0.54,IW*0.34,IH*0.38, IW*0.40,IH*0.66, legB);
-part(IW*0.22,IH*0.24,IW*0.50,IH*0.50, IW*0.50,IH*0.48, 0);
-part(IW*0.36,IH*0.54,IW*0.36,IH*0.38, IW*0.54,IH*0.68, legF);
-part(IW*0.28,IH*0.02,IW*0.50,IH*0.46, IW*0.48,IH*0.32, 0.12+flapR);
-part(IW*0.44,IH*0.04,IW*0.52,IH*0.52, IW*0.64,IH*0.34, headN);
+part(IW*0.02,IH*0.02,IW*0.40,IH*0.40, IW*0.34,IH*0.28, -0.18+flapL);
+part(0,IH*0.32,IW*0.42,IH*0.48, IW*0.32,IH*0.56, tailA);
+part(IW*0.16,IH*0.56,IW*0.32,IH*0.36, IW*0.38,IH*0.68, legB);
+part(IW*0.20,IH*0.28,IW*0.36,IH*0.42, IW*0.42,IH*0.50, 0);
+part(IW*0.34,IH*0.56,IW*0.30,IH*0.36, IW*0.50,IH*0.70, legF);
+part(IW*0.22,IH*0.02,IW*0.32,IH*0.38, IW*0.42,IH*0.28, 0.12+flapR);
+part(IW*0.48,IH*0.08,IW*0.52,IH*0.54, IW*0.70,IH*0.36, headN);
 }
 
 function drawDragon(){
