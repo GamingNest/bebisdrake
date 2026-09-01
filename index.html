@@ -270,18 +270,18 @@ var colors=[
 {id:"bloodmoon",name:"Bloodmoon",exclusive:true,price:50000,body:"#4a0810",wing:"#8a1020",accent:"#ffffff",stops:["#2a0408","#4a0810","#8a1020"]}
 ];
 var maps=[
-{id:"sky",name:"Sky Kingdom",desc:"Bright skies & floating islands",a:"#78bfff",b:"#f5d3e6"},
-{id:"night",name:"Neon Night",desc:"Purple clouds & city lights",a:"#0a0c3a",b:"#6a2a9a"},
-{id:"sunset",name:"Dragon Sunset",desc:"Warm mountains & golden skies",a:"#ef754e",b:"#542d74"},
-{id:"ice",name:"Frozen Peaks",desc:"Cold air & crystal mountains",a:"#a9e7ff",b:"#6d7de0"},
-{id:"volcano",name:"Volcanic Realm",desc:"Lava skies & burning peaks",a:"#401014",b:"#e04a18"},
-{id:"forest",name:"Mystic Forest",desc:"Ancient trees & emerald mist",a:"#123d2c",b:"#4c9a68"},
-{id:"crystal",name:"Crystal Caves",desc:"Glowing crystals & deep blue",a:"#15174d",b:"#3d8fd6"},
-{id:"storm",name:"Stormfront",desc:"Dark clouds & electric skies",a:"#151b2d",b:"#6877a8"},
-{id:"desert",name:"Golden Desert",desc:"Endless dunes & amber light",a:"#d08a35",b:"#f3d88a"},
-{id:"void",name:"The Void",desc:"Dark space & purple energy",a:"#05030e",b:"#3c1268"},
-{id:"cherry",name:"Cherry Blossom",desc:"Pink skies & drifting petals",a:"#d96c9d",b:"#f7c7d8"},
-{id:"aurora",name:"Aurora Realm",desc:"Frozen night beneath the aurora",a:"#071c39",b:"#36b6a3"},
+{id:"sky",name:"Sky Kingdom",desc:"Bright skies & floating islands",a:"#78bfff",b:"#f5d3e6",pillar:{a:"#7eb4d8",b:"#c5e4f6",cap:"#f3ead4"}},
+{id:"night",name:"Neon Night",desc:"Purple clouds & city lights",a:"#0a0c3a",b:"#6a2a9a",pillar:{a:"#0c1048",b:"#8a2cb8",cap:"#3dfff4"}},
+{id:"sunset",name:"Dragon Sunset",desc:"Warm mountains & golden skies",a:"#ef754e",b:"#542d74",pillar:{a:"#9a2e1c",b:"#e87838",cap:"#f0c24a"}},
+{id:"ice",name:"Frozen Peaks",desc:"Cold air & crystal mountains",a:"#a9e7ff",b:"#6d7de0",look:"ice",pillar:{a:"#6aa8d8",b:"#d8f4ff",cap:"#f4ffff"}},
+{id:"volcano",name:"Volcanic Realm",desc:"Lava skies & burning peaks",a:"#401014",b:"#e04a18",look:"volcano",pillar:{a:"#1a0c0c",b:"#3a2218",cap:"#ff5a18"}},
+{id:"forest",name:"Mystic Forest",desc:"Ancient trees & emerald mist",a:"#123d2c",b:"#4c9a68",look:"forest",pillar:{a:"#3a2410",b:"#6a4020",cap:"#3d8a4a"}},
+{id:"crystal",name:"Crystal Caves",desc:"Glowing crystals & deep blue",a:"#15174d",b:"#3d8fd6",pillar:{a:"#142878",b:"#3d8fd6",cap:"#d4ecff"}},
+{id:"storm",name:"Stormfront",desc:"Dark clouds & electric skies",a:"#151b2d",b:"#6877a8",look:"storm",pillar:{a:"#161c28",b:"#3a4458",cap:"#4ec8ff"}},
+{id:"desert",name:"Golden Desert",desc:"Endless dunes & amber light",a:"#d08a35",b:"#f3d88a",look:"desert",pillar:{a:"#c07a30",b:"#e8c070",cap:"#f4dc98"}},
+{id:"void",name:"The Void",desc:"Dark space & purple energy",a:"#05030e",b:"#3c1268",look:"void",pillar:{a:"#07050e",b:"#140a22",cap:"#7a40d8"}},
+{id:"cherry",name:"Cherry Blossom",desc:"Pink skies & drifting petals",a:"#d96c9d",b:"#f7c7d8",look:"cherry",pillar:{a:"#7a3a42",b:"#c07078",cap:"#f4b4d0"}},
+{id:"aurora",name:"Aurora Realm",desc:"Frozen night beneath the aurora",a:"#071c39",b:"#36b6a3",pillar:{a:"#063848",b:"#1a8a80",cap:"#b8ffe8"}},
 {id:"bones",name:"Bone Nest",desc:"Skull pillars & dragon jaws",a:"#1a120c",b:"#6b3a22",gates:"dragon"},
 {id:"nightmare",name:"Nightmare",desc:"Red eyes between living towers",a:"#07040c",b:"#4a1028",gates:"dragon"},
 {id:"wyrm",name:"Wyrm Hollow",desc:"Stone wyrms waiting to bite",a:"#10180e",b:"#3d5a28",gates:"dragon"},
@@ -574,20 +574,145 @@ else if(id==="wyrm"){floor="#121c10";line="#7dff4a"}
 else if(id==="bloodkeep"){floor="#1a080a";line="#c41418"}
 ctx.fillStyle=floor;ctx.fillRect(0,y,W,85);ctx.fillStyle=line;ctx.fillRect(0,y,W,4)
 }
+function pillarPal(m){return m.pillar||{a:"#445566",b:"#8899aa",cap:"#ccddee"}}
+function pillarGrad(x,w,a,b){
+var g=ctx.createLinearGradient(x,0,x+w,0);
+g.addColorStop(0,a);g.addColorStop(.5,b);g.addColorStop(1,a);return g
+}
+function drawBlockPillar(p,ground,m){
+var col=pillarPal(m),x=p.x,w=76;
+ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
+ctx.fillRect(x,0,w,p.top);ctx.fillRect(x,p.top+p.gap,w,ground-p.top-p.gap);
+ctx.fillStyle=col.cap;ctx.fillRect(x-7,p.top-20,90,20);ctx.fillRect(x-7,p.top+p.gap,90,20)
+}
+function iceJagged(x,w,y0,y1,lipAtTop){
+ctx.beginPath();
+if(lipAtTop){
+  ctx.moveTo(x,y0);ctx.lineTo(x+w,y0);
+  for(var y=y0+8;y<y1-4;y+=12)ctx.lineTo(x+w+((y/12|0)%2?6:-3),y);
+  ctx.lineTo(x+w,y1);ctx.lineTo(x+w-12,y1-18);ctx.lineTo(x+w-24,y1);ctx.lineTo(x+w-40,y1-24);ctx.lineTo(x+w-54,y1);ctx.lineTo(x+16,y1-12);ctx.lineTo(x,y1);
+  for(var y=y1-8;y>y0+4;y-=12)ctx.lineTo(x+((y/12|0)%2?-5:4),y);
+}else{
+  ctx.moveTo(x,y0);ctx.lineTo(x+16,y0+12);ctx.lineTo(x+w-54,y0);ctx.lineTo(x+w-40,y0+24);ctx.lineTo(x+w-24,y0);ctx.lineTo(x+w-12,y0+18);ctx.lineTo(x+w,y0);
+  for(var y=y0+8;y<y1-4;y+=12)ctx.lineTo(x+w+((y/12|0)%2?6:-3),y);
+  ctx.lineTo(x+w,y1);ctx.lineTo(x,y1);
+  for(var y=y1-8;y>y0+4;y-=12)ctx.lineTo(x+((y/12|0)%2?-5:4),y);
+}
+ctx.closePath();ctx.fill()
+}
+function iceShards(x,y,dir){
+var pts=[[10,14],[26,22],[42,12],[58,20],[70,10]];
+ctx.fillStyle="#ffffff";
+for(var i=0;i<pts.length;i++){ctx.beginPath();ctx.moveTo(x+pts[i][0]-6,y);ctx.lineTo(x+pts[i][0]+6,y);ctx.lineTo(x+pts[i][0],y+pts[i][1]*dir);ctx.fill()}
+ctx.fillStyle="#9ee8ff";
+ctx.beginPath();ctx.moveTo(x+18,y);ctx.lineTo(x+28,y);ctx.lineTo(x+22,y+16*dir);ctx.fill();
+ctx.beginPath();ctx.moveTo(x+48,y);ctx.lineTo(x+60,y);ctx.lineTo(x+54,y+18*dir);ctx.fill()
+}
+function drawIcePillar(p,ground,m){
+var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
+ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
+iceJagged(x,w,0,top,true);iceJagged(x,w,bot,ground,false);
+iceShards(x,top,1);iceShards(x,bot,-1)
+}
+function drawVolcanoPillar(p,ground,m){
+var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
+ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
+ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+ctx.strokeStyle="#ff5a18";ctx.lineWidth=2.2;
+function veins(y0,y1){
+  for(var v=0;v<3;v++){
+    ctx.beginPath();var vx=x+14+v*20;ctx.moveTo(vx,y0+4);
+    for(var y=y0+16;y<y1;y+=18)ctx.lineTo(vx+((y/18+v)%2?8:-8),y);
+    ctx.stroke()
+  }
+}
+veins(0,top);veins(bot,ground);
+ctx.fillStyle=col.cap;ctx.fillRect(x-7,top-12,90,12);ctx.fillRect(x-7,bot,90,12);
+ctx.fillStyle="#ffd040";ctx.fillRect(x-7,top-3,90,3);ctx.fillRect(x-7,bot,90,3)
+}
+function drawForestPillar(p,ground,m){
+var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap,mid=x+w/2;
+ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
+ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+ctx.strokeStyle="rgba(30,16,6,.35)";ctx.lineWidth=2;
+function rings(y0,y1){for(var y=y0+10;y<y1-6;y+=18){ctx.beginPath();ctx.ellipse(mid,y,34,6,0,0,Math.PI*2);ctx.stroke()}}
+rings(0,top);rings(bot,ground);
+ctx.fillStyle="#4a2c14";
+ctx.fillRect(x-8,Math.max(12,Math.min(top-18,top*0.35)),12,7);ctx.fillRect(x+w-4,Math.max(18,Math.min(top-18,top*0.55)),12,7);
+if(ground-bot>50){ctx.fillRect(x-8,bot+Math.min(40,(ground-bot)*0.35),12,7);ctx.fillRect(x+w-4,bot+Math.min(70,(ground-bot)*0.55),12,7)}
+ctx.fillStyle=col.cap;ctx.fillRect(x-7,top-14,90,14);ctx.fillRect(x-7,bot,90,14);
+ctx.fillStyle="#2d6a38";
+for(var k=0;k<5;k++){ctx.beginPath();ctx.arc(x+8+k*18,top-4,6,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(x+8+k*18,bot+4,6,0,Math.PI*2);ctx.fill()}
+}
+function drawDesertPillar(p,ground,m){
+var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
+ctx.fillStyle=col.a;ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+ctx.fillStyle=col.b;
+function bricks(y0,y1){
+  var rowH=14,brickW=24;
+  for(var y=y0,row=0;y<y1;y+=rowH,row++){
+    var off=row%2?12:0;
+    for(var bx=x-off;bx<x+w;bx+=brickW+2){
+      var rx=Math.max(x,bx),rw=Math.min(x+w,bx+brickW)-rx;
+      if(rw>3&&y+2<y1)ctx.fillRect(rx+1,y+1,rw-2,rowH-3)
+    }
+  }
+}
+bricks(0,top);bricks(bot,ground);
+ctx.fillStyle=col.cap;ctx.fillRect(x-7,top-16,90,16);ctx.fillRect(x-7,bot,90,16)
+}
+function drawCherryPillar(p,ground,m){
+var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
+ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
+ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+ctx.strokeStyle="rgba(90,30,40,.28)";ctx.lineWidth=1.5;
+for(var gy=8;gy<top;gy+=10){ctx.beginPath();ctx.moveTo(x+4,gy);ctx.lineTo(x+w-4,gy+3);ctx.stroke()}
+for(var gy=bot+8;gy<ground;gy+=10){ctx.beginPath();ctx.moveTo(x+4,gy);ctx.lineTo(x+w-4,gy+3);ctx.stroke()}
+ctx.fillStyle=col.cap;ctx.fillRect(x-7,top-16,90,16);ctx.fillRect(x-7,bot,90,16);
+var cols=["#ff8ab8","#ffd0e4","#ff6aa0"];
+function blossoms(cy){for(var k=0;k<6;k++){ctx.fillStyle=cols[k%3];ctx.beginPath();ctx.arc(x-2+k*16,cy,5+(k%2),0,Math.PI*2);ctx.fill()}}
+blossoms(top-8);blossoms(bot+8)
+}
+function drawStormPillar(p,ground,m){
+var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
+ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
+ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+ctx.strokeStyle="rgba(180,200,230,.12)";ctx.lineWidth=1;
+for(var c=0;c<4;c++){ctx.beginPath();ctx.moveTo(x+10+c*18,0);ctx.lineTo(x+6+c*18,top);ctx.stroke();ctx.beginPath();ctx.moveTo(x+10+c*18,bot);ctx.lineTo(x+6+c*18,ground);ctx.stroke()}
+ctx.shadowBlur=8;ctx.shadowColor="#4ec8ff";ctx.fillStyle=col.cap;
+ctx.fillRect(x-2,top-4,w+4,4);ctx.fillRect(x-2,bot,w+4,4);ctx.shadowBlur=0
+}
+function drawVoidPillar(p,ground,m){
+var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
+ctx.fillStyle=col.a;ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+ctx.shadowBlur=10;ctx.shadowColor=col.cap;ctx.strokeStyle=col.cap;ctx.lineWidth=3;
+ctx.strokeRect(x+4,2,w-8,Math.max(4,top-6));ctx.strokeRect(x+4,bot+2,w-8,Math.max(4,ground-bot-6));
+ctx.shadowBlur=0;
+ctx.fillStyle="#1a0a30";ctx.fillRect(x-7,top-10,90,10);ctx.fillRect(x-7,bot,90,10);
+ctx.fillStyle=col.cap;ctx.fillRect(x-7,top-2,90,2);ctx.fillRect(x-7,bot,90,2)
+}
 function drawGates(){
 var ground=H-85,m=getMap();
 if(m.gates==="dragon"){drawDragonGates(ground);return}
-for(var i=0;i<gates.length;i++){var p=gates[i],g=ctx.createLinearGradient(p.x,0,p.x+76,0);
-g.addColorStop(0,"#43209a");g.addColorStop(.5,"#a65cff");g.addColorStop(1,"#4a2096");
-ctx.fillStyle=g;ctx.fillRect(p.x,0,76,p.top);ctx.fillRect(p.x,p.top+p.gap,76,ground-p.top-p.gap);
-ctx.fillStyle="#d6a2ff";ctx.fillRect(p.x-7,p.top-20,90,20);ctx.fillRect(p.x-7,p.top+p.gap,90,20)}
+var look=m.look||"block";
+for(var i=0;i<gates.length;i++){
+  var p=gates[i];
+  if(look==="ice")drawIcePillar(p,ground,m);
+  else if(look==="volcano")drawVolcanoPillar(p,ground,m);
+  else if(look==="forest")drawForestPillar(p,ground,m);
+  else if(look==="desert")drawDesertPillar(p,ground,m);
+  else if(look==="cherry")drawCherryPillar(p,ground,m);
+  else if(look==="storm")drawStormPillar(p,ground,m);
+  else if(look==="void")drawVoidPillar(p,ground,m);
+  else drawBlockPillar(p,ground,m);
+}
 }
 function drawBoneDragonSkull(cx,cy,sc,flip,alpha){
 ctx.save();ctx.translate(cx,cy);ctx.scale((flip<0?-sc:sc),sc);ctx.globalAlpha=alpha==null?1:alpha;
-ctx.fillStyle="#e8dcc4";
+ctx.fillStyle="#f2e6cc";
 ctx.beginPath();ctx.ellipse(0,0,24,19,0,0,Math.PI*2);ctx.fill();
 ctx.beginPath();ctx.moveTo(6,-8);ctx.lineTo(40,-4);ctx.lineTo(42,5);ctx.lineTo(8,12);ctx.closePath();ctx.fill();
-ctx.fillStyle="#d2c4a4";
+ctx.fillStyle="#d4c09a";
 ctx.beginPath();ctx.moveTo(-8,-14);ctx.lineTo(-4,-36);ctx.lineTo(8,-12);ctx.fill();
 ctx.beginPath();ctx.moveTo(6,-16);ctx.lineTo(18,-34);ctx.lineTo(14,-10);ctx.fill();
 ctx.fillStyle="#2a1a10";
@@ -604,16 +729,16 @@ for(var y=y0+10;y<y1-6;y+=16){
   var sway=Math.sin(t*Math.PI*1.6)*10;
   var r=26-t*8;
   var cx=mid+sway;
-  ctx.fillStyle="#efe6d2";
+  ctx.fillStyle="#f3ead6";
   ctx.beginPath();ctx.ellipse(cx,y,r,8,0.15*dir,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle="#c4b090";
+  ctx.fillStyle="#c8b48c";
   ctx.beginPath();ctx.moveTo(cx-r+2,y);ctx.lineTo(cx-r-12,y-9);ctx.lineTo(cx-r-2,y);ctx.lineTo(cx-r-12,y+9);ctx.fill();
   ctx.beginPath();ctx.moveTo(cx+r-2,y);ctx.lineTo(cx+r+12,y-9);ctx.lineTo(cx+r+2,y);ctx.lineTo(cx+r+12,y+9);ctx.fill();
   ctx.fillStyle="#a89070";ctx.fillRect(cx-4,y-3,8,6);
 }
 var tipY=dir>0?y1-2:y0+2;
 var tipX=mid+Math.sin(0.9)*8;
-ctx.fillStyle="#efe6d2";
+ctx.fillStyle="#f3ead6";
 ctx.beginPath();
 if(dir>0){ctx.moveTo(tipX-16,tipY);ctx.lineTo(tipX+16,tipY);ctx.lineTo(tipX,tipY+18)}
 else{ctx.moveTo(tipX-16,tipY);ctx.lineTo(tipX+16,tipY);ctx.lineTo(tipX,tipY-18)}
@@ -627,10 +752,10 @@ for(var i=0;i<gates.length;i++){
     drawBoneTail(x,w,0,top,1);
     drawBoneTail(x,w,bot,ground,-1);
   }else if(id==="nightmare"){
-    ctx.fillStyle="#0c0610";
+    ctx.fillStyle="#0a040e";
     ctx.beginPath();ctx.moveTo(x+4,0);ctx.lineTo(x+w-4,0);ctx.quadraticCurveTo(x+w+10,top/2,x+w-6,top);ctx.lineTo(x+6,top);ctx.quadraticCurveTo(x-10,top/2,x+4,0);ctx.fill();
     ctx.beginPath();ctx.moveTo(x+6,bot);ctx.lineTo(x+w-6,bot);ctx.quadraticCurveTo(x+w+12,(bot+ground)/2,x+w-8,ground);ctx.lineTo(x+8,ground);ctx.quadraticCurveTo(x-12,(bot+ground)/2,x+6,bot);ctx.fill();
-    ctx.shadowBlur=12;ctx.shadowColor="#ff2040";ctx.fillStyle="#ff2a44";
+    ctx.shadowBlur=12;ctx.shadowColor="#ff1848";ctx.fillStyle="#ff1e48";
     var eyes=[[18,top-14],[w-18,top-14],[22,bot+14],[w-22,bot+14],[w/2,top-28],[w/2,bot+28]];
     for(var e=0;e<eyes.length;e++){ctx.beginPath();ctx.ellipse(x+eyes[e][0],eyes[e][1],6,4,0,0,Math.PI*2);ctx.fill()}
     ctx.shadowBlur=0;ctx.fillStyle="#140008";
@@ -639,11 +764,11 @@ for(var i=0;i<gates.length;i++){
     for(var t=0;t<4;t++){ctx.beginPath();ctx.moveTo(x+8+t*18,top);ctx.quadraticCurveTo(x+12+t*18,top-18,x+10+t*18,top-30);ctx.stroke()}
   }else if(id==="wyrm"){
     var g=ctx.createLinearGradient(x,0,x+w,0);
-    g.addColorStop(0,"#1a2c16");g.addColorStop(.5,"#4a7a38");g.addColorStop(1,"#203618");
+    g.addColorStop(0,"#163018");g.addColorStop(.5,"#4e8a3c");g.addColorStop(1,"#1c3818");
     ctx.fillStyle=g;
     for(var y=8;y<top;y+=18){ctx.beginPath();ctx.ellipse(x+w/2,y,30+((y/18)%2)*6,12,0,0,Math.PI*2);ctx.fill()}
     for(var y=bot+10;y<ground;y+=18){ctx.beginPath();ctx.ellipse(x+w/2,y,30+((y/18)%2)*6,12,0,0,Math.PI*2);ctx.fill()}
-    ctx.fillStyle="#5a8c40";
+    ctx.fillStyle="#5e9444";
     ctx.beginPath();ctx.ellipse(x+w/2,top-2,36,20,0,Math.PI,0);ctx.fill();
     ctx.beginPath();ctx.ellipse(x+w/2,bot+2,36,20,0,0,Math.PI);ctx.fill();
     ctx.fillStyle="#d8ff6a";
@@ -657,16 +782,16 @@ for(var i=0;i<gates.length;i++){
     ctx.beginPath();ctx.moveTo(x+w-22,bot);ctx.lineTo(x+w-30,bot);ctx.lineTo(x+w-16,bot+26);ctx.fill();
   }else{
     var g=ctx.createLinearGradient(x,0,x+w,0);
-    g.addColorStop(0,"#3a1014");g.addColorStop(.45,"#a01820");g.addColorStop(1,"#2a080c");
+    g.addColorStop(0,"#3e0c12");g.addColorStop(.45,"#b0141c");g.addColorStop(1,"#24060a");
     ctx.fillStyle=g;ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
     ctx.fillStyle="#1a0608";
     for(var by=10;by<top-8;by+=14)ctx.fillRect(x,by,w,2);
     for(var by=bot+10;by<ground;by+=14)ctx.fillRect(x,by,w,2);
     ctx.fillStyle="#4a1418";
     for(var k=0;k<4;k++)ctx.fillRect(x+4+k*18,0,14,12);
-    ctx.fillStyle="#c41418";
+    ctx.fillStyle="#d4181c";
     for(var d=0;d<5;d++){ctx.fillRect(x+10+d*13,top,3,10+d%3*6);ctx.fillRect(x+10+d*13,bot-8-d%3*5,3,12)}
-    ctx.fillStyle="#e8c878";
+    ctx.fillStyle="#f0d080";
     ctx.beginPath();ctx.moveTo(x-2,top-6);ctx.lineTo(x+w+2,top-6);ctx.lineTo(x+w-6,top+10);ctx.lineTo(x+6,top+10);ctx.fill();
     ctx.beginPath();ctx.moveTo(x-2,bot+6);ctx.lineTo(x+w+2,bot+6);ctx.lineTo(x+w-6,bot-10);ctx.lineTo(x+6,bot-10);ctx.fill();
     ctx.fillStyle="#2a080c";
