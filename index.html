@@ -80,7 +80,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <section id="customize" class="screen">
 <button class="back" type="button" data-home>‹</button>
 <div class="title">Customize</div>
-<div class="customPreview"><canvas id="customPreviewCanvas" width="360" height="120"></canvas><div class="customCurrent" id="customCurrent">Baby Dragon · Natural · Sky Kingdom</div></div>
+<div class="customPreview"><canvas id="customPreviewCanvas" width="720" height="240"></canvas><div class="customCurrent" id="customCurrent">Baby Dragon · Natural · Sky Kingdom</div></div>
 <div class="shopTabs customTabs">
 <button type="button" class="shopTab active" data-custom-tab="dragons">🐉<span>Dragon</span></button>
 <button type="button" class="shopTab" data-custom-tab="colors">🎨<span>Skin</span></button>
@@ -929,11 +929,20 @@ function loop(t){
 
 function show(id){var ss=document.querySelectorAll(".screen");for(var i=0;i<ss.length;i++)ss[i].classList.toggle("active",ss[i].id===id);overlay.classList.remove("hidden")}
 function drawPreviewCanvas(canvas,d,c,scale){
-if(!canvas)return;var cx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;
-cx.clearRect(0,0,w,h);
-var mp=getMap(),g=cx.createLinearGradient(0,0,0,h);
-g.addColorStop(0,mp.a);g.addColorStop(1,mp.b);cx.fillStyle=g;cx.fillRect(0,0,w,h);
-cx.save();cx.translate(w*.46,h*.58);cx.scale((scale||1)*0.85,(scale||1)*0.85);
+if(!canvas)return;
+var r=Math.max(2,Math.min(3,window.devicePixelRatio||2));
+var cssW=canvas.clientWidth||Number(canvas.getAttribute("width"))||180;
+var cssH=canvas.clientHeight||Number(canvas.getAttribute("height"))||78;
+if(cssW<2)cssW=Number(canvas.getAttribute("width"))||180;
+if(cssH<2)cssH=Number(canvas.getAttribute("height"))||78;
+canvas.width=Math.round(cssW*r);canvas.height=Math.round(cssH*r);
+var cx=canvas.getContext("2d");
+cx.setTransform(r,0,0,r,0,0);
+cx.imageSmoothingEnabled=true;cx.imageSmoothingQuality="high";
+cx.clearRect(0,0,cssW,cssH);
+var mp=getMap(),g=cx.createLinearGradient(0,0,0,cssH);
+g.addColorStop(0,mp.a);g.addColorStop(1,mp.b);cx.fillStyle=g;cx.fillRect(0,0,cssW,cssH);
+cx.save();cx.translate(cssW*.46,cssH*.62);cx.scale((scale||1)*1.15,(scale||1)*1.15);
 paintDragon(cx,d,paletteFor(d,c),0,{flap:.4,flapR:.1,walk:0,pitch:-.08,tuck:-0.2});
 cx.restore();
 }
@@ -948,11 +957,11 @@ return "linear-gradient(135deg,"+col.body+","+col.wing+")";
 }
 function render(){
 var sc="",sw="",ml="",customD="",customC="",level=getPlayerLevel();
-for(var j=0;j<dragons.length;j++){var q=dragons[j],oo=owned.has(q.id),can=q.exclusive?(coins>=50000||level>=100):(coins>=q.price),qlabel=q.price===0?"Free":(q.exclusive?"50,000 coins OR Level 100":q.price+" coins"),qaction=oo?(selectedDragon===q.id?"Selected":"Select"):(q.exclusive&&!can?"Locked":"Unlock");sc+='<div class="card '+(q.exclusive?"exclusive ":"")+(selectedDragon===q.id?" selected":"")+(!oo&&!can?" locked":"")+'" data-action="dragon" data-id="'+q.id+'"><div class="thumb"><canvas class="previewCanvas" width="180" height="78" data-preview-dragon="'+q.id+'"></canvas></div><b>'+q.name+'</b><small>'+qlabel+'</small><button type="button" data-action="dragon" data-id="'+q.id+'" class="'+((!oo&&can)?"buy":"")+'">'+qaction+'</button></div>';}
+for(var j=0;j<dragons.length;j++){var q=dragons[j],oo=owned.has(q.id),can=q.exclusive?(coins>=50000||level>=100):(coins>=q.price),qlabel=q.price===0?"Free":(q.exclusive?"50,000 coins OR Level 100":q.price+" coins"),qaction=oo?(selectedDragon===q.id?"Selected":"Select"):(q.exclusive&&!can?"Locked":"Unlock");sc+='<div class="card '+(q.exclusive?"exclusive ":"")+(selectedDragon===q.id?" selected":"")+(!oo&&!can?" locked":"")+'" data-action="dragon" data-id="'+q.id+'"><div class="thumb"><canvas class="previewCanvas" width="360" height="156" data-preview-dragon="'+q.id+'"></canvas></div><b>'+q.name+'</b><small>'+qlabel+'</small><button type="button" data-action="dragon" data-id="'+q.id+'" class="'+((!oo&&can)?"buy":"")+'">'+qaction+'</button></div>';}
 for(var k=0;k<colors.length;k++){var col=colors[k],co=ownedColors.has(col.id)||col.id==="natural",cs=selectedColor===col.id,pr=colorPrice(col),plabel=col.id==="natural"?"Free":(co?(cs?"Selected":"Owned"):(col.exclusive?"50,000 🪙":pr+" 🪙"));sw+='<button type="button" class="swatch '+(col.exclusive?"exclusive ":"")+(cs?"selected ":"")+(!co?"locked":"")+'" data-action="color" data-id="'+col.id+'" style="background:'+colorFill(col)+'"><span>'+col.name+(col.exclusive?" ★":"")+'</span><em class="priceTag">'+plabel+'</em></button>';}
 for(var n=0;n<maps.length;n++){var m=maps[n],mo=ownedMaps.has(m.id),ms=selectedMap===m.id;ml+='<button type="button" class="map '+(ms?"selected ":"")+(!mo?"locked":"")+'" data-action="map" data-id="'+m.id+'" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><b>'+m.name+'</b><small>'+m.desc+'</small><em class="priceTag">'+(mo?(ms?"Selected":"Owned"):"300 🪙")+'</em></button>';}
 var customM="";
-for(var cd=0;cd<dragons.length;cd++){var dd=dragons[cd],ownD=owned.has(dd.id);customD+='<div class="card '+(selectedDragon===dd.id?"selected":"")+(!ownD?" locked":"")+'" data-action="custom-dragon" data-id="'+dd.id+'"><div class="thumb"><canvas class="previewCanvas" width="140" height="56" data-preview-dragon="'+dd.id+'"></canvas></div><b>'+dd.name.replace(" Dragon","")+'</b></div>';}
+for(var cd=0;cd<dragons.length;cd++){var dd=dragons[cd],ownD=owned.has(dd.id);customD+='<div class="card '+(selectedDragon===dd.id?"selected":"")+(!ownD?" locked":"")+'" data-action="custom-dragon" data-id="'+dd.id+'"><div class="thumb"><canvas class="previewCanvas" width="280" height="112" data-preview-dragon="'+dd.id+'"></canvas></div><b>'+dd.name.replace(" Dragon","")+'</b></div>';}
 for(var cc=0;cc<colors.length;cc++){var coo=colors[cc],ownC=ownedColors.has(coo.id)||coo.id==="natural";customC+='<button type="button" class="swatch '+(coo.exclusive?"exclusive ":"")+(selectedColor===coo.id?"selected":"")+(!ownC?" locked":"")+'" data-action="custom-color" data-id="'+coo.id+'" style="background:'+colorFill(coo)+'"><span>'+coo.name+(coo.exclusive?" ★":"")+'</span></button>';}
 for(var cm=0;cm<maps.length;cm++){var mm=maps[cm],ownM=ownedMaps.has(mm.id);customM+='<button type="button" class="map compact '+(selectedMap===mm.id?"selected ":"")+(!ownM?"locked":"")+'" data-action="custom-map" data-id="'+mm.id+'" style="background:linear-gradient(135deg,'+mm.a+','+mm.b+')"><b>'+mm.name+'</b></button>';}
 document.getElementById("shopCards").innerHTML=sc;document.getElementById("shopSwatches").innerHTML=sw;document.getElementById("shopMapsList").innerHTML=ml;document.getElementById("dragonCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("mapsList").innerHTML=ml;document.getElementById("customDragonCards").innerHTML=customD;document.getElementById("customColorSwatches").innerHTML=customC;var cml=document.getElementById("customMapsList");if(cml)cml.innerHTML=customM;document.getElementById("shopCoins").textContent=String(coins);
