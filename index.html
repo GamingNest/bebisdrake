@@ -199,7 +199,11 @@ var maps=[
 {id:"desert",name:"Golden Desert",desc:"Endless dunes & amber light",a:"#d08a35",b:"#f3d88a"},
 {id:"void",name:"The Void",desc:"Dark space & purple energy",a:"#05030e",b:"#3c1268"},
 {id:"cherry",name:"Cherry Blossom",desc:"Pink skies & drifting petals",a:"#d96c9d",b:"#f7c7d8"},
-{id:"aurora",name:"Aurora Realm",desc:"Frozen night beneath the aurora",a:"#071c39",b:"#36b6a3"}
+{id:"aurora",name:"Aurora Realm",desc:"Frozen night beneath the aurora",a:"#071c39",b:"#36b6a3"},
+{id:"bones",name:"Bone Nest",desc:"Skull pillars & dragon jaws",a:"#1a120c",b:"#6b3a22",gates:"dragon"},
+{id:"nightmare",name:"Nightmare",desc:"Red eyes between living towers",a:"#07040c",b:"#4a1028",gates:"dragon"},
+{id:"wyrm",name:"Wyrm Hollow",desc:"Stone wyrms waiting to bite",a:"#10180e",b:"#3d5a28",gates:"dragon"},
+{id:"bloodkeep",name:"Blood Keep",desc:"Crimson fangs & horned towers",a:"#2a0608",b:"#8a1a18",gates:"dragon"}
 ];
 
 var dragon={x:0,y:0,vy:0,rot:0,bank:0,stretch:0},gates=[],coinItems=[];
@@ -337,12 +341,53 @@ for(var i=0;i<22;i++){var x=((i*173-scroll*.08)%(W+160))-80,y=55+(i*79)%(Math.ma
 }
 function drawGround(){var y=H-85;ctx.fillStyle="#080a18";ctx.fillRect(0,y,W,85);ctx.fillStyle="#9c5cff";ctx.fillRect(0,y,W,4)}
 function drawGates(){
-var ground=H-85;
+var ground=H-85,m=getMap();
+if(m.gates==="dragon"){drawDragonGates(ground);return}
 for(var i=0;i<gates.length;i++){var p=gates[i],g=ctx.createLinearGradient(p.x,0,p.x+76,0);
 g.addColorStop(0,"#43209a");g.addColorStop(.5,"#a65cff");g.addColorStop(1,"#4a2096");
 ctx.fillStyle=g;ctx.fillRect(p.x,0,76,p.top);ctx.fillRect(p.x,p.top+p.gap,76,ground-p.top-p.gap);
 ctx.fillStyle="#d6a2ff";ctx.fillRect(p.x-7,p.top-20,90,20);ctx.fillRect(p.x-7,p.top+p.gap,90,20)}
 }
+function drawDragonGates(ground){
+var m=getMap(),id=m.id;
+var bodyA="#2a1a14",bodyB="#6b3a22",fang="#efe6d4",eye="#ff2a22",horn="#d8c8a8";
+if(id==="nightmare"){bodyA="#120814";bodyB="#3a1230";fang="#1a0a18";eye="#ff2440";horn="#2a1028"}
+if(id==="wyrm"){bodyA="#142016";bodyB="#3d5a28";fang="#c8e8a0";eye="#b6ff3a";horn="#1e3018"}
+if(id==="bloodkeep"){bodyA="#22080a";bodyB="#8a1a18";fang="#ffd0c8";eye="#ffee66";horn="#4a1010"}
+for(var i=0;i<gates.length;i++){
+  var p=gates[i],x=p.x,w=76,top=p.top,bot=p.top+p.gap;
+  var g=ctx.createLinearGradient(x,0,x+w,0);
+  g.addColorStop(0,bodyA);g.addColorStop(.5,bodyB);g.addColorStop(1,bodyA);
+  ctx.fillStyle=g;
+  ctx.beginPath();
+  ctx.moveTo(x+8,0);ctx.lineTo(x+w-8,0);ctx.lineTo(x+w,top-8);ctx.lineTo(x,top-8);ctx.closePath();ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x,bot+8);ctx.lineTo(x+w,bot+8);ctx.lineTo(x+w-8,ground);ctx.lineTo(x+8,ground);ctx.closePath();ctx.fill();
+  ctx.fillStyle=horn;
+  ctx.beginPath();ctx.moveTo(x+10,0);ctx.lineTo(x+22,-22);ctx.lineTo(x+28,0);ctx.fill();
+  ctx.beginPath();ctx.moveTo(x+w-10,0);ctx.lineTo(x+w-22,-22);ctx.lineTo(x+w-28,0);ctx.fill();
+  function fangs(y,dir){
+    ctx.fillStyle=fang;
+    for(var k=0;k<5;k++){
+      var fx=x+8+k*13,fy=y;
+      ctx.beginPath();
+      ctx.moveTo(fx,fy);ctx.lineTo(fx+7,fy);ctx.lineTo(fx+3.5,fy+dir*16);ctx.closePath();ctx.fill();
+    }
+  }
+  fangs(top,-1);fangs(bot,1);
+  ctx.fillStyle=bodyB;
+  ctx.fillRect(x-4,top-18,w+8,18);ctx.fillRect(x-4,bot,w+8,18);
+  ctx.fillStyle=eye;
+  ctx.beginPath();ctx.ellipse(x+18,top-9,7,5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+w-18,top-9,7,5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+18,bot+9,7,5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(x+w-18,bot+9,7,5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#09060a";
+  ctx.fillRect(x+16,top-12,4,8);ctx.fillRect(x+w-20,top-12,4,8);
+  ctx.fillRect(x+16,bot+5,4,8);ctx.fillRect(x+w-20,bot+5,4,8);
+}
+}
+
 function drawCoins(){
 for(var i=0;i<coinItems.length;i++){var c=coinItems[i];if(c.collected)continue;
 c.spin+=.08;c.bob+=.05;ctx.save();ctx.translate(c.x,c.y+Math.sin(c.bob)*2);
