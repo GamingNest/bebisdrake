@@ -533,7 +533,7 @@ for(var b=0;b<blobs.length;b++){
       if(nx*nx+ny*ny>1)continue;
       var pn=(x-e.cx)/pr,pm=(y-e.cy)/phr;
       var inPupil=pn*pn+pm*pm<=1;
-      if(inPupil){p[i]=16;p[i+1]=14;p[i+2]=16}
+      if(inPupil){p[i]=0;p[i+1]=0;p[i+2]=0}
       else {p[i]=252;p[i+1]=252;p[i+2]=248}
       p[i+3]=255;
     }
@@ -553,10 +553,13 @@ bx.putImageData(cur,0,0);
 function addGhostGlow(bx,IW,IH){
 var c=document.createElement("canvas");c.width=IW;c.height=IH;
 var x=c.getContext("2d");
-x.shadowColor="rgba(255,255,255,1)";
-x.shadowBlur=Math.max(22,Math.floor(IW*0.08));
+x.shadowColor="rgba(230,245,255,1)";
+x.shadowBlur=Math.max(36,Math.floor(IW*0.12));
 x.drawImage(bx.canvas,0,0);
-x.shadowBlur=Math.max(14,Math.floor(IW*0.045));
+x.shadowBlur=Math.max(22,Math.floor(IW*0.07));
+x.drawImage(bx.canvas,0,0);
+x.shadowColor="rgba(255,255,255,0.9)";
+x.shadowBlur=Math.max(12,Math.floor(IW*0.035));
 x.drawImage(bx.canvas,0,0);
 x.shadowColor="transparent";x.shadowBlur=0;
 x.drawImage(bx.canvas,0,0);
@@ -603,11 +606,20 @@ if(tint){
 g.imageSmoothingEnabled=true;
 var sc=124/IW;
 var cx=IW*0.5, cy=IH*0.52;
+var ghostAura=getColor&&getColor().id==="ghost";
 function part(sx,sy,sw,sh,jx,jy,rot){
   g.save();
   g.translate((jx-cx)*sc,(jy-cy)*sc);
   g.rotate(rot);
   g.drawImage(src,sx,sy,sw,sh,(sx-jx)*sc,(sy-jy)*sc,sw*sc,sh*sc);
+  g.restore();
+}
+if(ghostAura){
+  g.save();
+  g.shadowColor="rgba(220,240,255,0.95)";
+  g.shadowBlur=28;
+  g.globalAlpha=0.9;
+  g.drawImage(src,-cx*sc,-cy*sc,IW*sc,IH*sc);
   g.restore();
 }
 var tm=t||0;
