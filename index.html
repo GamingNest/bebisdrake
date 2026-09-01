@@ -585,13 +585,26 @@ if(getColor&&getColor().id==="natural")tint=false;
 if(tint){
   paintDragon.cache=paintDragon.cache||{};
   var cid0=getColor()?getColor().id:"x";
+  if(cid0==="onyx"){
+    paintDragon.onyxFrames=paintDragon.onyxFrames||{};
+    var os=spriteId(d);
+    if(!paintDragon.onyxFrames[os]){
+      var fr=[];
+      for(var f=0;f<4;f++){
+        var ob=document.createElement("canvas"); ob.width=IW; ob.height=IH;
+        applyExclusiveSkin(ob.getContext("2d"),im,IW,IH,"onyx",os,f/4*Math.PI*2);
+        fr.push(ob);
+      }
+      paintDragon.onyxFrames[os]=fr;
+    }
+    src=paintDragon.onyxFrames[os][Math.floor((t||0)*4)%4];
+  }else{
   var key=spriteId(d)+":"+cid0+(cid0==="prism"?(":"+String(prismSeed)):"");
-  if(cid0==="onyx") key+=":"+String(Math.floor((t||0)*8));
   if(!paintDragon.cache[key]){
     var b=document.createElement("canvas"); b.width=IW; b.height=IH;
     var bx=b.getContext("2d");
     var cid=getColor()?getColor().id:"";
-    if(cid==="prism"||cid==="nebula"||cid==="koi"||cid==="magma"||cid==="venom"||cid==="aurora"||cid==="carbon"||cid==="ghost"||cid==="onyx"){
+    if(cid==="prism"||cid==="nebula"||cid==="koi"||cid==="magma"||cid==="venom"||cid==="aurora"||cid==="carbon"||cid==="ghost"){
       applyExclusiveSkin(bx,im,IW,IH,cid,spriteId(d),t||0);
     }else{
       bx.drawImage(im,0,0);
@@ -609,9 +622,9 @@ if(tint){
       restoreEyes(bx,im,IW,IH);
     }
     paintDragon.cache[key]=b;
-    if(cid0==="onyx"){for(var ck in paintDragon.cache){if(ck!==key&&ck.indexOf(":onyx:")!==-1)delete paintDragon.cache[ck]}}
   }
   src=paintDragon.cache[key];
+  }
 }
 g.imageSmoothingEnabled=true;
 var sc=124/IW;
