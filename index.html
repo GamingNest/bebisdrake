@@ -37,7 +37,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 #play::before,#play::after{content:"";position:absolute;top:50%;width:22px;height:14px;background:#fff6d0;border:2px solid #e8c040;border-radius:50% 50% 40% 40%;}
 #play::before{left:14px;transform:translateY(-70%) rotate(-18deg)}
 #play::after{right:14px;transform:translateY(-70%) rotate(18deg) scaleX(-1)}
-.menu{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}.menu button{padding:10px 3px;border-radius:12px;background:#111832;border:1px solid #5e6eb044;font-size:10px;font-weight:900}.menu i{display:block;font-style:normal;font-size:19px;margin-bottom:2px}
+.menu{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:9px}.menu button{padding:10px 3px;border-radius:12px;background:#111832;border:1px solid #5e6eb044;font-size:10px;font-weight:900}.menu i{display:block;font-style:normal;font-size:19px;margin-bottom:2px}
 #overlay.home-open .menu button{background:linear-gradient(180deg,#fff,#f3e4ff);color:#5a3a68;border:2px solid #d8b8f0;border-radius:16px}
 .menu.util{grid-template-columns:1fr 1fr;margin-top:8px;max-width:220px;margin-left:auto;margin-right:auto}
 .menu.util button{padding:6px 3px;font-size:9px;opacity:.85;border-radius:12px!important}
@@ -88,7 +88,6 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <div class="menu">
 <button type="button" data-screen="shop"><i>🛒</i>Shop</button>
 <button type="button" data-screen="customize"><i>✨</i>Customize</button>
-<button type="button" data-screen="maps"><i>🗺️</i>Maps</button>
 </div>
 <div class="menu util">
 <button type="button" id="sound"><i>🔊</i>Sound</button>
@@ -1820,7 +1819,7 @@ var customM="";
 for(var cd=0;cd<dragons.length;cd++){var dd=dragons[cd],ownD=owned.has(dd.id);customD+='<div class="card '+(selectedDragon===dd.id?"selected":"")+(!ownD?" locked":"")+'" data-action="custom-dragon" data-id="'+dd.id+'"><div class="thumb"><canvas class="previewCanvas" width="280" height="112" data-preview-dragon="'+dd.id+'"></canvas></div><b>'+dd.name.replace(" Dragon","")+'</b></div>';}
 for(var cc=0;cc<colors.length;cc++){var coo=colors[cc],ownC=ownedColors.has(coo.id)||coo.id==="natural";customC+='<button type="button" class="swatch '+(coo.exclusive?"exclusive ":"")+(selectedColor===coo.id?"selected":"")+(!ownC?" locked":"")+'" data-action="custom-color" data-id="'+coo.id+'" style="background:'+colorFill(coo)+'"><span>'+coo.name+(coo.exclusive?" ★":"")+'</span></button>';}
 for(var cm=0;cm<maps.length;cm++){var mm=maps[cm],ownM=ownedMaps.has(mm.id);customM+='<button type="button" class="map compact '+(selectedMap===mm.id?"selected ":"")+(!ownM?"locked":"")+'" data-action="custom-map" data-id="'+mm.id+'" style="background:linear-gradient(135deg,'+mm.a+','+mm.b+')"><b>'+mm.name+'</b></button>';}
-document.getElementById("shopCards").innerHTML=sc;document.getElementById("shopSwatches").innerHTML=sw;document.getElementById("shopMapsList").innerHTML=ml;document.getElementById("dragonCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("mapsList").innerHTML=ml;document.getElementById("customDragonCards").innerHTML=customD;document.getElementById("customColorSwatches").innerHTML=customC;var cml=document.getElementById("customMapsList");if(cml)cml.innerHTML=customM;document.getElementById("shopCoins").textContent=String(coins);
+document.getElementById("shopCards").innerHTML=sc;document.getElementById("shopSwatches").innerHTML=sw;document.getElementById("shopMapsList").innerHTML=ml;document.getElementById("dragonCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("customDragonCards").innerHTML=customD;document.getElementById("customColorSwatches").innerHTML=customC;var cml=document.getElementById("customMapsList");if(cml)cml.innerHTML=customM;document.getElementById("shopCoins").textContent=String(coins);
 var current=document.getElementById("customCurrent"),pc=document.getElementById("customPreviewCanvas");if(current){current.textContent=getDragon().name+" · "+getColor().name+(getColor().exclusive?" ★":"")+" · "+getMap().name;current.classList.toggle("exclusivePick",!!(getColor().exclusive||getDragon().exclusive));}if(pc)drawPreviewCanvas(pc,getDragon(),getColor(),1.2);schedulePreviews();var hc=document.getElementById("homeCoins");if(hc)hc.textContent=String(coins);drawHomeDragon();
 }
 function setShopTab(tab){var tabs=document.querySelectorAll("[data-shop-tab]"),panels=["Dragons","Colors","Maps"];for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-shop-tab")===tab);for(var j=0;j<panels.length;j++){var el=document.getElementById("shopPanel"+panels[j]);if(el)el.classList.toggle("active",panels[j].toLowerCase()===tab)}}
@@ -1906,30 +1905,18 @@ askPurchase("map",id,mp.name,300);return;
 }
 if(action==="custom-dragon"){
 var d=dragons.find(function(x){return x.id===id});if(!d)return;
-if(!owned.has(id)){
-  var level=getPlayerLevel();
-  if(d.exclusive&&coins<50000&&level<100){toast("Need 50,000 coins or Level 100");return;}
-  if(!d.exclusive&&coins<d.price){toast("Not enough coins");return;}
-  askPurchase("dragon",id,d.name,d.exclusive?50000:d.price);return;
-}
+if(!owned.has(id)){toast("Unlock this in the Shop");return;}
 selectedDragon=id;save();render();sfxClick();toast(d.name+" equipped");return;
 }
 if(action==="custom-color"){
 var col=colors.find(function(x){return x.id===id});if(!col)return;
 if(col.id==="natural"){selectedColor="natural";if(!ownedColors.has("natural"))ownedColors.add("natural");save();render();sfxClick();toast("Natural color equipped");return;}
-if(!ownedColors.has(id)){
-  var price=colorPrice(col);
-  if(coins<price){toast("Need "+price.toLocaleString()+" coins");return;}
-  askPurchase("color",id,col.name,price);return;
-}
+if(!ownedColors.has(id)){toast("Unlock this in the Shop");return;}
 selectedColor=id;save();render();sfxClick();toast(col.name+" equipped");return;
 }
 if(action==="custom-map"){
 var mp=maps.find(function(x){return x.id===id});if(!mp)return;
-if(!ownedMaps.has(id)){
-  if(coins<300){toast("Need 300 coins");return;}
-  askPurchase("map",id,mp.name,300);return;
-}
+if(!ownedMaps.has(id)){toast("Unlock this in the Shop");return;}
 selectedMap=id;save();render();sfxClick();toast(mp.name+" equipped");return;
 }
 }catch(err){console.error("Dragon Tap menu error:",err);toast("Menu error - reload the game");}
