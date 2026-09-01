@@ -661,7 +661,7 @@ ctx.restore()}
 var dragonImgs={};
 ["baby","fire","ice","forest","shadow","gold","void","knight","nimbus","coral","thorn","mochi"].forEach(function(id){
   var im=new Image();
-  im.onload=function(){if(typeof drawHomeDragon==="function")drawHomeDragon();if(typeof renderPreviewCards==="function")renderPreviewCards()};
+  im.onload=function(){if(typeof schedulePreviews==="function")schedulePreviews()};
   im.src="dragons/"+id+".png?v=5bcee15";
   dragonImgs[id]=im;
 });
@@ -1525,7 +1525,34 @@ cx.save();cx.translate(cssW*.46,cssH*.62);cx.scale((scale||1)*1.15,(scale||1)*1.
 paintDragon(cx,d,paletteFor(d,c),0,{still:true});
 cx.restore();
 }
-function renderPreviewCards(){var els=document.querySelectorAll("[data-preview-dragon]");for(var i=0;i<els.length;i++){var d=dragons.find(function(x){return x.id===els[i].getAttribute("data-preview-dragon")});if(d)drawPreviewCanvas(els[i],d,null,d.scale||.68);}}
+var previewTimer=0;
+function schedulePreviews(){
+  clearTimeout(previewTimer);
+  previewTimer=setTimeout(function(){
+    if(typeof drawHomeDragon==="function")drawHomeDragon();
+    if(typeof renderPreviewCards==="function")renderPreviewCards();
+  },80);
+}
+function renderPreviewCards(){
+  var els=document.querySelectorAll("[data-preview-dragon]");
+  for(var i=0;i<els.length;i++){
+    var canvas=els[i], id=canvas.getAttribute("data-preview-dragon");
+    var d=dragons.find(function(x){return x.id===id});
+    if(!d)continue;
+    var im=dragonImgs[spriteId(d)];
+    if(!im||!im.complete||!im.naturalWidth)continue;
+    var r=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+    var cssW=canvas.clientWidth||Number(canvas.getAttribute("width"))||180;
+    var cssH=canvas.clientHeight||Number(canvas.getAttribute("height"))||78;
+    if(cssW<2)cssW=180;if(cssH<2)cssH=78;
+    canvas.width=Math.round(cssW*r);canvas.height=Math.round(cssH*r);
+    var cx=canvas.getContext("2d");
+    cx.setTransform(r,0,0,r,0,0);
+    cx.clearRect(0,0,cssW,cssH);
+    var sc=Math.min(cssW/im.naturalWidth,cssH/im.naturalHeight)*1.15;
+    cx.drawImage(im,(cssW-im.naturalWidth*sc)/2,(cssH-im.naturalHeight*sc)/2,im.naturalWidth*sc,im.naturalHeight*sc);
+  }
+}
 function colorFill(col){
 if(!col||!col.body){
   var d=getDragon();
@@ -1544,7 +1571,7 @@ for(var cd=0;cd<dragons.length;cd++){var dd=dragons[cd],ownD=owned.has(dd.id);cu
 for(var cc=0;cc<colors.length;cc++){var coo=colors[cc],ownC=ownedColors.has(coo.id)||coo.id==="natural";customC+='<button type="button" class="swatch '+(coo.exclusive?"exclusive ":"")+(selectedColor===coo.id?"selected":"")+(!ownC?" locked":"")+'" data-action="custom-color" data-id="'+coo.id+'" style="background:'+colorFill(coo)+'"><span>'+coo.name+(coo.exclusive?" ★":"")+'</span></button>';}
 for(var cm=0;cm<maps.length;cm++){var mm=maps[cm],ownM=ownedMaps.has(mm.id);customM+='<button type="button" class="map compact '+(selectedMap===mm.id?"selected ":"")+(!ownM?"locked":"")+'" data-action="custom-map" data-id="'+mm.id+'" style="background:linear-gradient(135deg,'+mm.a+','+mm.b+')"><b>'+mm.name+'</b></button>';}
 document.getElementById("shopCards").innerHTML=sc;document.getElementById("shopSwatches").innerHTML=sw;document.getElementById("shopMapsList").innerHTML=ml;document.getElementById("dragonCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("mapsList").innerHTML=ml;document.getElementById("customDragonCards").innerHTML=customD;document.getElementById("customColorSwatches").innerHTML=customC;var cml=document.getElementById("customMapsList");if(cml)cml.innerHTML=customM;document.getElementById("shopCoins").textContent=String(coins);
-var current=document.getElementById("customCurrent"),pc=document.getElementById("customPreviewCanvas");if(current){current.textContent=getDragon().name+" · "+getColor().name+(getColor().exclusive?" ★":"")+" · "+getMap().name;current.classList.toggle("exclusivePick",!!(getColor().exclusive||getDragon().exclusive));}if(pc)drawPreviewCanvas(pc,getDragon(),getColor(),1.2);renderPreviewCards();var hc=document.getElementById("homeCoins");if(hc)hc.textContent=String(coins);drawHomeDragon();
+var current=document.getElementById("customCurrent"),pc=document.getElementById("customPreviewCanvas");if(current){current.textContent=getDragon().name+" · "+getColor().name+(getColor().exclusive?" ★":"")+" · "+getMap().name;current.classList.toggle("exclusivePick",!!(getColor().exclusive||getDragon().exclusive));}if(pc)drawPreviewCanvas(pc,getDragon(),getColor(),1.2);schedulePreviews();var hc=document.getElementById("homeCoins");if(hc)hc.textContent=String(coins);drawHomeDragon();
 }
 function setShopTab(tab){var tabs=document.querySelectorAll("[data-shop-tab]"),panels=["Dragons","Colors","Maps"];for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-shop-tab")===tab);for(var j=0;j<panels.length;j++){var el=document.getElementById("shopPanel"+panels[j]);if(el)el.classList.toggle("active",panels[j].toLowerCase()===tab)}}
 function setCustomTab(tab){var tabs=document.querySelectorAll("[data-custom-tab]");for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-custom-tab")===tab);var names=["dragons","colors","maps"];for(var j=0;j<names.length;j++){var el=document.getElementById("customPanel"+names[j].charAt(0).toUpperCase()+names[j].slice(1));if(el)el.classList.toggle("active",names[j]===tab)}}
