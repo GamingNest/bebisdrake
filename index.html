@@ -355,24 +355,8 @@ function applyExclusiveSkin(bx,im,IW,IH,kind,style){
 bx.clearRect(0,0,IW,IH);bx.drawImage(im,0,0);
 var img=bx.getImageData(0,0,IW,IH),p=img.data;
 var hueOff={baby:8,fire:22,ice:-28,forest:95,shadow:265,gold:42,void:288}[style]||0;
-var koiOff={
-  baby:[[0.62,0.36,0.17],[0.40,0.58,0.13]],
-  fire:[[0.58,0.32,0.18],[0.44,0.60,0.12],[0.70,0.48,0.10]],
-  ice:[[0.60,0.34,0.14],[0.38,0.55,0.11]],
-  forest:[[0.55,0.40,0.16],[0.36,0.62,0.12],[0.68,0.52,0.09]],
-  shadow:[[0.60,0.38,0.15],[0.42,0.57,0.12]],
-  gold:[[0.63,0.34,0.16],[0.45,0.56,0.11]],
-  void:[[0.58,0.36,0.18],[0.40,0.60,0.14],[0.72,0.46,0.08]]
-}[style]||[[0.6,0.38,0.15],[0.42,0.58,0.12]];
-var inkOff={
-  baby:[[0.30,0.34,0.05],[0.72,0.60,0.04]],
-  fire:[[0.28,0.40,0.045],[0.74,0.34,0.04]],
-  ice:[[0.32,0.30,0.04],[0.70,0.58,0.035]],
-  forest:[[0.26,0.36,0.05],[0.68,0.64,0.04]],
-  shadow:[[0.34,0.32,0.045],[0.76,0.52,0.04]],
-  gold:[[0.29,0.33,0.04],[0.71,0.61,0.035]],
-  void:[[0.33,0.38,0.05],[0.69,0.30,0.04]]
-}[style]||[[0.3,0.34,0.05],[0.7,0.6,0.04]];
+var stripeAng={baby:0.58,fire:0.72,ice:0.42,forest:0.64,shadow:0.88,gold:0.5,void:0.98}[style]||0.6;
+var stripeFreq={baby:5.4,fire:6.1,ice:7.0,forest:5.7,shadow:6.4,gold:5.1,void:7.3}[style]||5.6;
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
     var i=(y*IW+x)*4,a=p[i+3];if(a<12)continue;
@@ -404,24 +388,23 @@ for(var y=0;y<IH;y++){
       var shade=0.38+yv*0.72;
       nr=mix[0]*shade;ng=mix[1]*shade;nb=mix[2]*shade;
     }else{
-      var cream=[255,241,220],orange=[226,74,28],ink=[22,16,14];
-      if(style==="ice"){cream=[240,248,255];orange=[255,130,110]}
-      if(style==="shadow"||style==="void"){cream=[236,228,220];orange=[200,60,40]}
-      if(style==="gold"){cream=[255,244,220];orange=[210,90,30]}
-      if(style==="forest"){cream=[255,246,220];orange=[200,90,30]}
-      var patch=0;
-      for(var pi=0;pi<koiOff.length;pi++){
-        var dx=(nx-koiOff[pi][0])/koiOff[pi][2], dy=(ny-koiOff[pi][1])/(koiOff[pi][2]*0.85);
-        patch=Math.max(patch,Math.exp(-(dx*dx+dy*dy)));
-      }
-      var spot=0;
-      for(var qi=0;qi<inkOff.length;qi++){
-        var ex=(nx-inkOff[qi][0])/inkOff[qi][2], ey=(ny-inkOff[qi][1])/inkOff[qi][2];
-        spot=Math.max(spot,Math.exp(-(ex*ex+ey*ey)*1.8));
-      }
-      var base=lerp3(cream,orange,Math.min(1,patch*1.35*(0.45+yv)));
-      if(spot>0.45) base=lerp3(base,ink,Math.min(1,(spot-0.45)*2.2));
-      var sh=0.42+yv*0.68;
+      var cream=[245,242,236],orange=[232,92,28],ink=[18,16,16];
+      if(style==="ice"){cream=[236,244,252];orange=[255,110,70];ink=[16,28,42]}
+      if(style==="fire"){cream=[250,240,232];orange=[255,78,18]}
+      if(style==="forest"){cream=[242,244,232];orange=[220,86,22]}
+      if(style==="shadow"){cream=[228,224,220];orange=[210,70,28];ink=[12,10,16]}
+      if(style==="gold"){cream=[252,244,228];orange=[220,84,18]}
+      if(style==="void"){cream=[232,228,226];orange=[255,72,24];ink=[8,6,12]}
+      var ca=Math.cos(stripeAng),sa=Math.sin(stripeAng);
+      var u=nx*ca+ny*sa, v=-nx*sa+ny*ca;
+      var f=((u*stripeFreq)%1+1)%1;
+      var base=cream;
+      if(f<0.055||(f>0.26&&f<0.31)) base=ink;
+      else if(f<0.26) base=orange;
+      var f2=((v*3.8+u*0.4)%1+1)%1;
+      if(yv>0.58&&f2<0.11) base=orange;
+      if(yv<0.22&&f>0.4&&f<0.48) base=ink;
+      var sh=0.40+yv*0.68;
       nr=base[0]*sh;ng=base[1]*sh;nb=base[2]*sh;
     }
     p[i]=Math.max(0,Math.min(255,nr));
@@ -592,7 +575,7 @@ if(!col||!col.body){
   return "linear-gradient(135deg,"+d.body+","+d.wing+")";
 }
 if(col.stops&&col.stops.length)return "linear-gradient(135deg,"+col.stops.join(",")+")";
-if(col.skin==="koi")return "linear-gradient(135deg,#fff6e8 0%,#e24a1c 48%,#1a1412 100%)";
+if(col.skin==="koi")return "repeating-linear-gradient(115deg,#f4f1eb 0 10px,#e85c1c 10px 22px,#141210 22px 26px,#f4f1eb 26px 40px)";
 return "linear-gradient(135deg,"+col.body+","+col.wing+")";
 }
 function render(){
