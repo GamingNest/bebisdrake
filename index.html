@@ -451,7 +451,7 @@ for(var y=0;y<IH;y++){
       var belly=ny>0.52&&yv>0.5;
       var blaze=ny>0.22&&ny<0.5&&nx>0.52&&nx<0.86&&((nx-0.7)+(ny-0.34)*1.4)>-0.08&&((nx-0.7)+(ny-0.34)*1.4)<0.22;
       if(wing||tail||belly||blaze) base=orange;
-      var horn=ny<0.28&&nx>0.48&&yv<0.45;
+      var horn=ny<0.20&&nx>0.58&&yv<0.32;
       var claw=ny>0.68&&yv<0.5;
       var plate=(nx>0.40&&nx<0.50&&ny>0.38&&ny<0.55);
       var seam=Math.abs((nx*0.9+ny*0.5)-0.72)<0.018||Math.abs((nx-0.33)*1.2-(ny-0.45))<0.016;
@@ -478,32 +478,38 @@ var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
 var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
 var o=tx.getImageData(0,0,IW,IH).data;
 var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
-var mask=new Uint8Array(IW*IH);
-for(var y=0;y<IH;y++){
-  for(var x=0;x<IW;x++){
-    var i=(y*IW+x)*4;if(o[i+3]<40)continue;
-    var nx=x/IW,ny=y/IH;
-    if(nx<0.38||ny>0.58)continue;
+var r=Math.max(6,Math.floor(IW*0.014));
+var pupils=[];
+for(var y=Math.floor(IH*0.16);y<Math.floor(IH*0.42);y++){
+  for(var x=Math.floor(IW*0.50);x<Math.floor(IW*0.86);x++){
+    var i=(y*IW+x)*4;if(o[i+3]<80)continue;
     var yv=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
-    if(yv<0.17){
-      var r=Math.floor(IW*0.038);
-      for(var dy=-r;dy<=r;dy++){
-        for(var dx=-r;dx<=r;dx++){
-          if(dx*dx+dy*dy>r*r)continue;
-          var xx=x+dx,yy=y+dy;
-          if(xx>=0&&yy>=0&&xx<IW&&yy<IH)mask[yy*IW+xx]=1;
-        }
-      }
+    if(yv>0.12)continue;
+    var darkN=0;
+    for(var k=-2;k<=2;k++)for(var j=-2;j<=2;j++){
+      var ii=((y+k)*IW+(x+j))*4;
+      if(o[ii+3]>80&&(0.2126*o[ii]+0.7152*o[ii+1]+0.0722*o[ii+2])/255<0.18)darkN++;
+    }
+    if(darkN>=12)pupils.push([x,y]);
+  }
+}
+var mask=new Uint8Array(IW*IH);
+for(var pii=0;pii<pupils.length;pii++){
+  var px=pupils[pii][0],py=pupils[pii][1];
+  for(var dy=-r;dy<=r;dy++){
+    for(var dx=-r;dx<=r;dx++){
+      if(dx*dx+dy*dy>r*r)continue;
+      var xx=px+dx,yy=py+dy;
+      if(xx>=0&&yy>=0&&xx<IW&&yy<IH)mask[yy*IW+xx]=1;
     }
   }
 }
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
-    var i=(y*IW+x)*4,nx=x/IW,ny=y/IH;
-    if(o[i+3]<40)continue;
+    if(!mask[y*IW+x])continue;
+    var i=(y*IW+x)*4;if(o[i+3]<40)continue;
     var yv=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
-    var keep=mask[y*IW+x]||(nx>0.4&&ny<0.55&&(yv<0.14||yv>0.9));
-    if(keep){p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3]}
+    if(yv<0.22||yv>0.82){p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3]}
   }
 }
 bx.putImageData(cur,0,0);
