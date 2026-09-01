@@ -729,6 +729,112 @@ for(var y=0;y<IH;y++){
 }
 return keep;
 }
+function fillInteriorHoles(bx,IW,IH){
+var img=bx.getImageData(0,0,IW,IH),p=img.data,n=IW*IH;
+var outside=new Uint8Array(n),q=new Int32Array(n),qs=0,qe=0;
+function push(x,y){
+  if(x<0||y<0||x>=IW||y>=IH)return;
+  var k=y*IW+x;
+  if(outside[k])return;
+  if(p[k*4+3]>=12)return;
+  outside[k]=1;q[qe++]=k;
+}
+for(var x=0;x<IW;x++){push(x,0);push(x,IH-1)}
+for(var y=0;y<IH;y++){push(0,y);push(IW-1,y)}
+while(qs<qe){
+  var k=q[qs++],x=k%IW,y=(k-x)/IW;
+  push(x-1,y);push(x+1,y);push(x,y-1);push(x,y+1);
+}
+function sampleRgb(x,y){
+  var sr=0,sg=0,sb=0,c=0;
+  for(var rad=1;rad<=10&&c===0;rad++){
+    for(var dy=-rad;dy<=rad;dy++){
+      for(var dx=-rad;dx<=rad;dx++){
+        if(Math.abs(dx)!==rad&&Math.abs(dy)!==rad)continue;
+        var xx=x+dx,yy=y+dy;
+        if(xx<0||yy<0||xx>=IW||yy>=IH)continue;
+        var kk=yy*IW+xx,ii=kk*4;
+        if(p[ii+3]<12)continue;
+        sr+=p[ii];sg+=p[ii+1];sb+=p[ii+2];c++;
+      }
+    }
+  }
+  if(!c){
+    for(var i=0;i<n&&c<48;i++){
+      if(outside[i])continue;
+      var ii=i*4;
+      if(p[ii+3]>=12){sr+=p[ii];sg+=p[ii+1];sb+=p[ii+2];c++}
+    }
+  }
+  if(!c)return [48,36,58];
+  return [sr/c,sg/c,sb/c];
+}
+for(var y=0;y<IH;y++){
+  for(var x=0;x<IW;x++){
+    var k=y*IW+x,i=k*4;
+    if(outside[k])continue;
+    if(p[i+3]>=12)continue;
+    var rgb=sampleRgb(x,y);
+    p[i]=rgb[0];p[i+1]=rgb[1];p[i+2]=rgb[2];p[i+3]=255;
+  }
+}
+bx.putImageData(img,0,0);
+}
+function silhouetteLineRgb(bx,IW,IH){
+var img=bx.getImageData(0,0,IW,IH),p=img.data,sr=0,sg=0,sb=0,c=0;
+for(var i=0;i<p.length;i+=4){
+  if(p[i+3]<40)continue;
+  sr+=p[i];sg+=p[i+1];sb+=p[i+2];c++;
+}
+if(!c)return [10,8,12];
+return [Math.round(sr/c*0.16+6),Math.round(sg/c*0.12+5),Math.round(sb/c*0.18+8)];
+}
+function strokeSilhouette(bx,IW,IH,lineRgb){
+var img=bx.getImageData(0,0,IW,IH),p=img.data,n=IW*IH;
+var aa=new Uint8Array(n),yyv=new Float32Array(n);
+for(var k=0;k<n;k++){
+  var i=k*4;aa[k]=p[i+3];
+  yyv[k]=(0.2126*p[i]+0.7152*p[i+1]+0.0722*p[i+2])/255;
+}
+var lr=lineRgb[0],lg=lineRgb[1],lb=lineRgb[2];
+var out=new Uint8ClampedArray(p);
+function isOut(x,y){if(x<0||y<0||x>=IW||y>=IH)return true;return aa[y*IW+x]<40}
+for(var y=0;y<IH;y++){
+  for(var x=0;x<IW;x++){
+    var k=y*IW+x;if(aa[k]<40)continue;
+    var dmin=99;
+    for(var dy=-2;dy<=2;dy++){
+      for(var dx=-2;dx<=2;dx++){
+        if(!dx&&!dy)continue;
+        if(isOut(x+dx,y+dy)){
+          var md=Math.max(Math.abs(dx),Math.abs(dy));
+          if(md<dmin)dmin=md;
+        }
+      }
+    }
+    var i=k*4;
+    if(dmin<=2){
+      out[i]=lr;out[i+1]=lg;out[i+2]=lb;out[i+3]=255;
+      continue;
+    }
+    var ridge=0;
+    var n4=[[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2]];
+    for(var ni=0;ni<n4.length;ni++){
+      var xx=x+n4[ni][0],yy=y+n4[ni][1];
+      if(xx<0||yy<0||xx>=IW||yy>=IH)continue;
+      if(aa[yy*IW+xx]<40)continue;
+      if(yyv[k]-yyv[yy*IW+xx]>0.24)ridge=1;
+    }
+    if(ridge){
+      out[i]=out[i]*0.42+lr*0.58;
+      out[i+1]=out[i+1]*0.42+lg*0.58;
+      out[i+2]=out[i+2]*0.42+lb*0.58;
+    }
+  }
+}
+for(var i=0;i<p.length;i++)p[i]=out[i];
+bx.putImageData(img,0,0);
+}
 function applyExclusiveSkin(bx,im,IW,IH,kind,style,phase){
 bx.clearRect(0,0,IW,IH);bx.drawImage(im,0,0);
 var img=bx.getImageData(0,0,IW,IH),p=img.data;
@@ -752,6 +858,7 @@ for(var y=0;y<IH;y++){
     if(knightArmor&&knightArmor[y*IW+x])continue;
     var r=p[i],g=p[i+1],b=p[i+2];
     var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
+    if(style==="void"||style==="shadow") yv=Math.min(1,yv*1.55+0.12);
     var nx=x/IW,ny=y/IH,nr,ng,nb;
     if(kind==="prism"){
       var hx=(h1%360), sx=80+(h2%200), sy=40+(h3%170), swirl=((h1>>>8)%120);
@@ -829,7 +936,7 @@ for(var y=0;y<IH;y++){
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="onyx"){
       var dark=style==="void"||style==="shadow";
-      var y2=dark?Math.min(1,yv*1.55+0.12):yv;
+      var y2=yv;
       var wave=0.5+0.5*Math.sin(nx*5.4+ny*3.6+y2*2.2);
       var u=Math.max(0,Math.min(1,y2*(dark?0.48:0.62)+wave*(dark?0.52:0.38)));
       var ink=dark?[18,8,8]:[8,6,6],red=dark?[255,28,32]:[198,12,22],hot=dark?[255,90,50]:[255,48,36];
@@ -992,13 +1099,17 @@ if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
   }
 }
 bx.putImageData(img,0,0);
+var smoky=style==="void"||style==="shadow";
+if(smoky)fillInteriorHoles(bx,IW,IH);
 bx.globalCompositeOperation="destination-in";
 bx.drawImage(im,0,0);
 bx.globalCompositeOperation="source-over";
+if(smoky)fillInteriorHoles(bx,IW,IH);
 restoreEyes(bx,im,IW,IH,style);
 if(style==="knight")restoreArmor(bx,im,IW,IH);
 if(kind==="ghost")addGhostGlow(bx,IW,IH);
 if(kind==="jade")addJadeGlow(bx,IW,IH);
+if(smoky)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH));
 }
 
 
@@ -1230,11 +1341,15 @@ if(!paintDragon.cache[key]){
     bx.globalCompositeOperation="destination-in";
     bx.drawImage(im,0,0);
     bx.globalCompositeOperation="source-over";
+    if(spriteId(d)==="void"||spriteId(d)==="shadow")fillInteriorHoles(bx,IW,IH);
     restoreEyes(bx,im,IW,IH,spriteId(d));
     if(spriteId(d)==="knight")restoreArmor(bx,im,IW,IH);
+    if(spriteId(d)==="void"||spriteId(d)==="shadow")strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH));
   }else{
     bx.drawImage(im,0,0);
+    if(spriteId(d)==="void"||spriteId(d)==="shadow")fillInteriorHoles(bx,IW,IH);
     restoreEyes(bx,im,IW,IH,spriteId(d));
+    if(spriteId(d)==="void"||spriteId(d)==="shadow")strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH));
   }
   hardenAlpha(b);
   stampPupils(b);
