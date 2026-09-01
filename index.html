@@ -172,7 +172,12 @@ var colors=[
 {id:"cobalt",name:"Cobalt",body:"#1236b8",wing:"#7ab8ff"},
 {id:"prism",name:"Prism",exclusive:true,price:50000,body:"#ff4d9a",wing:"#4df0ff",accent:"#ffd24d",stops:["#ff4d9a","#ffd24d","#4dff88","#4df0ff","#b44dff"]},
 {id:"nebula",name:"Nebula",exclusive:true,price:50000,body:"#2a1060",wing:"#ff64d8",accent:"#48d0ff",stops:["#120824","#6b2cff","#ff64d8","#48d0ff"]},
-{id:"koi",name:"Koi",exclusive:true,price:50000,body:"#fff1dc",wing:"#e24a1c",accent:"#1a1412",skin:"koi"}
+{id:"koi",name:"Koi",exclusive:true,price:50000,body:"#fff1dc",wing:"#e24a1c",accent:"#1a1412",skin:"koi"},
+{id:"magma",name:"Magma",exclusive:true,price:50000,body:"#1a0804",wing:"#ff4a12",accent:"#ffd24a",stops:["#140804","#ff3a00","#ffb020"]},
+{id:"venom",name:"Venom",exclusive:true,price:50000,body:"#0c1808",wing:"#b6ff1a",accent:"#f6ff6a",stops:["#081208","#5cff14","#e8ff4a"]},
+{id:"aurora",name:"Aurora",exclusive:true,price:50000,body:"#12382a",wing:"#3cffc8",accent:"#ff7ad2",stops:["#0a2a24","#2bffb0","#7ad0ff","#ff73d2"]},
+{id:"carbon",name:"Carbon",exclusive:true,price:50000,body:"#1a1d22",wing:"#3df0ff",accent:"#e8fbff",stops:["#12151a","#2a3038","#3df0ff"]},
+{id:"ghost",name:"Ghost",exclusive:true,price:50000,body:"#dce8f4",wing:"#9fd4ff",accent:"#ffffff",stops:["#c8d8ea","#eef6ff","#8ec8ff"]}
 ];
 var maps=[
 {id:"sky",name:"Sky Kingdom",desc:"Bright skies & floating islands",a:"#78bfff",b:"#f5d3e6"},
@@ -392,6 +397,40 @@ for(var y=0;y<IH;y++){
       var mix=lerp3(c2,ice,edge*(style==="ice"?1:0.55)+nx*0.15);
       var shade=0.38+yv*0.72;
       nr=mix[0]*shade;ng=mix[1]*shade;nb=mix[2]*shade;
+    }else if(kind==="magma"){
+      var dark=[18,6,2],mid=[220,40,8],hot=[255,150,20],white=[255,240,160];
+      var t1=Math.max(0,Math.min(1,(yv-0.12)/0.4));
+      var mix=lerp3(dark,mid,t1);
+      mix=lerp3(mix,hot,Math.max(0,Math.min(1,(yv-0.5)/0.3)));
+      mix=lerp3(mix,white,Math.max(0,Math.min(1,(yv-0.78)/0.22)));
+      var sh=0.62+yv*0.5;
+      nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
+    }else if(kind==="venom"){
+      var dark=[8,16,4],mid=[90,210,20],hot=[220,255,70];
+      var mix=lerp3(dark,mid,Math.max(0,Math.min(1,(yv-0.1)/0.45)));
+      mix=lerp3(mix,hot,Math.max(0,Math.min(1,(yv-0.55)/0.4)));
+      if(ny<0.34) mix=lerp3(mix,hot,0.35);
+      var sh=0.65+yv*0.48;
+      nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
+    }else if(kind==="aurora"){
+      var hue=150+nx*90+ny*70+yv*40+Math.sin(nx*7+ny*5)*25;
+      var rgb=hsvToRgb(hue,0.72,Math.min(1.1,0.7+yv*0.5));
+      var spec=Math.pow(Math.max(0,yv-0.5)/0.5,1.5);
+      nr=rgb[0]*(1-spec)+255*spec;ng=rgb[1]*(1-spec)+255*spec;nb=rgb[2]*(1-spec)+255*spec;
+    }else if(kind==="carbon"){
+      var base=[28+yv*50,32+yv*52,38+yv*55];
+      var edge=Math.abs(Math.sin((nx*18+ny*10)))>0.92||Math.abs(Math.sin((nx*9-ny*14)))>0.94;
+      if(edge){base=[40,230,255]}
+      if(yv>0.78){base=[200,245,255]}
+      var sh=0.7+yv*0.4;
+      nr=base[0]*sh;ng=base[1]*sh;nb=base[2]*sh;
+    }else if(kind==="ghost"){
+      var mix=lerp3([200,214,230],[245,250,255],yv);
+      mix=lerp3(mix,[140,190,255],Math.max(0,0.25-ny)*0.8);
+      var spec=Math.pow(yv,2.2);
+      nr=mix[0]*(1-spec*0.35)+255*spec*0.35;
+      ng=mix[1]*(1-spec*0.35)+255*spec*0.35;
+      nb=mix[2]*(1-spec*0.25)+255*spec*0.4;
     }else{
       var cream=[248,246,242],orange=[236,84,22],ink=[16,14,14];
       if(style==="ice"){cream=[240,246,252];orange=[255,96,48];ink=[18,26,40]}
@@ -424,6 +463,44 @@ bx.putImageData(img,0,0);
 bx.globalCompositeOperation="destination-in";
 bx.drawImage(im,0,0);
 bx.globalCompositeOperation="source-over";
+restoreEyes(bx,im,IW,IH);
+}
+
+
+function restoreEyes(bx,im,IW,IH){
+var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
+var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
+var o=tx.getImageData(0,0,IW,IH).data;
+var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
+var mask=new Uint8Array(IW*IH);
+for(var y=0;y<IH;y++){
+  for(var x=0;x<IW;x++){
+    var i=(y*IW+x)*4;if(o[i+3]<40)continue;
+    var nx=x/IW,ny=y/IH;
+    if(nx<0.38||ny>0.58)continue;
+    var yv=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
+    if(yv<0.17){
+      var r=Math.floor(IW*0.038);
+      for(var dy=-r;dy<=r;dy++){
+        for(var dx=-r;dx<=r;dx++){
+          if(dx*dx+dy*dy>r*r)continue;
+          var xx=x+dx,yy=y+dy;
+          if(xx>=0&&yy>=0&&xx<IW&&yy<IH)mask[yy*IW+xx]=1;
+        }
+      }
+    }
+  }
+}
+for(var y=0;y<IH;y++){
+  for(var x=0;x<IW;x++){
+    var i=(y*IW+x)*4,nx=x/IW,ny=y/IH;
+    if(o[i+3]<40)continue;
+    var yv=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
+    var keep=mask[y*IW+x]||(nx>0.4&&ny<0.55&&(yv<0.14||yv>0.9));
+    if(keep){p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3]}
+  }
+}
+bx.putImageData(cur,0,0);
 }
 
 function paintDragon(g,d,pal,t,anim){
@@ -441,7 +518,7 @@ if(tint){
     var b=document.createElement("canvas"); b.width=IW; b.height=IH;
     var bx=b.getContext("2d");
     var cid=getColor()?getColor().id:"";
-    if(cid==="prism"||cid==="nebula"||cid==="koi"){
+    if(cid==="prism"||cid==="nebula"||cid==="koi"||cid==="magma"||cid==="venom"||cid==="aurora"||cid==="carbon"||cid==="ghost"){
       applyExclusiveSkin(bx,im,IW,IH,cid,spriteId(d));
     }else{
       bx.drawImage(im,0,0);
@@ -456,6 +533,7 @@ if(tint){
       bx.globalCompositeOperation="destination-in";
       bx.drawImage(im,0,0);
       bx.globalCompositeOperation="source-over";
+      restoreEyes(bx,im,IW,IH);
     }
     paintDragon.cache[key]=b;
   }
