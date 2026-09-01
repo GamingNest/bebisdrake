@@ -857,7 +857,6 @@ if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
     var i=(y*IW+x)*4,a=p[i+3];if(a<12)continue;
-    if(knightArmor&&knightArmor[y*IW+x])continue;
     var r=p[i],g=p[i+1],b=p[i+2];
     var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
     if(style==="void"||style==="shadow") yv=Math.min(1,yv*1.55+0.12);
@@ -1072,7 +1071,6 @@ if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
     for(var x=0;x<IW;x++){
       var k=y*IW+x,i=k*4,a=srcA[k];
       if(a<12)continue;
-      if(knightArmor&&knightArmor[k])continue;
       var yv=srcY[k];
       var edge=0;
       var nbs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];
@@ -1110,7 +1108,6 @@ bx.drawImage(im,0,0);
 bx.globalCompositeOperation="source-over";
 if(puff)fillInteriorHoles(bx,IW,IH,knightArmor);
 restoreEyes(bx,im,IW,IH,style);
-if(style==="knight")restoreArmor(bx,im,IW,IH);
 if(kind==="ghost")addGhostGlow(bx,IW,IH);
 if(kind==="jade")addJadeGlow(bx,IW,IH);
 if(puff)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),knightArmor);
@@ -1179,7 +1176,7 @@ var EYE_PUPILS={
   shadow:[{cx:0.754,cy:0.451,pr:0.017},{cx:0.511,cy:0.453,pr:0.017}],
   gold:[{cx:0.680,cy:0.432,pr:0.017},{cx:0.786,cy:0.427,pr:0.017}],
   void:[{cx:0.768,cy:0.435,pr:0.016}],
-  knight:[{cx:0.575,cy:0.422,pr:0.016},{cx:0.708,cy:0.407,pr:0.016}],
+  knight:[{cx:0.554,cy:0.413,pr:0.016}],
   nimbus:[{cx:0.821,cy:0.457,pr:0.016}],
   coral:[{cx:0.834,cy:0.443,pr:0.016}],
   thorn:[{cx:0.800,cy:0.400,pr:0.016}],
@@ -1391,10 +1388,9 @@ if(!paintDragon.cache[key]){
       var tx=tc.getContext("2d");tx.drawImage(im,0,0);
       keep=armorKeepMask(tx.getImageData(0,0,IW,IH).data,IW,IH);
     }
-    if(cid==="royal")applyRoyalGold(bx,im,IW,IH,keep);
+    if(cid==="royal")applyRoyalGold(bx,im,IW,IH,null);
     if(sid==="void"||sid==="shadow"||sid==="knight")fillInteriorHoles(bx,IW,IH,keep);
     restoreEyes(bx,im,IW,IH,sid);
-    if(sid==="knight")restoreArmor(bx,im,IW,IH);
     if(sid==="void"||sid==="shadow"||sid==="knight")strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),keep);
   }else{
     bx.drawImage(im,0,0);
