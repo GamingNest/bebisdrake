@@ -164,7 +164,7 @@ var colors=[
 {id:"crimson",name:"Crimson",body:"#8f1838",wing:"#ff3f6f"},
 {id:"toxic",name:"Toxic",body:"#35551d",wing:"#b6ff3b"},
 {id:"aqua",name:"Aqua",body:"#126f78",wing:"#35f0d0"},
-{id:"lava",name:"Lava",body:"#6e180f",wing:"#ffb000"},
+{id:"lava",name:"Lava",body:"#e2580e",wing:"#ff9a2a",accent:"#ffd56a"},
 {id:"rose",name:"Rose",body:"#8f3d70",wing:"#ff9edb"},
 {id:"void",name:"Void",body:"#17131f",wing:"#9a55ff"},
 {id:"plasma",name:"Plasma",body:"#2549a3",wing:"#ff4dff"},
@@ -180,7 +180,7 @@ var colors=[
 {id:"prism",name:"Prism",exclusive:true,price:50000,body:"#ff4d9a",wing:"#4df0ff",accent:"#ffd24d",stops:["#ff4d9a","#ffd24d","#4dff88","#4df0ff","#b44dff"]},
 {id:"nebula",name:"Nebula",exclusive:true,price:50000,body:"#2a1060",wing:"#ff64d8",accent:"#48d0ff",stops:["#120824","#6b2cff","#ff64d8","#48d0ff"]},
 {id:"koi",name:"Koi",exclusive:true,price:50000,body:"#ffffff",wing:"#ff3008",accent:"#111111",stops:["#ffffff","#ff3008","#0a0a0a"]},
-{id:"magma",name:"Magma",exclusive:true,price:50000,body:"#1a0804",wing:"#ff4a12",accent:"#ffd24a",stops:["#140804","#ff3a00","#ffb020"]},
+{id:"magma",name:"Magma",exclusive:true,price:50000,body:"#1a0804",wing:"#ff6a18",accent:"#ffd24a",stops:["#140804","#ff5a10","#ffc040"]},
 {id:"venom",name:"Venom",exclusive:true,price:50000,body:"#0c1808",wing:"#b6ff1a",accent:"#f6ff6a",stops:["#081208","#5cff14","#e8ff4a"]},
 {id:"aurora",name:"Aurora",exclusive:true,price:50000,body:"#12382a",wing:"#3cffc8",accent:"#ff7ad2",stops:["#0a2a24","#2bffb0","#7ad0ff","#ff73d2"]},
 {id:"carbon",name:"Carbon",exclusive:true,price:50000,body:"#0c0e12",wing:"#2af0ff",accent:"#d8f6ff",stops:["#07080c","#2a3444","#2af0ff"]},
@@ -510,36 +510,47 @@ return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
 function lerp3(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]}
 function hash32(n){n|=0;n=Math.imul(n^n>>>16,2246822507);n=Math.imul(n^n>>>13,3266489909);return (n^n>>>16)>>>0}
 function armorKeepMask(o,IW,IH){
-var steel=new Uint8Array(IW*IH),keep=new Uint8Array(IW*IH);
+var seed=new Uint8Array(IW*IH),keep=new Uint8Array(IW*IH);
 function isSteel(r,g,b,a){
   if(a<70)return false;
   var mx=Math.max(r,g,b),mn=Math.min(r,g,b),c=mx-mn;
   var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
   var sat=mx?c/mx:0;
-  return sat<0.32&&yv>0.16&&yv<0.96&&Math.abs(r-g)<42&&Math.abs(g-b)<48&&Math.abs(r-b)<52;
+  return sat<0.42&&yv>0.14&&yv<0.98&&Math.abs(r-g)<52&&Math.abs(g-b)<58&&Math.abs(r-b)<62;
 }
 function isGold(r,g,b,a){
   if(a<70)return false;
   var mx=Math.max(r,g,b),mn=Math.min(r,g,b),c=mx-mn;
   var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
   var sat=mx?c/mx:0;
-  return r>g+4&&g>b+2&&r>95&&sat>0.14&&sat<0.86&&yv>0.22&&yv<0.96&&(r-b)>18;
+  if(g>r*0.80&&r>130&&g>105&&(r-g)<48&&yv<0.78)return false;
+  return r>g+10&&g>b+6&&r>108&&sat>0.20&&sat<0.90&&yv>0.28&&yv<0.98&&(r-b)>36&&(r-g)>10&&g<(r*0.82+18);
 }
+function inHelmet(x,y){var nx=x/IW,ny=y/IH;return ny<0.42&&nx>0.50&&nx<0.98}
+function inChest(x,y){var dx=x/IW-0.56,dy=y/IH-0.50;return dx*dx+dy*dy<0.13*0.13}
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
-    var i=(y*IW+x)*4;
-    if(isSteel(o[i],o[i+1],o[i+2],o[i+3])){steel[y*IW+x]=1;keep[y*IW+x]=1}
+    var i=(y*IW+x)*4,r=o[i],g=o[i+1],b=o[i+2],a=o[i+3];
+    var st=isSteel(r,g,b,a),go=isGold(r,g,b,a);
+    if(st||go){seed[y*IW+x]=1;keep[y*IW+x]=1}
+    else if(a>80&&(inHelmet(x,y)||inChest(x,y))){
+      var mx=Math.max(r,g,b),mn=Math.min(r,g,b),c=mx-mn,sat=mx?c/mx:0;
+      var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
+      if((sat<0.48&&yv>0.18)||(r>g&&g>=b-4&&r>120&&sat>0.18&&yv>0.32&&!(g>r*0.82&&(r-g)<40))){
+        seed[y*IW+x]=1;keep[y*IW+x]=1;
+      }
+    }
   }
 }
-var rad=6;
+var rad=8;
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
-    if(!steel[y*IW+x])continue;
+    if(!seed[y*IW+x])continue;
     for(var dy=-rad;dy<=rad;dy++)for(var dx=-rad;dx<=rad;dx++){
       if(dx*dx+dy*dy>rad*rad)continue;
       var xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=IW||yy>=IH)continue;
       var i=(yy*IW+xx)*4;if(o[i+3]<70)continue;
-      if(steel[yy*IW+xx]||isGold(o[i],o[i+1],o[i+2],o[i+3]))keep[yy*IW+xx]=1;
+      keep[yy*IW+xx]=1;
     }
   }
 }
@@ -591,7 +602,7 @@ for(var y=0;y<IH;y++){
         nr=Math.min(255,nr+90);ng=Math.min(255,ng+100);nb=Math.min(255,nb+140);
       }
     }else if(kind==="magma"){
-      var dark=[18,6,2],mid=[220,40,8],hot=[255,150,20],white=[255,240,160];
+      var dark=[18,6,2],mid=[235,72,10],hot=[255,168,32],white=[255,240,160];
       var t1=Math.max(0,Math.min(1,(yv-0.12)/0.4));
       var mix=lerp3(dark,mid,t1);
       mix=lerp3(mix,hot,Math.max(0,Math.min(1,(yv-0.5)/0.3)));
@@ -611,18 +622,18 @@ for(var y=0;y<IH;y++){
       var stripe=Math.floor((nx*36-ny*14+yv*8)*10);
       var hue=hues[band]+(stripe%3)*8;
       hue=Math.floor(hue/10)*10;
-      var sat=0.96;
-      var val=Math.min(1.05,0.22+yv*0.62);
+      var sat=0.94;
+      var val=Math.min(1.18,0.55+yv*0.5);
       var valley=Math.pow(1-yv,1.35);
-      val=val*(1-0.38*valley);
+      val=val*(1-0.12*valley);
       var rgb=hsvToRgb(hue,sat,val);
       var aniso=Math.pow(Math.abs(Math.sin((nx*1.4-ny*11.5)*Math.PI)),2.2);
-      var spec=Math.pow(Math.max(0,yv-0.58)/0.42,2.6)*(0.18+0.82*aniso);
-      var metal=0.22+yv*0.28;
-      nr=rgb[0]*metal*(1-spec)+245*spec;
+      var spec=Math.pow(Math.max(0,yv-0.52)/0.48,2.4)*(0.22+0.78*aniso);
+      var metal=0.70+yv*0.35;
+      nr=rgb[0]*metal*(1-spec)+250*spec;
       ng=rgb[1]*metal*(1-spec)+255*spec;
       nb=rgb[2]*metal*(1-spec)+255*spec;
-      if(aniso>0.82&&yv>0.62){nr=Math.min(255,nr+40);ng=Math.min(255,ng+18);nb=Math.min(255,nb+55)}
+      if(aniso>0.82&&yv>0.58){nr=Math.min(255,nr+36);ng=Math.min(255,ng+16);nb=Math.min(255,nb+48)}
     }else if(kind==="carbon"){
       var wave=0.5+0.5*Math.sin(nx*2.2+ny*1.6+yv*1.4);
       var u=Math.max(0,Math.min(1,yv*0.7+wave*0.3));
@@ -646,17 +657,12 @@ for(var y=0;y<IH;y++){
       ng=mix[1]*sh*(1-spec)+120*spec;
       nb=mix[2]*sh*(1-spec)+80*spec;
     }else if(kind==="koi"){
-      var wave=0.5+0.5*Math.sin(nx*4.6-ny*3.1+yv*1.6);
-      var u=Math.max(0,Math.min(1,wave*0.72+yv*0.28));
-      var cream=[255,255,252],orange=[255,48,6],ink=[8,7,7];
-      var mix;
-      if(u<0.42) mix=lerp3(cream,orange,u/0.42);
-      else mix=lerp3(orange,ink,(u-0.42)/0.58);
-      var sh=0.88+yv*0.2;
-      var spec=Math.pow(Math.max(0,yv-0.72)/0.28,1.5)*0.22;
-      nr=mix[0]*sh*(1-spec)+255*spec;
-      ng=mix[1]*sh*(1-spec)+255*spec;
-      nb=mix[2]*sh*(1-spec)+252*spec;
+      var px=Math.floor(nx*18+Math.abs(Math.sin(ny*41))*1.4);
+      var py=Math.floor(ny*14+Math.abs(Math.cos(nx*37))*1.2);
+      var u=(hash32(px*131+py*917+sid*19)&255)/255;
+      var cream=[255,252,236],orange=[255,92,8],ink=[10,8,8];
+      var mix=u<0.34?cream:(u<0.72?orange:ink);
+      nr=mix[0];ng=mix[1];nb=mix[2];
     }else if(kind==="ghost"){
       var mix=lerp3([200,214,230],[245,250,255],yv);
       mix=lerp3(mix,[140,190,255],Math.max(0,0.25-ny)*0.8);
@@ -696,7 +702,7 @@ bx.putImageData(img,0,0);
 bx.globalCompositeOperation="destination-in";
 bx.drawImage(im,0,0);
 bx.globalCompositeOperation="source-over";
-restoreEyes(bx,im,IW,IH);
+restoreEyes(bx,im,IW,IH,style);
 if(style==="knight")restoreArmor(bx,im,IW,IH);
 if(kind==="ghost")addGhostGlow(bx,IW,IH);
 }
@@ -717,12 +723,63 @@ for(var y=0;y<IH;y++){
 }
 bx.putImageData(cur,0,0);
 }
-function restoreEyes(bx,im,IW,IH){
+var EYE_PUPILS={
+  baby:[{cx:0.610,cy:0.452,pr:0.017},{cx:0.752,cy:0.435,pr:0.017}],
+  fire:[{cx:0.658,cy:0.428,pr:0.017},{cx:0.765,cy:0.428,pr:0.017}],
+  ice:[{cx:0.746,cy:0.453,pr:0.018}],
+  forest:[{cx:0.736,cy:0.445,pr:0.017}],
+  shadow:[{cx:0.754,cy:0.451,pr:0.017},{cx:0.511,cy:0.453,pr:0.017}],
+  gold:[{cx:0.680,cy:0.432,pr:0.017},{cx:0.786,cy:0.427,pr:0.017}],
+  void:[{cx:0.768,cy:0.435,pr:0.016}],
+  knight:[{cx:0.575,cy:0.422,pr:0.016}]
+};
+function restoreEyes(bx,im,IW,IH,style){
 var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
 var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
 var o=tx.getImageData(0,0,IW,IH).data;
 var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
-var x0=Math.floor(IW*0.52),x1=Math.floor(IW*0.90),y0=Math.floor(IH*0.12),y1=Math.floor(IH*0.40);
+var mapped=EYE_PUPILS[style];
+function stampMapped(e){
+  var cx=e.cx*IW,cy=e.cy*IH,pr=Math.max(3.2,Math.min(12,(e.pr||0.015)*IW));
+  var copyR=pr*1.35;
+  for(var y=Math.floor(cy-copyR);y<=cy+copyR;y++){
+    for(var x=Math.floor(cx-copyR);x<=cx+copyR;x++){
+      if(x<0||y<0||x>=IW||y>=IH)continue;
+      var dx=x-cx,dy=y-cy;if(dx*dx+dy*dy>copyR*copyR)continue;
+      var i=(y*IW+x)*4;
+      if(o[i+3]>90){
+        var lu=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
+        if(lu<0.22){p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3]}
+      }
+    }
+  }
+  for(var y=Math.floor(cy-pr);y<=cy+pr;y++){
+    for(var x=Math.floor(cx-pr);x<=cx+pr;x++){
+      if(x<0||y<0||x>=IW||y>=IH)continue;
+      var dx=x-cx,dy=y-cy;if(dx*dx+dy*dy>pr*pr)continue;
+      var i=(y*IW+x)*4;
+      p[i]=0;p[i+1]=0;p[i+2]=0;p[i+3]=255;
+    }
+  }
+  var hx=cx+pr*0.28,hy=cy-pr*0.32,hs=Math.max(1.2,pr*0.22);
+  for(var y=Math.floor(hy-hs);y<=hy+hs;y++){
+    for(var x=Math.floor(hx-hs);x<=hx+hs;x++){
+      if(x<0||y<0||x>=IW||y>=IH)continue;
+      var dx=x-hx,dy=y-hy;if(dx*dx+dy*dy>hs*hs)continue;
+      var i=(y*IW+x)*4;
+      p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=255;
+    }
+  }
+  return {cx:cx,cy:cy,pr:pr};
+}
+if(mapped&&mapped.length){
+  var discs=[];
+  for(var m=0;m<mapped.length;m++)discs.push(stampMapped(mapped[m]));
+  bx.putImageData(cur,0,0);
+  if(bx.canvas)bx.canvas._eyePupils=discs;
+  return;
+}
+var x0=Math.floor(IW*0.50),x1=Math.floor(IW*0.88),y0=Math.floor(IH*0.28),y1=Math.floor(IH*0.52);
 var bg=new Uint8Array(IW*IH);
 var q=[];
 function tryBg(x,y){
@@ -757,8 +814,8 @@ for(var y=y0;y<y1;y++){
       }
     }
     var w=maxx-minx+1,h=maxy-miny+1,area=pts.length;
-    if(area<8||area>1400)continue;
-    if(w>h*1.7||h>w*1.7||w<4||h<4)continue;
+    if(area<8||area>400)continue;
+    if(w>40||h>40||w>h*1.7||h>w*1.7||w<4||h<4)continue;
     eyes.push({pts:pts,cx:sx/area,cy:sy/area,rx:w/2,ry:h/2});
   }
 }
@@ -860,11 +917,11 @@ if(!paintDragon.cache[key]){
     bx.globalCompositeOperation="destination-in";
     bx.drawImage(im,0,0);
     bx.globalCompositeOperation="source-over";
-    restoreEyes(bx,im,IW,IH);
+    restoreEyes(bx,im,IW,IH,spriteId(d));
     if(spriteId(d)==="knight")restoreArmor(bx,im,IW,IH);
   }else{
     bx.drawImage(im,0,0);
-    restoreEyes(bx,im,IW,IH);
+    restoreEyes(bx,im,IW,IH,spriteId(d));
   }
   hardenAlpha(b);
   stampPupils(b);
@@ -874,11 +931,33 @@ src=paintDragon.cache[key];
 g.imageSmoothingEnabled=true;
 var sc=124/IW;
 var cx=IW*0.5, cy=IH*0.52;
+function drawNeonSmoke(){
+  var tm=t||0;
+  g.save();
+  g.globalCompositeOperation="lighter";
+  var blobs=[{ox:-18,oy:-28,r:46,a:0.28},{ox:8,oy:-36,r:38,a:0.22},{ox:-6,oy:-14,r:54,a:0.16}];
+  for(var i=0;i<blobs.length;i++){
+    var b=blobs[i];
+    var jx=Math.sin(tm*1.7+i*1.3)*6;
+    var jy=Math.cos(tm*1.3+i)*5-8;
+    g.globalAlpha=b.a*(0.85+0.15*Math.sin(tm*2+i));
+    g.fillStyle=i%2? "#7cff3a":"#13ff4a";
+    g.shadowColor="#13ff4a";
+    g.shadowBlur=22;
+    g.beginPath();
+    g.ellipse((b.ox+jx)*sc,(b.oy+jy)*sc,b.r*sc,b.r*0.72*sc,0,0,Math.PI*2);
+    g.fill();
+  }
+  g.restore();
+}
+var cidNow=(getColor&&getColor())?getColor().id:"";
 if(anim&&anim.still){
+  if(cidNow==="neon")drawNeonSmoke();
   g.drawImage(src,-cx*sc,-cy*sc,IW*sc,IH*sc);
   return;
 }
-var ghostAura=getColor&&getColor().id==="ghost";
+var ghostAura=cidNow==="ghost";
+var neonAura=cidNow==="neon";
 function part(sx,sy,sw,sh,jx,jy,rot){
   g.save();
   g.translate((jx-cx)*sc,(jy-cy)*sc);
@@ -886,6 +965,7 @@ function part(sx,sy,sw,sh,jx,jy,rot){
   g.drawImage(src,sx,sy,sw,sh,(sx-jx)*sc,(sy-jy)*sc,sw*sc,sh*sc);
   g.restore();
 }
+if(neonAura)drawNeonSmoke();
 if(ghostAura){
   g.save();
   g.shadowColor="rgba(255,255,255,0.35)";
