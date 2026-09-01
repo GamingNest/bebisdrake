@@ -729,7 +729,7 @@ for(var y=0;y<IH;y++){
 }
 return keep;
 }
-function fillInteriorHoles(bx,IW,IH){
+function fillInteriorHoles(bx,IW,IH,keep){
 var img=bx.getImageData(0,0,IW,IH),p=img.data,n=IW*IH;
 var outside=new Uint8Array(n),q=new Int32Array(n),qs=0,qe=0;
 function push(x,y){
@@ -773,6 +773,7 @@ for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
     var k=y*IW+x,i=k*4;
     if(outside[k])continue;
+    if(keep&&keep[k])continue;
     if(p[i+3]>=12)continue;
     var rgb=sampleRgb(x,y);
     p[i]=rgb[0];p[i+1]=rgb[1];p[i+2]=rgb[2];p[i+3]=255;
@@ -789,7 +790,7 @@ for(var i=0;i<p.length;i+=4){
 if(!c)return [10,8,12];
 return [Math.round(sr/c*0.16+6),Math.round(sg/c*0.12+5),Math.round(sb/c*0.18+8)];
 }
-function strokeSilhouette(bx,IW,IH,lineRgb){
+function strokeSilhouette(bx,IW,IH,lineRgb,keep){
 var img=bx.getImageData(0,0,IW,IH),p=img.data,n=IW*IH;
 var aa=new Uint8Array(n),yyv=new Float32Array(n);
 for(var k=0;k<n;k++){
@@ -802,6 +803,7 @@ function isOut(x,y){if(x<0||y<0||x>=IW||y>=IH)return true;return aa[y*IW+x]<40}
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
     var k=y*IW+x;if(aa[k]<40)continue;
+    if(keep&&keep[k])continue;
     var dmin=99;
     for(var dy=-2;dy<=2;dy++){
       for(var dx=-2;dx<=2;dx++){
@@ -864,12 +866,13 @@ for(var y=0;y<IH;y++){
       var hx=(h1%360), sx=80+(h2%200), sy=40+(h3%170), swirl=((h1>>>8)%120);
       var hue=hx+nx*sx+ny*sy+yv*55+Math.sin((nx*8+ny*6)+swirl*0.05)*40;
       var sat=0.78+(h2%15)/100;
-      var val=Math.min(1.15,0.68+yv*0.55);
+      var val=Math.min(1.18,0.36+yv*0.88);
       var rgb=hsvToRgb(hue,sat,val);
-      var spec=Math.pow(Math.max(0,yv-0.48)/0.52,1.6);
-      nr=rgb[0]*(1-spec)+255*spec;
-      ng=rgb[1]*(1-spec)+255*spec;
-      nb=rgb[2]*(1-spec)+255*spec;
+      var spec=Math.pow(Math.max(0,yv-0.62)/0.38,2.4)*0.28;
+      var shade=0.42+yv*0.72;
+      nr=(rgb[0]*shade)*(1-spec)+255*spec;
+      ng=(rgb[1]*shade)*(1-spec)+255*spec;
+      nb=(rgb[2]*shade)*(1-spec)+255*spec;
       var spark=((x*374761+y*668265+(h3&255)*409)+h1)>>>0;
       if((spark%97)<3&&yv>0.4){nr=Math.min(255,nr+90);ng=Math.min(255,ng+90);nb=Math.min(255,nb+110)}
     }else if(kind==="nebula"){
@@ -1100,18 +1103,58 @@ if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
 }
 bx.putImageData(img,0,0);
 var smoky=style==="void"||style==="shadow";
-if(smoky)fillInteriorHoles(bx,IW,IH);
+var puff=smoky||style==="knight";
+if(puff)fillInteriorHoles(bx,IW,IH,knightArmor);
 bx.globalCompositeOperation="destination-in";
 bx.drawImage(im,0,0);
 bx.globalCompositeOperation="source-over";
-if(smoky)fillInteriorHoles(bx,IW,IH);
+if(puff)fillInteriorHoles(bx,IW,IH,knightArmor);
 restoreEyes(bx,im,IW,IH,style);
 if(style==="knight")restoreArmor(bx,im,IW,IH);
 if(kind==="ghost")addGhostGlow(bx,IW,IH);
 if(kind==="jade")addJadeGlow(bx,IW,IH);
-if(smoky)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH));
+if(puff)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),knightArmor);
 }
 
+
+
+function applyRoyalGold(bx,im,IW,IH,keep){
+var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
+var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
+var o=tx.getImageData(0,0,IW,IH).data;
+var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
+var goldLo=[232,192,64],goldHi=[255,233,176];
+for(var y=0;y<IH;y++){
+  for(var x=0;x<IW;x++){
+    var k=y*IW+x,i=k*4;
+    if(o[i+3]<12)continue;
+    if(keep&&keep[k])continue;
+    if(p[i+3]<12)continue;
+    var yv=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
+    var edge=0;
+    var nbs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1],[2,0],[-2,0],[0,2],[0,-2]];
+    for(var ni=0;ni<nbs.length;ni++){
+      var xx=x+nbs[ni][0],yy=y+nbs[ni][1];
+      if(xx<0||yy<0||xx>=IW||yy>=IH){edge=Math.max(edge,1);continue}
+      var nk=yy*IW+xx,ii=nk*4;
+      if(o[ii+3]<40)edge=Math.max(edge,1);
+      else{
+        var nyv=(0.2126*o[ii]+0.7152*o[ii+1]+0.0722*o[ii+2])/255;
+        if(yv-nyv>0.18)edge=Math.max(edge,Math.min(1,(yv-nyv)/0.34));
+      }
+    }
+    var ridge=Math.max(0,Math.min(1,(yv-0.58)/0.34));
+    var amt=Math.max(edge,ridge*0.32);
+    if(amt<0.18)continue;
+    var w=Math.min(0.82,amt*1.05);
+    var mix=lerp3(goldLo,goldHi,Math.max(0,Math.min(1,yv*0.55+amt*0.45)));
+    p[i]=p[i]*(1-w)+mix[0]*w;
+    p[i+1]=p[i+1]*(1-w)+mix[1]*w;
+    p[i+2]=p[i+2]*(1-w)+mix[2]*w;
+  }
+}
+bx.putImageData(cur,0,0);
+}
 
 function restoreArmor(bx,im,IW,IH){
 var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
@@ -1136,7 +1179,7 @@ var EYE_PUPILS={
   shadow:[{cx:0.754,cy:0.451,pr:0.017},{cx:0.511,cy:0.453,pr:0.017}],
   gold:[{cx:0.680,cy:0.432,pr:0.017},{cx:0.786,cy:0.427,pr:0.017}],
   void:[{cx:0.768,cy:0.435,pr:0.016}],
-  knight:[{cx:0.575,cy:0.422,pr:0.016}],
+  knight:[{cx:0.575,cy:0.422,pr:0.016},{cx:0.708,cy:0.407,pr:0.016}],
   nimbus:[{cx:0.821,cy:0.457,pr:0.016}],
   coral:[{cx:0.834,cy:0.443,pr:0.016}],
   thorn:[{cx:0.800,cy:0.400,pr:0.016}],
@@ -1341,15 +1384,25 @@ if(!paintDragon.cache[key]){
     bx.globalCompositeOperation="destination-in";
     bx.drawImage(im,0,0);
     bx.globalCompositeOperation="source-over";
-    if(spriteId(d)==="void"||spriteId(d)==="shadow")fillInteriorHoles(bx,IW,IH);
-    restoreEyes(bx,im,IW,IH,spriteId(d));
-    if(spriteId(d)==="knight")restoreArmor(bx,im,IW,IH);
-    if(spriteId(d)==="void"||spriteId(d)==="shadow")strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH));
+    var sid=spriteId(d);
+    var keep=null;
+    if(sid==="knight"){
+      var tc=document.createElement("canvas");tc.width=IW;tc.height=IH;
+      var tx=tc.getContext("2d");tx.drawImage(im,0,0);
+      keep=armorKeepMask(tx.getImageData(0,0,IW,IH).data,IW,IH);
+    }
+    if(cid==="royal")applyRoyalGold(bx,im,IW,IH,keep);
+    if(sid==="void"||sid==="shadow"||sid==="knight")fillInteriorHoles(bx,IW,IH,keep);
+    restoreEyes(bx,im,IW,IH,sid);
+    if(sid==="knight")restoreArmor(bx,im,IW,IH);
+    if(sid==="void"||sid==="shadow"||sid==="knight")strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),keep);
   }else{
     bx.drawImage(im,0,0);
-    if(spriteId(d)==="void"||spriteId(d)==="shadow")fillInteriorHoles(bx,IW,IH);
-    restoreEyes(bx,im,IW,IH,spriteId(d));
-    if(spriteId(d)==="void"||spriteId(d)==="shadow")strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH));
+    var sid=spriteId(d);
+    var keep=sid==="knight"?armorKeepMask(bx.getImageData(0,0,IW,IH).data,IW,IH):null;
+    if(sid==="void"||sid==="shadow"||sid==="knight")fillInteriorHoles(bx,IW,IH,keep);
+    restoreEyes(bx,im,IW,IH,sid);
+    if(sid==="void"||sid==="shadow"||sid==="knight")strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),keep);
   }
   hardenAlpha(b);
   stampPupils(b);
