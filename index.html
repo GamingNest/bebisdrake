@@ -472,19 +472,35 @@ for(var i=0;i<gates.length;i++){
 }
 }
 
+function drawCoinHead(){
+ctx.fillStyle="#6e430c";
+ctx.beginPath();ctx.ellipse(-1,1,6.4,5.6,0,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.moveTo(1,-1);ctx.lineTo(10,1.2);ctx.lineTo(1,4.2);ctx.closePath();ctx.fill();
+ctx.beginPath();ctx.moveTo(-4,-3.5);ctx.lineTo(-1.2,-10);ctx.lineTo(1.8,-2.5);ctx.closePath();ctx.fill();
+ctx.beginPath();ctx.moveTo(1,-4);ctx.lineTo(5.5,-9);ctx.lineTo(4,-2);ctx.closePath();ctx.fill();
+ctx.fillStyle="#3d2408";
+ctx.beginPath();ctx.ellipse(-2.2,-0.4,1.7,1.9,0,0,Math.PI*2);ctx.fill();
+ctx.fillStyle="#c9a24a";
+ctx.beginPath();ctx.arc(-1.6,-1,0.7,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.moveTo(7.5,0.2);ctx.lineTo(10,1.2);ctx.lineTo(7.2,2);ctx.fill();
+}
 function drawCoins(){
 for(var i=0;i<coinItems.length;i++){var c=coinItems[i];if(c.collected)continue;
 c.spin+=.07;c.bob+=.05;ctx.save();ctx.translate(c.x,c.y+Math.sin(c.bob)*2);
-ctx.fillStyle="rgba(255,214,70,.22)";
-ctx.beginPath();ctx.arc(0,0,c.r*2.1,0,Math.PI*2);ctx.fill();
-ctx.fillStyle="rgba(255,230,120,.16)";
-ctx.beginPath();ctx.arc(0,0,c.r*1.45,0,Math.PI*2);ctx.fill();
-var sx=Math.cos(c.spin);if(Math.abs(sx)<0.08)sx=sx<0?-0.08:0.08;
-ctx.scale(sx,1);
-ctx.shadowBlur=12;ctx.shadowColor="rgba(255,210,60,.55)";ctx.fillStyle="#ffd83d";
-ctx.beginPath();ctx.arc(0,0,c.r,0,Math.PI*2);ctx.fill();
-ctx.shadowBlur=0;ctx.strokeStyle="#fff7a8";ctx.lineWidth=3;ctx.stroke();
-ctx.fillStyle="#8b5b00";ctx.font="900 16px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("1",0,1);ctx.restore()}
+var a=Math.cos(c.spin),aa=Math.abs(a);if(aa<0.08)aa=0.08;
+ctx.fillStyle="rgba(255,210,70,.14)";
+ctx.beginPath();ctx.arc(0,0,c.r+3.5,0,Math.PI*2);ctx.fill();
+var thick=(1-aa)*5;
+ctx.fillStyle="#9a6a12";
+ctx.beginPath();ctx.ellipse(a>0?thick*0.45:-thick*0.45,0,c.r,c.r,0,0,Math.PI*2);ctx.fill();
+var grd=ctx.createRadialGradient(-c.r*0.35*aa,-c.r*0.35,1,0,0,c.r);
+grd.addColorStop(0,"#ffe58a");grd.addColorStop(.55,"#e8b430");grd.addColorStop(1,"#8a5a10");
+ctx.fillStyle=grd;
+ctx.beginPath();ctx.ellipse(0,0,c.r*aa,c.r,0,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle="rgba(255,240,180,.55)";ctx.lineWidth=1.6;
+ctx.beginPath();ctx.ellipse(0,0,c.r*aa*0.78,c.r*0.78,0,0,Math.PI*2);ctx.stroke();
+ctx.save();ctx.scale(a<0?-aa:aa,1);drawCoinHead();ctx.restore();
+ctx.restore()}
 }
 var dragonImgs={};
 ["baby","fire","ice","forest","shadow","gold","void","knight"].forEach(function(id){
