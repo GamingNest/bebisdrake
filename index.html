@@ -940,43 +940,36 @@ src=paintDragon.cache[key];
 g.imageSmoothingEnabled=true;
 var sc=124/IW;
 var cx=IW*0.5, cy=IH*0.52;
-function drawNeonSmoke(){
+function drawNeonLight(){
   var tm=t||0;
-  var sid=spriteId(d);
-  var clusters={
-    baby:[[0.22,0.54,22,0.34],[0.18,0.50,18,0.26],[0.26,0.56,16,0.22],[0.34,0.34,20,0.28],[0.30,0.30,15,0.20],[0.38,0.36,14,0.18]],
-    fire:[[0.16,0.52,24,0.32],[0.12,0.48,18,0.24],[0.22,0.56,16,0.20],[0.32,0.28,22,0.28],[0.28,0.24,16,0.20],[0.38,0.32,14,0.16]],
-    ice:[[0.18,0.50,23,0.32],[0.14,0.46,17,0.22],[0.24,0.54,16,0.20],[0.34,0.28,21,0.26],[0.30,0.24,15,0.18],[0.40,0.34,14,0.16]],
-    forest:[[0.16,0.52,24,0.32],[0.12,0.48,18,0.22],[0.22,0.56,16,0.20],[0.32,0.30,22,0.28],[0.28,0.26,16,0.18],[0.40,0.34,14,0.16]],
-    gold:[[0.16,0.48,24,0.32],[0.12,0.44,18,0.22],[0.22,0.54,16,0.20],[0.34,0.28,21,0.26],[0.28,0.24,16,0.18],[0.40,0.32,14,0.16]],
-    shadow:[[0.18,0.56,23,0.32],[0.14,0.52,17,0.22],[0.24,0.58,16,0.20],[0.34,0.30,21,0.26],[0.30,0.26,15,0.18],[0.40,0.36,14,0.16]],
-    void:[[0.16,0.50,26,0.30],[0.12,0.46,20,0.22],[0.22,0.56,18,0.18],[0.30,0.24,24,0.26],[0.26,0.20,18,0.18],[0.38,0.30,16,0.16],[0.22,0.32,16,0.14]],
-    knight:[[0.14,0.50,24,0.32],[0.10,0.46,18,0.22],[0.20,0.56,17,0.20],[0.32,0.28,22,0.26],[0.28,0.24,16,0.18],[0.40,0.32,14,0.16]]
-  };
-  var blobs=clusters[sid]||clusters.baby;
+  var pulse=0.86+0.14*Math.sin(tm*3.4);
+  var ox=IW*0.02*sc, oy=IH*0.04*sc;
+  var rx=IW*0.36*sc, ry=IH*0.30*sc;
   g.save();
-  g.globalCompositeOperation="source-over";
-  for(var i=0;i<blobs.length;i++){
-    var b=blobs[i],nx=b[0],ny=b[1],rr=b[2],aa=b[3];
-    var drift=8+10*(0.5+0.5*Math.sin(tm*1.15+i*0.9));
-    var lift=4+8*(0.5+0.5*Math.cos(tm*0.95+i*1.1));
-    var jx=-drift+Math.sin(tm*1.6+i*1.4)*3;
-    var jy=-lift+Math.cos(tm*1.2+i)*2;
-    var px=(nx*IW-cx+jx)*sc;
-    var py=(ny*IH-cy+jy)*sc;
-    g.globalAlpha=aa*(0.72+0.28*Math.sin(tm*1.8+i));
-    g.fillStyle=i%2?"#7cff3a":"#13ff4a";
-    g.shadowColor="#13ff4a";
-    g.shadowBlur=16;
-    g.beginPath();
-    g.ellipse(px,py,rr*sc,rr*0.62*sc,-0.35,0,Math.PI*2);
-    g.fill();
-  }
+  g.globalCompositeOperation="lighter";
+  var aura=g.createRadialGradient(ox,oy,rx*0.08,ox,oy,rx);
+  aura.addColorStop(0,"rgba(216,255,154,"+(0.98*pulse)+")");
+  aura.addColorStop(0.16,"rgba(19,255,74,"+(0.78*pulse)+")");
+  aura.addColorStop(0.38,"rgba(124,255,58,"+(0.32*pulse)+")");
+  aura.addColorStop(0.62,"rgba(19,255,74,0.08)");
+  aura.addColorStop(1,"rgba(124,255,58,0)");
+  g.fillStyle=aura;
+  g.beginPath();
+  g.ellipse(ox,oy,rx,ry,0,0,Math.PI*2);
+  g.fill();
+  var core=g.createRadialGradient(ox,oy,0,ox,oy,rx*0.22);
+  core.addColorStop(0,"rgba(216,255,154,"+(1*pulse)+")");
+  core.addColorStop(0.45,"rgba(19,255,74,"+(0.55*pulse)+")");
+  core.addColorStop(1,"rgba(124,255,58,0)");
+  g.fillStyle=core;
+  g.beginPath();
+  g.ellipse(ox,oy,rx*0.22,ry*0.20,0,0,Math.PI*2);
+  g.fill();
   g.restore();
 }
 var cidNow=(getColor&&getColor())?getColor().id:"";
 if(anim&&anim.still){
-  if(cidNow==="neon")drawNeonSmoke();
+  if(cidNow==="neon")drawNeonLight();
   g.drawImage(src,-cx*sc,-cy*sc,IW*sc,IH*sc);
   return;
 }
@@ -989,7 +982,7 @@ function part(sx,sy,sw,sh,jx,jy,rot){
   g.drawImage(src,sx,sy,sw,sh,(sx-jx)*sc,(sy-jy)*sc,sw*sc,sh*sc);
   g.restore();
 }
-if(neonAura)drawNeonSmoke();
+if(neonAura)drawNeonLight();
 if(ghostAura){
   g.save();
   g.shadowColor="rgba(255,255,255,0.35)";
