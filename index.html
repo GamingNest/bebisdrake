@@ -19,7 +19,7 @@ button{font:inherit;color:#fff;border:0;cursor:pointer}
 #score{position:absolute;top:max(5px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);font-size:50px;font-weight:950;text-shadow:0 3px 9px #000,0 0 24px #8955ff}
 #pause{position:absolute;right:10px;top:max(10px,env(safe-area-inset-top));width:43px;height:43px;border-radius:13px;background:#080a1ddd;border:1px solid #a06cff55;pointer-events:auto}
 #overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:16px;background:#02030bcc;backdrop-filter:blur(6px)}
-#overlay.hidden{display:none}
+#overlay.hidden{display:none!important;pointer-events:none}
 #overlay.home-open{background:linear-gradient(180deg,rgba(255,176,92,.22),rgba(232,110,70,.18) 42%,rgba(90,36,92,.28));backdrop-filter:blur(1.5px)}
 .panel{width:min(430px,94vw);max-height:92vh;overflow:auto;padding:22px 16px 18px;border-radius:27px;border:1px solid #d8a83b66;background:linear-gradient(160deg,#111736f8,#070a18f8);box-shadow:0 30px 90px #000d}
 #overlay.home-open .panel{background:linear-gradient(180deg,#fff8e8ee,#f6e3c4d8 55%,#efe0ffcc);border:2px solid #f0c56a;box-shadow:0 18px 50px #6a204044,0 0 0 4px #fff6}
@@ -30,6 +30,8 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 #overlay.home-open h1 span{color:#c48a18}
 .tag{text-align:center;color:#cbd3eb;font-size:12px;line-height:1.45;margin:10px 0 14px}
 #overlay.home-open .tag{color:#6a4a38;font-size:11px}
+#overlay.home-open #status{display:none}
+#home{position:relative}
 .primary{width:100%;padding:15px;border-radius:15px;background:linear-gradient(135deg,#8b4dff,#357fff);font-size:17px;font-weight:950}
 #play{position:relative;padding:20px 12px;border-radius:28px;background:linear-gradient(180deg,#ffe27a,#f0b430 55%,#d89418);color:#5a3a08;font-size:28px;font-weight:950;letter-spacing:.04em;box-shadow:0 8px 0 #b07810,0 14px 28px #c48a1844;border:3px solid #fff3c0;text-shadow:0 1px 0 #fff8}
 #play::before,#play::after{content:"";position:absolute;top:50%;width:22px;height:14px;background:#fff6d0;border:2px solid #e8c040;border-radius:50% 50% 40% 40%;}
@@ -40,9 +42,9 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 .menu.util{grid-template-columns:1fr 1fr;margin-top:8px;max-width:220px;margin-left:auto;margin-right:auto}
 .menu.util button{padding:6px 3px;font-size:9px;opacity:.85;border-radius:12px!important}
 .homeCoins{position:absolute;top:10px;right:12px;background:#fff8e8;border:2px solid #f0c56a;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:950;color:#7a5208;box-shadow:0 4px 12px #c48a1833;z-index:2}
-.nestStage{position:relative;height:168px;margin:4px auto 2px;display:flex;align-items:flex-end;justify-content:center}
-#homeDragon{width:220px;height:150px;display:block;position:relative;z-index:2;filter:drop-shadow(0 8px 10px #5a3a1844)}
-.nestTwigs{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:210px;height:52px;z-index:1}
+.nestStage{position:relative;height:110px;margin:2px auto 0;display:flex;align-items:flex-end;justify-content:center;cursor:pointer}
+#homeDragon{width:160px;height:96px;display:block;position:relative;z-index:2;filter:drop-shadow(0 8px 10px #5a3a1844);pointer-events:auto}
+.nestTwigs{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);width:168px;height:40px;z-index:1}
 .nestTwigs:before,.nestTwigs:after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:36px;border-radius:50%;border:10px solid #8a5a28;border-top-color:transparent;box-shadow:inset 0 -8px 0 #c48a48}
 .nestTwigs:after{left:22px;right:22px;bottom:8px;height:28px;border-width:8px;border-color:#c48a40;border-top-color:transparent;opacity:.95}
 .nestEgg{position:absolute;left:50%;bottom:22px;width:28px;height:22px;margin-left:38px;border-radius:50% 50% 45% 45%;background:radial-gradient(circle at 40% 35%,#fff6e0,#f0c56a);box-shadow:0 2px 0 #b07820;z-index:1}
@@ -351,7 +353,7 @@ gates=[makeGate(W+100),makeGate(W+100+Math.max(285,W*.55))];
 addCoinsForCurrentGates();
 scoreEl.textContent="0";coinsEl.textContent=String(coins);
 }
-function startGame(){prismSeed=Math.random()*1e9;if(paintDragon.cache){for(var k in paintDragon.cache)if(k.indexOf(":prism")!==-1)delete paintDragon.cache[k]}resetGame();mode="playing";paused=false;crash.active=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");flap()}
+function startGame(){prismSeed=Math.random()*1e9;if(paintDragon.cache){for(var k in paintDragon.cache)if(k.indexOf(":prism")!==-1)delete paintDragon.cache[k]}resetGame();mode="playing";paused=false;crash.active=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");overlay.classList.remove("home-open");flap()}
 function flap(){
 if(mode==="crashing")return;
 if(mode==="playing"){if(paused)return;dragon.vy=-455;wing=1;sfxFlap()}
@@ -1597,7 +1599,7 @@ if(b.id==="play"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation(
 if(b.id==="pause"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}return;}
 if(b.id==="confirmCancel"){e.preventDefault();e.stopPropagation();sfxClick();closePurchase();return;}
 if(b.id==="confirmBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();completePurchase();return;}
-if(b.hasAttribute("data-screen")){var targetScreen=b.getAttribute("data-screen");show(targetScreen);render();if(targetScreen==="shop")setShopTab(b.getAttribute("data-open-shop-tab")||"dragons");if(targetScreen==="customize")setCustomTab("dragons");return;}
+if(b.hasAttribute("data-screen")){e.stopPropagation();var targetScreen=b.getAttribute("data-screen");show(targetScreen);render();if(targetScreen==="shop")setShopTab(b.getAttribute("data-open-shop-tab")||"dragons");if(targetScreen==="customize")setCustomTab("dragons");return;}
 if(b.hasAttribute("data-shop-tab")){setShopTab(b.getAttribute("data-shop-tab"));sfxClick();return;}
 if(b.hasAttribute("data-custom-tab")){setCustomTab(b.getAttribute("data-custom-tab"));sfxClick();return;}
 if(b.hasAttribute("data-home")){show("home");render();return;}
@@ -1659,13 +1661,23 @@ selectedMap=id;save();render();sfxClick();toast(mp.name+" equipped");return;
 play.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();startGame()});
 pause.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}});
 
-document.getElementById("sound").addEventListener("click",function(){muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound";if(!muted){ensureAudio();sfxClick()}});
-document.getElementById("reset").addEventListener("click",function(){localStorage.clear();localStorage.setItem("gn_coins","2000000");location.reload()});
+function startFromHome(e){if(e){e.preventDefault();e.stopPropagation()}ensureAudio();sfxClick();startGame()}
+var nestStage=document.querySelector(".nestStage");
+var homeDragon=document.getElementById("homeDragon");
+var homeEl=document.getElementById("home");
+if(nestStage)nestStage.addEventListener("click",startFromHome);
+if(homeDragon)homeDragon.addEventListener("click",startFromHome);
+if(homeEl)homeEl.addEventListener("click",function(e){if(e.target.closest("button")||e.target.closest(".homeCoins")||e.target.closest(".menu"))return;startFromHome(e)});
+
+document.getElementById("sound").addEventListener("click",function(e){e.stopPropagation();muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound";if(!muted){ensureAudio();sfxClick()}});
+document.getElementById("reset").addEventListener("click",function(e){e.stopPropagation();localStorage.clear();localStorage.setItem("gn_coins","2000000");location.reload()});
 function input(e){if(e)e.preventDefault();var now=Date.now();if(now-lastInput<100)return;lastInput=now;flap()}
 canvas.addEventListener("pointerdown",input,{passive:false});
 window.addEventListener("keydown",function(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();input(e)}});
 
-bestEl.textContent=String(best);coinsEl.textContent=String(coins);render();setShopTab("dragons");resetGame();requestAnimationFrame(loop);
+bestEl.textContent=String(best);coinsEl.textContent=String(coins);
+try{render();setShopTab("dragons");resetGame();}catch(bootErr){console.error("Dragon Tap boot render:",bootErr);}
+requestAnimationFrame(loop);
 })();
 </script>
 </body>
