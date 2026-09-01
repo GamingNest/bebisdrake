@@ -509,14 +509,52 @@ return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
 }
 function lerp3(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]}
 function hash32(n){n|=0;n=Math.imul(n^n>>>16,2246822507);n=Math.imul(n^n>>>13,3266489909);return (n^n>>>16)>>>0}
+function armorKeepMask(o,IW,IH){
+var steel=new Uint8Array(IW*IH),keep=new Uint8Array(IW*IH);
+function isSteel(r,g,b,a){
+  if(a<70)return false;
+  var mx=Math.max(r,g,b),mn=Math.min(r,g,b),c=mx-mn;
+  var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
+  var sat=mx?c/mx:0;
+  return sat<0.32&&yv>0.16&&yv<0.96&&Math.abs(r-g)<42&&Math.abs(g-b)<48&&Math.abs(r-b)<52;
+}
+function isGold(r,g,b,a){
+  if(a<70)return false;
+  var mx=Math.max(r,g,b),mn=Math.min(r,g,b),c=mx-mn;
+  var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
+  var sat=mx?c/mx:0;
+  return r>g+4&&g>b+2&&r>95&&sat>0.14&&sat<0.86&&yv>0.22&&yv<0.96&&(r-b)>18;
+}
+for(var y=0;y<IH;y++){
+  for(var x=0;x<IW;x++){
+    var i=(y*IW+x)*4;
+    if(isSteel(o[i],o[i+1],o[i+2],o[i+3])){steel[y*IW+x]=1;keep[y*IW+x]=1}
+  }
+}
+var rad=6;
+for(var y=0;y<IH;y++){
+  for(var x=0;x<IW;x++){
+    if(!steel[y*IW+x])continue;
+    for(var dy=-rad;dy<=rad;dy++)for(var dx=-rad;dx<=rad;dx++){
+      if(dx*dx+dy*dy>rad*rad)continue;
+      var xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=IW||yy>=IH)continue;
+      var i=(yy*IW+xx)*4;if(o[i+3]<70)continue;
+      if(steel[yy*IW+xx]||isGold(o[i],o[i+1],o[i+2],o[i+3]))keep[yy*IW+xx]=1;
+    }
+  }
+}
+return keep;
+}
 function applyExclusiveSkin(bx,im,IW,IH,kind,style,phase){
 bx.clearRect(0,0,IW,IH);bx.drawImage(im,0,0);
 var img=bx.getImageData(0,0,IW,IH),p=img.data;
 var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7,knight:8}[style]||1;
 var h1=hash32((prismSeed|0)*17+sid*997),h2=hash32(h1+91),h3=hash32(h2+13);
+var knightArmor=(style==="knight")?armorKeepMask(p,IW,IH):null;
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
     var i=(y*IW+x)*4,a=p[i+3];if(a<12)continue;
+    if(knightArmor&&knightArmor[y*IW+x])continue;
     var r=p[i],g=p[i+1],b=p[i+2];
     var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
     var nx=x/IW,ny=y/IH,nr,ng,nb;
@@ -568,10 +606,23 @@ for(var y=0;y<IH;y++){
       var sh=0.65+yv*0.48;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="aurora"){
-      var hue=150+nx*90+ny*70+yv*40+Math.sin(nx*7+ny*5)*25;
-      var rgb=hsvToRgb(hue,0.72,Math.min(1.1,0.7+yv*0.5));
-      var spec=Math.pow(Math.max(0,yv-0.5)/0.5,1.5);
-      nr=rgb[0]*(1-spec)+255*spec;ng=rgb[1]*(1-spec)+255*spec;nb=rgb[2]*(1-spec)+255*spec;
+      var band=Math.floor(((nx*22+ny*17)*8+yv*5)%8);
+      var hues=[168,128,188,300,268,148,318,208];
+      var stripe=Math.floor((nx*36-ny*14+yv*8)*10);
+      var hue=hues[band]+(stripe%3)*8;
+      hue=Math.floor(hue/10)*10;
+      var sat=0.96;
+      var val=Math.min(1.05,0.22+yv*0.62);
+      var valley=Math.pow(1-yv,1.35);
+      val=val*(1-0.38*valley);
+      var rgb=hsvToRgb(hue,sat,val);
+      var aniso=Math.pow(Math.abs(Math.sin((nx*1.4-ny*11.5)*Math.PI)),2.2);
+      var spec=Math.pow(Math.max(0,yv-0.58)/0.42,2.6)*(0.18+0.82*aniso);
+      var metal=0.22+yv*0.28;
+      nr=rgb[0]*metal*(1-spec)+245*spec;
+      ng=rgb[1]*metal*(1-spec)+255*spec;
+      nb=rgb[2]*metal*(1-spec)+255*spec;
+      if(aniso>0.82&&yv>0.62){nr=Math.min(255,nr+40);ng=Math.min(255,ng+18);nb=Math.min(255,nb+55)}
     }else if(kind==="carbon"){
       var wave=0.5+0.5*Math.sin(nx*2.2+ny*1.6+yv*1.4);
       var u=Math.max(0,Math.min(1,yv*0.7+wave*0.3));
@@ -656,33 +707,7 @@ var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
 var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
 var o=tx.getImageData(0,0,IW,IH).data;
 var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
-var steel=new Uint8Array(IW*IH),keep=new Uint8Array(IW*IH);
-for(var y=0;y<IH;y++){
-  for(var x=0;x<IW;x++){
-    var i=(y*IW+x)*4;if(o[i+3]<80)continue;
-    var r=o[i],g=o[i+1],b=o[i+2];
-    var mx=Math.max(r,g,b),mn=Math.min(r,g,b),c=mx-mn;
-    var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
-    var sat=mx?c/mx:0;
-    if(sat<0.20&&yv>0.22&&yv<0.92&&Math.abs(r-g)<30&&Math.abs(g-b)<36){steel[y*IW+x]=1;keep[y*IW+x]=1}
-  }
-}
-var rad=3;
-for(var y=0;y<IH;y++){
-  for(var x=0;x<IW;x++){
-    if(!steel[y*IW+x])continue;
-    for(var dy=-rad;dy<=rad;dy++)for(var dx=-rad;dx<=rad;dx++){
-      if(dx*dx+dy*dy>rad*rad)continue;
-      var xx=x+dx,yy=y+dy;if(xx<0||yy<0||xx>=IW||yy>=IH)continue;
-      var i=(yy*IW+xx)*4;if(o[i+3]<80)continue;
-      var r=o[i],g=o[i+1],b=o[i+2];
-      var mx=Math.max(r,g,b),mn=Math.min(r,g,b),c=mx-mn,sat=mx?c/mx:0;
-      var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
-      var gold=r>g+8&&g>b+8&&r>120&&sat>0.18&&sat<0.78&&yv>0.28;
-      if(gold||steel[yy*IW+xx])keep[yy*IW+xx]=1;
-    }
-  }
-}
+var keep=armorKeepMask(o,IW,IH);
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
     if(!keep[y*IW+x])continue;
@@ -698,38 +723,52 @@ var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
 var o=tx.getImageData(0,0,IW,IH).data;
 var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
 var x0=Math.floor(IW*0.52),x1=Math.floor(IW*0.90),y0=Math.floor(IH*0.12),y1=Math.floor(IH*0.40);
-var seen=new Uint8Array(IW*IH),eyes=[];
+var bg=new Uint8Array(IW*IH);
+var q=[];
+function tryBg(x,y){
+  if(x<0||y<0||x>=IW||y>=IH)return;
+  var idx=y*IW+x;if(bg[idx])return;
+  if(o[(idx)*4+3]>=40)return;
+  bg[idx]=1;q.push(x,y);
+}
+for(var x=0;x<IW;x++){tryBg(x,0);tryBg(x,IH-1)}
+for(var y=0;y<IH;y++){tryBg(0,y);tryBg(IW-1,y)}
+while(q.length){
+  var py=q.pop(),px=q.pop();
+  tryBg(px+1,py);tryBg(px-1,py);tryBg(px,py+1);tryBg(px,py-1);
+}
 function luma(i){return(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255}
 function chroma(i){return Math.max(o[i],o[i+1],o[i+2])-Math.min(o[i],o[i+1],o[i+2])}
-function isSeed(x,y){var i=(y*IW+x)*4;return o[i+3]>90&&luma(i)<0.16&&chroma(i)<55}
+function isDark(x,y){var i=(y*IW+x)*4;return o[i+3]>90&&luma(i)<0.16&&chroma(i)<55}
+function isHole(x,y){var idx=y*IW+x;return !bg[idx]&&o[idx*4+3]<40}
+function isSeed(x,y){return isDark(x,y)||isHole(x,y)}
+var seen=new Uint8Array(IW*IH),eyes=[];
 for(var y=y0;y<y1;y++){
   for(var x=x0;x<x1;x++){
     var idx=y*IW+x;if(seen[idx]||!isSeed(x,y))continue;
-    var q=[[x,y]],pts=[],minx=x,maxx=x,miny=y,maxy=y,sx=0,sy=0;seen[idx]=1;
-    while(q.length){
-      var t=q.pop(),px=t[0],py=t[1];pts.push(t);sx+=px;sy+=py;
+    var qq=[[x,y]],pts=[],minx=x,maxx=x,miny=y,maxy=y,sx=0,sy=0;seen[idx]=1;
+    while(qq.length){
+      var t=qq.pop(),px=t[0],py=t[1];pts.push(t);sx+=px;sy+=py;
       if(px<minx)minx=px;if(px>maxx)maxx=px;if(py<miny)miny=py;if(py>maxy)maxy=py;
       for(var k=-1;k<=1;k++)for(var j=-1;j<=1;j++){
         var xx=px+j,yy=py+k;if(xx<x0||yy<y0||xx>=x1||yy>=y1)continue;
         var ii=yy*IW+xx;if(seen[ii]||!isSeed(xx,yy))continue;
-        seen[ii]=1;q.push([xx,yy]);
+        seen[ii]=1;qq.push([xx,yy]);
       }
     }
     var w=maxx-minx+1,h=maxy-miny+1,area=pts.length;
-    if(area<18||area>900)continue;
-    if(w>h*1.45||h>w*1.45||w<7||h<7)continue;
+    if(area<8||area>1400)continue;
+    if(w>h*1.7||h>w*1.7||w<4||h<4)continue;
     eyes.push({pts:pts,cx:sx/area,cy:sy/area,rx:w/2,ry:h/2});
   }
 }
 eyes.sort(function(a,b){return b.pts.length-a.pts.length});
 if(eyes.length>2)eyes=eyes.slice(0,2);
+var discs=[];
 for(var b=0;b<eyes.length;b++){
   var e=eyes[b];
-  for(var n=0;n<e.pts.length;n++){
-    var x=e.pts[n][0],y=e.pts[n][1],i=(y*IW+x)*4;
-    p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=255;
-  }
-  var pr=Math.max(3.2,Math.min(e.rx,e.ry)*0.52);
+  var pr=Math.max(3.6,Math.min(e.rx,e.ry)*0.62);
+  discs.push({cx:e.cx,cy:e.cy,pr:pr});
   for(var y=Math.floor(e.cy-pr);y<=e.cy+pr;y++){
     for(var x=Math.floor(e.cx-pr);x<=e.cx+pr;x++){
       if(x<0||y<0||x>=IW||y>=IH)continue;
@@ -743,12 +782,39 @@ for(var b=0;b<eyes.length;b++){
     for(var x=Math.floor(hx-hs);x<=hx+hs;x++){
       if(x<0||y<0||x>=IW||y>=IH)continue;
       var dx=x-hx,dy=y-hy;if(dx*dx+dy*dy>hs*hs)continue;
-      var i=(y*IW+x)*4;if(o[i+3]<40)continue;
+      var i=(y*IW+x)*4;
       p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=255;
     }
   }
 }
 bx.putImageData(cur,0,0);
+if(bx.canvas)bx.canvas._eyePupils=discs;
+}
+function stampPupils(c){
+var discs=c&&c._eyePupils;if(!discs||!discs.length)return;
+var x=c.getContext("2d"),img=x.getImageData(0,0,c.width,c.height),p=img.data;
+var IW=c.width,IH=c.height;
+for(var b=0;b<discs.length;b++){
+  var e=discs[b],pr=e.pr;
+  for(var y=Math.floor(e.cy-pr);y<=e.cy+pr;y++){
+    for(var xx=Math.floor(e.cx-pr);xx<=e.cx+pr;xx++){
+      if(xx<0||y<0||xx>=IW||y>=IH)continue;
+      var dx=xx-e.cx,dy=y-e.cy;if(dx*dx+dy*dy>pr*pr)continue;
+      var i=(y*IW+xx)*4;
+      p[i]=0;p[i+1]=0;p[i+2]=0;p[i+3]=255;
+    }
+  }
+  var hx=e.cx+pr*0.28,hy=e.cy-pr*0.32,hs=Math.max(1.4,pr*0.22);
+  for(var y=Math.floor(hy-hs);y<=hy+hs;y++){
+    for(var xx=Math.floor(hx-hs);xx<=hx+hs;xx++){
+      if(xx<0||y<0||xx>=IW||y>=IH)continue;
+      var dx=xx-hx,dy=y-hy;if(dx*dx+dy*dy>hs*hs)continue;
+      var i=(y*IW+xx)*4;
+      p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=255;
+    }
+  }
+}
+x.putImageData(img,0,0);
 }
 function addGhostGlow(bx,IW,IH){
 var c=document.createElement("canvas");c.width=IW;c.height=IH;
@@ -801,6 +867,7 @@ if(!paintDragon.cache[key]){
     restoreEyes(bx,im,IW,IH);
   }
   hardenAlpha(b);
+  stampPupils(b);
   paintDragon.cache[key]=b;
 }
 src=paintDragon.cache[key];
