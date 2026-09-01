@@ -517,32 +517,35 @@ for(var y=y0;y<y1;y++){
     if(area<28||area>1100)continue;
     if(w>h*1.7||h>w*1.7)continue;
     if(w<8||h<8)continue;
-    blobs.push({pts:pts,cx:(minx+maxx)/2,cy:(miny+maxy)/2});
+    blobs.push({pts:pts,cx:(minx+maxx)/2,cy:(miny+maxy)/2,rx:(maxx-minx+1)/2,ry:(maxy-miny+1)/2});
   }
 }
 blobs.sort(function(a,b){return b.pts.length-a.pts.length});
 if(blobs.length>2)blobs=blobs.slice(0,2);
-var near=new Uint8Array(IW*IH);
 for(var b=0;b<blobs.length;b++){
-  var pts=blobs[b].pts;
-  for(var n=0;n<pts.length;n++){
-    var x=pts[n][0],y=pts[n][1],i=(y*IW+x)*4;
-    p[i]=18;p[i+1]=16;p[i+2]=18;p[i+3]=255;
-    near[y*IW+x]=1;
-  }
-}
-var hr=Math.max(10,Math.floor(IW*0.028));
-for(var y=y0;y<y1;y++){
-  for(var x=x0;x<x1;x++){
-    var i=(y*IW+x)*4;if(o[i+3]<80)continue;
-    if(luma(i)<0.82||chroma(i)>50)continue;
-    var ok=0;
-    for(var b=0;b<blobs.length;b++){
-      var dx=x-blobs[b].cx,dy=y-blobs[b].cy;
-      if(dx*dx+dy*dy<hr*hr){ok=1;break}
+  var e=blobs[b], wr=e.rx*1.55, hr=e.ry*1.55, pr=e.rx*1.05, phr=e.ry*1.05;
+  var minX=Math.max(0,Math.floor(e.cx-wr-1)), maxX=Math.min(IW-1,Math.ceil(e.cx+wr+1));
+  var minY=Math.max(0,Math.floor(e.cy-hr-1)), maxY=Math.min(IH-1,Math.ceil(e.cy+hr+1));
+  for(var y=minY;y<=maxY;y++){
+    for(var x=minX;x<=maxX;x++){
+      var i=(y*IW+x)*4;if(o[i+3]<40)continue;
+      var nx=(x-e.cx)/wr,ny=(y-e.cy)/hr;
+      if(nx*nx+ny*ny>1)continue;
+      var pn=(x-e.cx)/pr,pm=(y-e.cy)/phr;
+      var inPupil=pn*pn+pm*pm<=1;
+      if(inPupil){p[i]=16;p[i+1]=14;p[i+2]=16}
+      else {p[i]=252;p[i+1]=252;p[i+2]=248}
+      p[i+3]=255;
     }
-    if(!ok)continue;
-    p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=255;
+  }
+  var hx=e.cx+e.rx*0.28, hy=e.cy-e.ry*0.32, hs=Math.max(2.2,e.rx*0.28);
+  for(var y=Math.floor(hy-hs);y<=hy+hs;y++){
+    for(var x=Math.floor(hx-hs);x<=hx+hs;x++){
+      if(x<0||y<0||x>=IW||y>=IH)continue;
+      var dx=x-hx,dy=y-hy;if(dx*dx+dy*dy>hs*hs)continue;
+      var i=(y*IW+x)*4;if(o[i+3]<40)continue;
+      p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=255;
+    }
   }
 }
 bx.putImageData(cur,0,0);
@@ -550,10 +553,13 @@ bx.putImageData(cur,0,0);
 function addGhostGlow(bx,IW,IH){
 var c=document.createElement("canvas");c.width=IW;c.height=IH;
 var x=c.getContext("2d");
-x.shadowColor="rgba(255,255,255,0.55)";
-x.shadowBlur=Math.max(10,Math.floor(IW*0.028));
+x.shadowColor="rgba(255,255,255,1)";
+x.shadowBlur=Math.max(22,Math.floor(IW*0.08));
+x.drawImage(bx.canvas,0,0);
+x.shadowBlur=Math.max(14,Math.floor(IW*0.045));
 x.drawImage(bx.canvas,0,0);
 x.shadowColor="transparent";x.shadowBlur=0;
+x.drawImage(bx.canvas,0,0);
 bx.clearRect(0,0,IW,IH);
 bx.drawImage(c,0,0);
 }
