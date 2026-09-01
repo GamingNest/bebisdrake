@@ -192,6 +192,7 @@ var maps=[
 var dragon={x:0,y:0,vy:0,rot:0,bank:0,stretch:0},gates=[],coinItems=[];
 var crash={active:false,time:0,duration:900,rot:0,scale:1,particles:[]};
 var pendingPurchase=null;
+var prismSeed=Math.random()*1e9;
 var audioCtx=null;
 function ensureAudio(){
 if(muted)return null;
@@ -292,7 +293,7 @@ gates=[makeGate(W+100),makeGate(W+100+Math.max(285,W*.55))];
 addCoinsForCurrentGates();
 scoreEl.textContent="0";coinsEl.textContent=String(coins);
 }
-function startGame(){resetGame();mode="playing";paused=false;crash.active=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");flap()}
+function startGame(){prismSeed=Math.random()*1e9;if(paintDragon.cache){for(var k in paintDragon.cache)if(k.indexOf(":prism")!==-1)delete paintDragon.cache[k]}resetGame();mode="playing";paused=false;crash.active=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");flap()}
 function flap(){
 if(mode==="crashing")return;
 if(mode==="playing"){if(paused)return;dragon.vy=-455;wing=1;sfxFlap()}
@@ -351,12 +352,12 @@ if(h<1){r=c;g=x}else if(h<2){r=x;g=c}else if(h<3){g=c;b=x}else if(h<4){g=x;b=c}e
 return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
 }
 function lerp3(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]}
+function hash32(n){n|=0;n=Math.imul(n^n>>>16,2246822507);n=Math.imul(n^n>>>13,3266489909);return (n^n>>>16)>>>0}
 function applyExclusiveSkin(bx,im,IW,IH,kind,style){
 bx.clearRect(0,0,IW,IH);bx.drawImage(im,0,0);
 var img=bx.getImageData(0,0,IW,IH),p=img.data;
-var hueOff={baby:8,fire:22,ice:-28,forest:95,shadow:265,gold:42,void:288}[style]||0;
-var stripeAng={baby:0.58,fire:0.72,ice:0.42,forest:0.64,shadow:0.88,gold:0.5,void:0.98}[style]||0.6;
-var stripeFreq={baby:5.4,fire:6.1,ice:7.0,forest:5.7,shadow:6.4,gold:5.1,void:7.3}[style]||5.6;
+var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7}[style]||1;
+var h1=hash32((prismSeed|0)*17+sid*997),h2=hash32(h1+91),h3=hash32(h2+13);
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
     var i=(y*IW+x)*4,a=p[i+3];if(a<12)continue;
@@ -364,13 +365,17 @@ for(var y=0;y<IH;y++){
     var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
     var nx=x/IW,ny=y/IH,nr,ng,nb;
     if(kind==="prism"){
-      var hue=hueOff+(nx*220+ny*90+yv*80);
-      var sat=style==="void"?0.85:(style==="gold"?0.62:0.72);
-      var val=0.22+yv*0.78;
-      if(style==="ice")val=0.32+yv*0.7;
-      if(style==="shadow")val=0.16+yv*0.72;
+      var hx=(h1%360), sx=80+(h2%200), sy=40+(h3%170), swirl=((h1>>>8)%120);
+      var hue=hx+nx*sx+ny*sy+yv*55+Math.sin((nx*8+ny*6)+swirl*0.05)*40;
+      var sat=0.78+(h2%15)/100;
+      var val=Math.min(1.15,0.68+yv*0.55);
       var rgb=hsvToRgb(hue,sat,val);
-      nr=rgb[0];ng=rgb[1];nb=rgb[2];
+      var spec=Math.pow(Math.max(0,yv-0.48)/0.52,1.6);
+      nr=rgb[0]*(1-spec)+255*spec;
+      ng=rgb[1]*(1-spec)+255*spec;
+      nb=rgb[2]*(1-spec)+255*spec;
+      var spark=((x*374761+y*668265+(h3&255)*409)+h1)>>>0;
+      if((spark%97)<3&&yv>0.4){nr=Math.min(255,nr+90);ng=Math.min(255,ng+90);nb=Math.min(255,nb+110)}
     }else if(kind==="nebula"){
       var dark=[18,8,36],mid=[107,44,255],hot=[255,100,216],ice=[72,208,255];
       if(style==="fire"){dark=[40,6,18];mid=[160,30,90];hot=[255,90,60];ice=[255,180,80]}
@@ -388,23 +393,25 @@ for(var y=0;y<IH;y++){
       var shade=0.38+yv*0.72;
       nr=mix[0]*shade;ng=mix[1]*shade;nb=mix[2]*shade;
     }else{
-      var cream=[245,242,236],orange=[232,92,28],ink=[18,16,16];
-      if(style==="ice"){cream=[236,244,252];orange=[255,110,70];ink=[16,28,42]}
-      if(style==="fire"){cream=[250,240,232];orange=[255,78,18]}
-      if(style==="forest"){cream=[242,244,232];orange=[220,86,22]}
-      if(style==="shadow"){cream=[228,224,220];orange=[210,70,28];ink=[12,10,16]}
-      if(style==="gold"){cream=[252,244,228];orange=[220,84,18]}
-      if(style==="void"){cream=[232,228,226];orange=[255,72,24];ink=[8,6,12]}
-      var ca=Math.cos(stripeAng),sa=Math.sin(stripeAng);
-      var u=nx*ca+ny*sa, v=-nx*sa+ny*ca;
-      var f=((u*stripeFreq)%1+1)%1;
+      var cream=[248,246,242],orange=[236,84,22],ink=[16,14,14];
+      if(style==="ice"){cream=[240,246,252];orange=[255,96,48];ink=[18,26,40]}
+      if(style==="fire"){cream=[252,244,236];orange=[255,70,12]}
+      if(style==="forest"){cream=[244,246,236];orange=[214,78,18]}
+      if(style==="shadow"){cream=[236,232,228];orange=[204,64,24];ink=[12,10,16]}
+      if(style==="gold"){cream=[255,248,230];orange=[214,76,14]}
+      if(style==="void"){cream=[238,234,232];orange=[255,64,16];ink=[8,6,12]}
       var base=cream;
-      if(f<0.055||(f>0.26&&f<0.31)) base=ink;
-      else if(f<0.26) base=orange;
-      var f2=((v*3.8+u*0.4)%1+1)%1;
-      if(yv>0.58&&f2<0.11) base=orange;
-      if(yv<0.22&&f>0.4&&f<0.48) base=ink;
-      var sh=0.40+yv*0.68;
+      var wing=ny<0.36&&nx<0.58;
+      var tail=nx<0.34&&ny>0.38;
+      var belly=ny>0.52&&yv>0.5;
+      var blaze=ny>0.22&&ny<0.5&&nx>0.52&&nx<0.86&&((nx-0.7)+(ny-0.34)*1.4)>-0.08&&((nx-0.7)+(ny-0.34)*1.4)<0.22;
+      if(wing||tail||belly||blaze) base=orange;
+      var horn=ny<0.28&&nx>0.48&&yv<0.45;
+      var claw=ny>0.68&&yv<0.5;
+      var plate=(nx>0.40&&nx<0.50&&ny>0.38&&ny<0.55);
+      var seam=Math.abs((nx*0.9+ny*0.5)-0.72)<0.018||Math.abs((nx-0.33)*1.2-(ny-0.45))<0.016;
+      if(horn||claw||plate||seam||yv<0.18) base=ink;
+      var sh=0.58+yv*0.5;
       nr=base[0]*sh;ng=base[1]*sh;nb=base[2]*sh;
     }
     p[i]=Math.max(0,Math.min(255,nr));
@@ -428,7 +435,8 @@ var tint=skin.body&&!skin._natural;
 if(getColor&&getColor().id==="natural")tint=false;
 if(tint){
   paintDragon.cache=paintDragon.cache||{};
-  var key=spriteId(d)+":"+(getColor()?getColor().id:"x");
+  var cid0=getColor()?getColor().id:"x";
+  var key=spriteId(d)+":"+cid0+(cid0==="prism"?(":"+String(prismSeed)):"");
   if(!paintDragon.cache[key]){
     var b=document.createElement("canvas"); b.width=IW; b.height=IH;
     var bx=b.getContext("2d");
@@ -575,7 +583,7 @@ if(!col||!col.body){
   return "linear-gradient(135deg,"+d.body+","+d.wing+")";
 }
 if(col.stops&&col.stops.length)return "linear-gradient(135deg,"+col.stops.join(",")+")";
-if(col.skin==="koi")return "repeating-linear-gradient(115deg,#f4f1eb 0 10px,#e85c1c 10px 22px,#141210 22px 26px,#f4f1eb 26px 40px)";
+if(col.skin==="koi")return "linear-gradient(118deg,#f6f4f0 0 38%,#e95416 38% 62%,#121010 62% 70%,#f6f4f0 70% 100%)";
 return "linear-gradient(135deg,"+col.body+","+col.wing+")";
 }
 function render(){
