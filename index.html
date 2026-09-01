@@ -955,7 +955,7 @@ for(var y=0;y<IH;y++){
 }
 if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
   var goldLo=[232,192,64],goldHi=[255,233,176];
-  var vioLo=[138,77,255],vioHi=[216,176,255];
+  var vioLo=[192,112,255],vioHi=[255,232,255];
   var stormLo=[40,160,255],stormHi=[180,240,255];
   var moonLo=[255,255,255],moonHi=[255,246,248];
   for(var y=0;y<IH;y++){
@@ -976,8 +976,8 @@ if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
       var ridge=Math.max(0,Math.min(1,(yv-0.52)/0.38));
       var rimOnly=(kind==="jade"||kind==="bloodmoon");
       var amt=rimOnly?edge:Math.max(edge,ridge*0.72);
-      if(amt<0.14)continue;
-      var w=rimOnly?Math.min(1,amt*1.85):Math.min(1,amt*1.2);
+      if(amt<(kind==="jade"?0.08:0.14))continue;
+      var w=kind==="jade"?Math.min(1,amt*2.65):rimOnly?Math.min(1,amt*1.85):Math.min(1,amt*1.2);
       var hiMix=Math.max(0,Math.min(1,yv*0.55+amt*0.45));
       var lo,hi;
       if(kind==="jade"){lo=vioLo;hi=vioHi}
@@ -998,6 +998,7 @@ bx.globalCompositeOperation="source-over";
 restoreEyes(bx,im,IW,IH,style);
 if(style==="knight")restoreArmor(bx,im,IW,IH);
 if(kind==="ghost")addGhostGlow(bx,IW,IH);
+if(kind==="jade")addJadeGlow(bx,IW,IH);
 }
 
 
@@ -1181,6 +1182,21 @@ x.drawImage(bx.canvas,0,0);
 bx.clearRect(0,0,IW,IH);
 bx.drawImage(c,0,0);
 }
+function addJadeGlow(bx,IW,IH){
+var c=document.createElement("canvas");c.width=IW;c.height=IH;
+var x=c.getContext("2d");
+var blur=Math.max(18,Math.floor(IW*0.055));
+x.shadowColor="#b44dff";
+x.shadowBlur=blur;
+x.drawImage(bx.canvas,0,0);
+x.shadowColor="#ffe0ff";
+x.shadowBlur=Math.max(10,Math.floor(IW*0.028));
+x.drawImage(bx.canvas,0,0);
+x.shadowColor="transparent";x.shadowBlur=0;
+x.drawImage(bx.canvas,0,0);
+bx.clearRect(0,0,IW,IH);
+bx.drawImage(c,0,0);
+}
 
 function hardenAlpha(c){
 var x=c.getContext("2d"),img=x.getImageData(0,0,c.width,c.height),p=img.data;
@@ -1252,6 +1268,7 @@ var cidNow=(getColor&&getColor())?getColor().id:"";
 var ghostAura=cidNow==="ghost";
 var neonAura=cidNow==="neon";
 var eclipseAura=cidNow==="eclipse";
+var jadeAura=cidNow==="jade";
 function drawEclipseAura(){
   var dx=-cx*sc, dy=-cy*sc, dw=IW*sc, dh=IH*sc;
   g.save();
@@ -1270,6 +1287,24 @@ function drawEclipseAura(){
   g.drawImage(src,dx-(dw*(pad-1))/2,dy-(dh*(pad-1))/2,dw*pad,dh*pad);
   g.restore();
 }
+function drawJadeAura(){
+  var dx=-cx*sc, dy=-cy*sc, dw=IW*sc, dh=IH*sc;
+  g.save();
+  g.globalCompositeOperation="lighter";
+  g.shadowColor="#b44dff";
+  g.shadowBlur=8;
+  g.globalAlpha=0.46;
+  g.drawImage(src,dx,dy,dw,dh);
+  g.shadowColor="#ffe0ff";
+  g.shadowBlur=5;
+  g.globalAlpha=0.34;
+  g.drawImage(src,dx,dy,dw,dh);
+  g.shadowBlur=0;
+  var pad=1.022;
+  g.globalAlpha=0.18;
+  g.drawImage(src,dx-(dw*(pad-1))/2,dy-(dh*(pad-1))/2,dw*pad,dh*pad);
+  g.restore();
+}
 if(anim&&anim.still){
   if(neonAura)drawNeonAura();
   if(ghostAura){
@@ -1281,6 +1316,7 @@ if(anim&&anim.still){
     g.restore();
   }
   if(eclipseAura)drawEclipseAura();
+  if(jadeAura)drawJadeAura();
   g.drawImage(src,-cx*sc,-cy*sc,IW*sc,IH*sc);
   return;
 }
@@ -1301,6 +1337,7 @@ if(ghostAura){
   g.restore();
 }
 if(eclipseAura)drawEclipseAura();
+if(jadeAura)drawJadeAura();
 var tm=t||0;
 var tuck=(anim&&anim.tuck)||0;
 var pitch=(anim&&anim.pitch)||0;
