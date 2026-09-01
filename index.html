@@ -433,12 +433,11 @@ for(var y=0;y<IH;y++){
       var sh=0.7+yv*0.4;
       nr=base[0]*sh;ng=base[1]*sh;nb=base[2]*sh;
     }else if(kind==="onyx"){
-      var ph=phase||0;
-      var wave=Math.sin(nx*6.2+ny*4.1+ph*2.15+yv*2.4);
-      var u=Math.max(0,Math.min(1,0.22+yv*0.5+(wave*0.5+0.5-0.5)*0.72));
+      var wave=0.5+0.5*Math.sin(nx*5.4+ny*3.6+yv*2.2);
+      var u=Math.max(0,Math.min(1,yv*0.62+wave*0.38));
       var ink=[8,6,6],red=[198,12,22],hot=[255,48,36];
       var mix=lerp3(ink,red,u);
-      mix=lerp3(mix,hot,Math.max(0,(u-0.7)/0.3)*0.85);
+      mix=lerp3(mix,hot,Math.max(0,(u-0.72)/0.28)*0.8);
       var sh=0.52+yv*0.58;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="ghost"){
@@ -491,74 +490,50 @@ var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
 var o=tx.getImageData(0,0,IW,IH).data;
 var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
 var x0=Math.floor(IW*0.46),x1=Math.floor(IW*0.96),y0=Math.floor(IH*0.08),y1=Math.floor(IH*0.52);
-var seen=new Uint8Array(IW*IH),cands=[];
+var seen=new Uint8Array(IW*IH),keep=new Uint8Array(IW*IH);
 function luma(i){return(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255}
 function chroma(i){return Math.max(o[i],o[i+1],o[i+2])-Math.min(o[i],o[i+1],o[i+2])}
-function isSeed(x,y){
-  var i=(y*IW+x)*4;
-  return o[i+3]>90&&luma(i)<0.13&&chroma(i)<42;
-}
-function inSocket(x,y){
+function isSeed(x,y){var i=(y*IW+x)*4;return o[i+3]>90&&luma(i)<0.13&&chroma(i)<45}
+function inEye(x,y){
   if(x<x0||y<y0||x>=x1||y>=y1)return false;
   var i=(y*IW+x)*4;if(o[i+3]<90)return false;
   var yv=luma(i),c=chroma(i);
-  return yv<0.16||(yv<0.42&&c>55)||(yv<0.28&&c<50);
+  return yv<0.15||(yv<0.45&&c>50);
 }
 for(var y=y0;y<y1;y++){
   for(var x=x0;x<x1;x++){
     var idx=y*IW+x;if(seen[idx]||!isSeed(x,y))continue;
-    var q=[[x,y]],pts=[],minx=x,maxx=x,miny=y,maxy=y,sx=0,sy=0;seen[idx]=1;
+    var q=[[x,y]],pts=[],minx=x,maxx=x,miny=y,maxy=y;seen[idx]=1;
     while(q.length){
-      var t=q.pop(),px=t[0],py=t[1];pts.push(t);sx+=px;sy+=py;
+      var t=q.pop(),px=t[0],py=t[1];pts.push(t);
       if(px<minx)minx=px;if(px>maxx)maxx=px;if(py<miny)miny=py;if(py>maxy)maxy=py;
       for(var k=-1;k<=1;k++)for(var j=-1;j<=1;j++){
         var xx=px+j,yy=py+k;if(xx<x0||yy<y0||xx>=x1||yy>=y1)continue;
-        var ii=yy*IW+xx;if(seen[ii]||!inSocket(xx,yy))continue;
+        var ii=yy*IW+xx;if(seen[ii]||!inEye(xx,yy))continue;
         seen[ii]=1;q.push([xx,yy]);
       }
     }
-    var w=maxx-minx+1,h=maxy-miny+1,area=pts.length;
-    if(area<24||area>2200)continue;
-    if(w>h*1.65||h>w*1.65)continue;
-    if(w<7||h<7)continue;
-    var cx=sx/area,cy=sy/area,hi=0;
-    var r=Math.max(w,h)+8;
-    for(var yy=Math.max(y0,Math.floor(cy-r));yy<=Math.min(y1-1,cy+r);yy++){
-      for(var xx=Math.max(x0,Math.floor(cx-r));xx<=Math.min(x1-1,cx+r);xx++){
+    var w=maxx-minx+1,h=maxy-miny+1;
+    if(pts.length<20||pts.length>2400)continue;
+    if(w>h*1.7||h>w*1.7||w<6||h<6)continue;
+    var cx=(minx+maxx)/2,cy=(miny+maxy)/2,hi=0;
+    for(var n=0;n<pts.length;n++)keep[pts[n][1]*IW+pts[n][0]]=1;
+    var rr=Math.max(w,h)+6;
+    for(var yy=Math.max(y0,Math.floor(cy-rr));yy<=Math.min(y1-1,cy+rr);yy++){
+      for(var xx=Math.max(x0,Math.floor(cx-rr));xx<=Math.min(x1-1,cx+rr);xx++){
         var i=(yy*IW+xx)*4;if(o[i+3]<80)continue;
-        var dx=xx-cx,dy=yy-cy;if(dx*dx+dy*dy>r*r)continue;
-        if(luma(i)>0.78&&chroma(i)<70)hi++;
+        var dx=xx-cx,dy=yy-cy;if(dx*dx+dy*dy>rr*rr)continue;
+        if(luma(i)>0.78&&chroma(i)<80){keep[yy*IW+xx]=1;hi++}
       }
     }
-    if(hi<3)continue;
-    cands.push({pts:pts,cx:cx,cy:cy,rx:w/2,ry:h/2,area:area,hi:hi});
+    if(hi<2){for(var n=0;n<pts.length;n++)keep[pts[n][1]*IW+pts[n][0]]=0}
   }
 }
-cands.sort(function(a,b){return (b.hi+b.area*0.02)-(a.hi+a.area*0.02)});
-if(cands.length>2)cands=cands.slice(0,2);
-for(var b=0;b<cands.length;b++){
-  var e=cands[b],pts=e.pts;
-  var maxd=0;
-  for(var n=0;n<pts.length;n++){
-    var dx=pts[n][0]-e.cx,dy=pts[n][1]-e.cy,d=dx*dx+dy*dy;
-    if(d>maxd)maxd=d;
-  }
-  maxd=Math.sqrt(maxd)||1;
-  for(var n=0;n<pts.length;n++){
-    var x=pts[n][0],y=pts[n][1],i=(y*IW+x)*4;
-    var d=Math.sqrt((x-e.cx)*(x-e.cx)+(y-e.cy)*(y-e.cy))/maxd;
-    if(d>0.58){p[i]=250;p[i+1]=250;p[i+2]=247}
-    else {p[i]=0;p[i+1]=0;p[i+2]=0}
-    p[i+3]=255;
-  }
-  var hx=e.cx+e.rx*0.22,hy=e.cy-e.ry*0.28,hs=Math.max(2,maxd*0.18);
-  for(var y=Math.floor(hy-hs);y<=hy+hs;y++){
-    for(var x=Math.floor(hx-hs);x<=hx+hs;x++){
-      if(x<0||y<0||x>=IW||y>=IH)continue;
-      var dx=x-hx,dy=y-hy;if(dx*dx+dy*dy>hs*hs)continue;
-      var i=(y*IW+x)*4;if(o[i+3]<40)continue;
-      p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=255;
-    }
+for(var y=0;y<IH;y++){
+  for(var x=0;x<IW;x++){
+    if(!keep[y*IW+x])continue;
+    var i=(y*IW+x)*4;
+    p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3];
   }
 }
 bx.putImageData(cur,0,0);
@@ -585,26 +560,12 @@ if(getColor&&getColor().id==="natural")tint=false;
 if(tint){
   paintDragon.cache=paintDragon.cache||{};
   var cid0=getColor()?getColor().id:"x";
-  if(cid0==="onyx"){
-    paintDragon.onyxFrames=paintDragon.onyxFrames||{};
-    var os=spriteId(d);
-    if(!paintDragon.onyxFrames[os]){
-      var fr=[];
-      for(var f=0;f<4;f++){
-        var ob=document.createElement("canvas"); ob.width=IW; ob.height=IH;
-        applyExclusiveSkin(ob.getContext("2d"),im,IW,IH,"onyx",os,f/4*Math.PI*2);
-        fr.push(ob);
-      }
-      paintDragon.onyxFrames[os]=fr;
-    }
-    src=paintDragon.onyxFrames[os][Math.floor((t||0)*4)%4];
-  }else{
   var key=spriteId(d)+":"+cid0+(cid0==="prism"?(":"+String(prismSeed)):"");
   if(!paintDragon.cache[key]){
     var b=document.createElement("canvas"); b.width=IW; b.height=IH;
     var bx=b.getContext("2d");
     var cid=getColor()?getColor().id:"";
-    if(cid==="prism"||cid==="nebula"||cid==="koi"||cid==="magma"||cid==="venom"||cid==="aurora"||cid==="carbon"||cid==="ghost"){
+    if(cid==="prism"||cid==="nebula"||cid==="koi"||cid==="magma"||cid==="venom"||cid==="aurora"||cid==="carbon"||cid==="ghost"||cid==="onyx"){
       applyExclusiveSkin(bx,im,IW,IH,cid,spriteId(d),t||0);
     }else{
       bx.drawImage(im,0,0);
@@ -624,7 +585,6 @@ if(tint){
     paintDragon.cache[key]=b;
   }
   src=paintDragon.cache[key];
-  }
 }
 g.imageSmoothingEnabled=true;
 var sc=124/IW;
