@@ -149,7 +149,11 @@ var dragons=[
  {id:"shadow",name:"Shadow Dragon",price:1500,body:"#40304f",wing:"#8c61b8",eye:"#f2b8ff",accent:"#c993e8",style:"shadow",scale:.68},
  {id:"gold",name:"Golden Dragon",price:2000,body:"#b87828",wing:"#ffd65a",eye:"#fff3a5",accent:"#fff0b8",style:"gold",scale:.68},
  {id:"voidwatcher",name:"Voidwatcher",price:50000,body:"#29223b",wing:"#7650c9",eye:"#e8b5ff",accent:"#d6a64a",style:"void",scale:.76,exclusive:true}
-,{id:"sirpuff",name:"Sir Puff",price:50000,body:"#e8b84a",wing:"#c9a038",eye:"#fff8d0",accent:"#c8d0dc",style:"knight",scale:.68,exclusive:true}
+,{id:"sirpuff",name:"Sir Puff",price:50000,body:"#e8b84a",wing:"#c9a038",eye:"#fff8d0",accent:"#c8d0dc",style:"knight",scale:.68,exclusive:true},
+ {id:"nimbus",name:"Nimbus",price:800,body:"#c8e6fa",wing:"#7ec8f0",eye:"#ffffff",accent:"#f4fbff",style:"nimbus",scale:.68},
+ {id:"coral",name:"Coral",price:1100,body:"#ef8aa8",wing:"#2eb8b4",eye:"#fff4e8",accent:"#ffe0d8",style:"coral",scale:.68},
+ {id:"thorn",name:"Thorn",price:50000,body:"#d4b07a",wing:"#5a9c4a",eye:"#fff6e8",accent:"#f3e0b8",style:"thorn",scale:.68,exclusive:true},
+ {id:"mochi",name:"Mochi",price:50000,body:"#ffc4d4",wing:"#f2c4b4",eye:"#fff8ee",accent:"#fff3e8",style:"mochi",scale:.62,exclusive:true}
 ];
 var colors=[
 {id:"natural",name:"Natural",body:null,wing:null},
@@ -503,7 +507,7 @@ drawCoinPrint();
 ctx.restore()}
 }
 var dragonImgs={};
-["baby","fire","ice","forest","shadow","gold","void","knight"].forEach(function(id){
+["baby","fire","ice","forest","shadow","gold","void","knight","nimbus","coral","thorn","mochi"].forEach(function(id){
   var im=new Image();
   im.src="dragons/"+id+".png";
   dragonImgs[id]=im;
@@ -575,7 +579,7 @@ return keep;
 function applyExclusiveSkin(bx,im,IW,IH,kind,style,phase){
 bx.clearRect(0,0,IW,IH);bx.drawImage(im,0,0);
 var img=bx.getImageData(0,0,IW,IH),p=img.data;
-var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7,knight:8}[style]||1;
+var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7,knight:8,nimbus:9,coral:10,thorn:11,mochi:12}[style]||1;
 var h1=hash32((prismSeed|0)*17+sid*997),h2=hash32(h1+91),h3=hash32(h2+13);
 var knightArmor=(style==="knight")?armorKeepMask(p,IW,IH):null;
 for(var y=0;y<IH;y++){
@@ -831,7 +835,11 @@ var EYE_PUPILS={
   shadow:[{cx:0.754,cy:0.451,pr:0.017},{cx:0.511,cy:0.453,pr:0.017}],
   gold:[{cx:0.680,cy:0.432,pr:0.017},{cx:0.786,cy:0.427,pr:0.017}],
   void:[{cx:0.768,cy:0.435,pr:0.016}],
-  knight:[{cx:0.575,cy:0.422,pr:0.016}]
+  knight:[{cx:0.575,cy:0.422,pr:0.016}],
+  nimbus:[{cx:0.548,cy:0.418,pr:0.017},{cx:0.477,cy:0.487,pr:0.016}],
+  coral:[{cx:0.584,cy:0.424,pr:0.016},{cx:0.614,cy:0.423,pr:0.016}],
+  thorn:[{cx:0.584,cy:0.424,pr:0.016},{cx:0.614,cy:0.423,pr:0.016}],
+  mochi:[{cx:0.548,cy:0.419,pr:0.017},{cx:0.481,cy:0.492,pr:0.016}]
 };
 function restoreEyes(bx,im,IW,IH,style){
 var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
