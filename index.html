@@ -1219,7 +1219,7 @@ bx.putImageData(cur,0,0);
 }
 var EYE_PUPILS={
   baby:[{cx:0.610,cy:0.452,pr:0.017},{cx:0.752,cy:0.435,pr:0.017}],
-  fire:[{cx:0.836,cy:0.426,pr:0.015},{cx:0.904,cy:0.414,pr:0.015}],
+  fire:[{cx:0.770,cy:0.412,pr:0.017},{cx:0.894,cy:0.411,pr:0.016}],
   ice:[{cx:0.746,cy:0.453,pr:0.018}],
   forest:[{cx:0.736,cy:0.445,pr:0.015}],
   shadow:[{cx:0.754,cy:0.451,pr:0.015}],
@@ -1600,19 +1600,14 @@ var headN=Math.sin(tm*4.6)*0.03 - pitch*0.06;
 var sid=spriteId(d);
 if(sid==="fire") tailA=Math.sin(tm*6.2)*0.16 + pitch*0.32 - tuck*0.08;
 /* Cropped profile sprites: belly sits toward the head seam (x>~0.56). Default body
-   clip ends at 0.56 so head rotation punches a pie-wedge of scutes. Keep baby/ice/
-   forest/shadow/gold/void/knight on the original layout. Fire tail owns the baked flame. */
+   clip ends at 0.56 so head rotation punches a pie-wedge of scutes. Keep baby/fire/ice/
+   forest/shadow/gold/void/knight on the original layout. */
 var profile=sid==="nimbus"||sid==="coral"||sid==="thorn"||sid==="mochi";
-if(sid==="fire"){
-  part(IW*0.08,IH*0.02,IW*0.30,IH*0.26, IW*0.34,IH*0.22, -0.18+flapL);
-  part(0,IH*0.20,IW*0.44,IH*0.52, IW*0.42,IH*0.54, tailA);
-}else{
-  part(IW*0.02,IH*0.02,IW*0.40,IH*0.40, IW*0.34,IH*0.28, -0.18+flapL);
-  part(0,IH*0.32,IW*0.42,IH*0.48, IW*0.32,IH*0.56, tailA);
-}
+part(IW*0.02,IH*0.02,IW*0.40,IH*0.40, IW*0.34,IH*0.28, -0.18+flapL);
+part(0,IH*0.32,IW*0.42,IH*0.48, IW*0.32,IH*0.56, tailA);
 if(sid==="fire" && !(anim&&anim.still)){
   g.save();
-  g.translate((IW*0.42-cx)*sc,(IH*0.54-cy)*sc);
+  g.translate((IW*0.32-cx)*sc,(IH*0.56-cy)*sc);
   g.rotate(tailA);
   g.globalCompositeOperation="lighter";
   var ft=t||0;
@@ -1620,7 +1615,6 @@ if(sid==="fire" && !(anim&&anim.still)){
   var f1=0.82+0.20*Math.sin(ft*11.3);
   var f2=0.88+0.22*Math.sin(ft*17.1+1.2);
   var f3=0.78+0.26*Math.sin(ft*23.7+2.4);
-  var f4=0.74+0.22*Math.sin(ft*8.4+0.6);
   var tongue=function(ox,oy,len,wid,ang,col){
     g.save();g.translate(ox,oy);g.rotate(ang);g.fillStyle=col;
     g.beginPath();g.moveTo(0,0);
@@ -1628,47 +1622,35 @@ if(sid==="fire" && !(anim&&anim.still)){
     g.bezierCurveTo(-wid*0.38,-len*0.68,-wid*0.65,-len*0.22,0,0);
     g.closePath();g.fill();g.restore();
   };
-  var bx=-IW*0.08*sc, by=0;
+  var bx=-IW*0.26*sc, by=-IH*0.02*sc;
   g.save();
   g.translate(bx,by);
   g.rotate(lag);
-  tongue(0,0,30*f1,9*f2,-Math.PI/2+0.10*Math.sin(ft*9),"rgba(255,36,12,0.55)");
-  tongue(-1.5,1.2,22*f2,6.2*f3,-Math.PI/2-0.16*Math.sin(ft*13),"rgba(255,140,24,0.72)");
-  tongue(-1,-0.8,16*f3,4.2*f1,-Math.PI/2+0.22*Math.sin(ft*19),"rgba(255,230,80,0.88)");
-  if(f4>0.80) tongue(2,2.4,18*f4,4.6,-Math.PI/2+0.34*Math.sin(ft*7.2),"rgba(255,70,16,0.48)");
-  for(var ei=0;ei<5;ei++){
+  tongue(0,0,12*f1,3.6*f2,-Math.PI/2+0.10*Math.sin(ft*9),"rgba(255,36,12,0.55)");
+  tongue(-0.6,0.5,8.8*f2,2.5*f3,-Math.PI/2-0.16*Math.sin(ft*13),"rgba(255,140,24,0.72)");
+  tongue(-0.4,-0.3,6.4*f3,1.7*f1,-Math.PI/2+0.22*Math.sin(ft*19),"rgba(255,230,80,0.88)");
+  for(var ei=0;ei<2;ei++){
     var ph=ft*2.5+ei*1.37;
     var life=0.45+0.55*(0.5+0.5*Math.sin(ph*1.8));
-    var ex=-10-ei*6.5-(0.5+0.5*Math.sin(ph))*16;
-    var ey=(Math.sin(ph*1.6)*3.2)+(ei%2?1.2:-1.0);
-    var er=(1.1+life*1.7+(ei%2)*0.4);
+    var ex=-4-ei*2.6-(0.5+0.5*Math.sin(ph))*6.4;
+    var ey=(Math.sin(ph*1.6)*1.28)+(ei%2?0.48:-0.4);
+    var er=(0.44+life*0.68+(ei%2)*0.16);
     g.fillStyle=ei%2?"rgba(255,210,70,"+(0.32+life*0.5)+")":"rgba(255,70,18,"+(0.28+life*0.42)+")";
     g.beginPath();g.ellipse(ex,ey,er*0.5,er,-0.7,0,Math.PI*2);g.fill();
   }
   g.restore();
   g.restore();
 }
-if(sid==="fire"){
-  part(IW*0.42,IH*0.56,IW*0.22,IH*0.36, IW*0.50,IH*0.68, legB);
-}else{
-  part(IW*0.16,IH*0.56,IW*0.32,IH*0.36, IW*0.38,IH*0.68, legB);
-}
+part(IW*0.16,IH*0.56,IW*0.32,IH*0.36, IW*0.38,IH*0.68, legB);
 if(profile){
   /* Torso+belly+throat, unrotated, further right so chin/neck underside is not a hole. */
   part(IW*0.16,IH*0.24,IW*0.66,IH*0.50, IW*0.48,IH*0.50, 0);
   part(IW*0.48,IH*0.26,IW*0.44,IH*0.30, IW*0.68,IH*0.40, 0);
-}else if(sid==="fire"){
-  part(IW*0.42,IH*0.28,IW*0.22,IH*0.42, IW*0.52,IH*0.50, 0);
 }else{
   part(IW*0.20,IH*0.28,IW*0.36,IH*0.42, IW*0.42,IH*0.50, 0);
 }
-if(sid==="fire"){
-  part(IW*0.44,IH*0.56,IW*0.26,IH*0.36, IW*0.56,IH*0.70, legF);
-  part(IW*0.44,IH*0.02,IW*0.28,IH*0.38, IW*0.56,IH*0.28, 0.12+flapR);
-}else{
-  part(IW*0.34,IH*0.56,IW*0.30,IH*0.36, IW*0.50,IH*0.70, legF);
-  part(IW*0.22,IH*0.02,IW*0.32,IH*0.38, IW*0.42,IH*0.28, 0.12+flapR);
-}
+part(IW*0.34,IH*0.56,IW*0.30,IH*0.36, IW*0.50,IH*0.70, legF);
+part(IW*0.22,IH*0.02,IW*0.32,IH*0.38, IW*0.42,IH*0.28, 0.12+flapR);
 if(profile){
   /* Head; taller so neck underside stays attached when head nods. */
   part(IW*0.50,IH*0.10,IW*0.50,IH*0.44, IW*0.74,IH*0.32, headN);
