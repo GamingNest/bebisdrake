@@ -224,10 +224,10 @@ var colors=[
 {id:"gilded",name:"Gilded",exclusive:true,price:50000,body:"#3a2410",wing:"#e8c040",accent:"#fff0a8",stops:["#3a2410","#8a5a18","#e8c040","#fff0a8"]},
 {id:"eclipse",name:"Eclipse",exclusive:true,price:50000,body:"#0c0c10",wing:"#1a1a22",accent:"#ffe9b0",stops:["#0c0c10","#1a1a22","#ffe9b0"]},
 {id:"pearl",name:"Pearl",exclusive:true,price:50000,body:"#f4efe8",wing:"#c8ffe8",accent:"#e8c8ff",stops:["#f4efe8","#c8ffe8","#e8c8ff"]},
-{id:"storm",name:"Storm",exclusive:true,price:50000,body:"#0a0818",wing:"#2a1860",accent:"#e8c040",stops:["#080614","#1a1038","#3a2080","#e8c040"]},
+{id:"storm",name:"Storm",exclusive:true,price:50000,body:"#0c1030",wing:"#5a40c8",accent:"#66d4ff",stops:["#0c1030","#5a40c8","#66d4ff"]},
 {id:"jade",name:"Jade",exclusive:true,price:50000,body:"#0c3a28",wing:"#3ecf7a",accent:"#8a4dff",stops:["#0c3a28","#3ecf7a","#6a38c8"]},
 {id:"holo",name:"Holo",exclusive:true,price:50000,body:"#141018",wing:"#ff4dff",accent:"#4dfff0",stops:["#141018","#ff4dff","#4dfff0","#ffe84d"]},
-{id:"bloodmoon",name:"Bloodmoon",exclusive:true,price:50000,body:"#ff3a3a",wing:"#ff6a6a",accent:"#ffffff",stops:["#ff2a3a","#ff6a72","#fff0f2"]}
+{id:"bloodmoon",name:"Bloodmoon",exclusive:true,price:50000,body:"#4a0810",wing:"#8a1020",accent:"#ffffff",stops:["#2a0408","#4a0810","#8a1020"]}
 ];
 var maps=[
 {id:"sky",name:"Sky Kingdom",desc:"Bright skies & floating islands",a:"#78bfff",b:"#f5d3e6"},
@@ -736,7 +736,7 @@ var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7,knight:8,nimbus:9,c
 var h1=hash32((prismSeed|0)*17+sid*997),h2=hash32(h1+91),h3=hash32(h2+13);
 var knightArmor=(style==="knight")?armorKeepMask(p,IW,IH):null;
 var srcY=null,srcA=null;
-if(kind==="eclipse"||kind==="storm"||kind==="jade"){
+if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
   srcY=new Float32Array(IW*IH);srcA=new Uint8Array(IW*IH);
   for(var yi=0;yi<IH;yi++){
     for(var xi=0;xi<IW;xi++){
@@ -872,15 +872,12 @@ for(var y=0;y<IH;y++){
       ng=mix[1]*(1-spec)+255*spec;
       nb=mix[2]*(1-spec)+255*spec;
     }else if(kind==="storm"){
-      var navy=[8,6,20],mid=[28,18,72],violet=[56,32,118],gold=[232,192,64],hi=[255,233,176];
+      var navy=[12,16,48],mid=[32,28,110],violet=[90,64,200],ice=[102,212,255];
       var mix=lerp3(navy,mid,Math.max(0,Math.min(1,yv*1.05)));
-      mix=lerp3(mix,violet,Math.max(0,(yv-0.42)/0.5)*0.55);
-      var sh=0.62+yv*0.38;
-      var spec=Math.pow(Math.max(0,yv-0.58)/0.42,1.8)*0.55;
-      nr=mix[0]*sh*(1-spec)+gold[0]*spec;
-      ng=mix[1]*sh*(1-spec)+gold[1]*spec;
-      nb=mix[2]*sh*(1-spec)+gold[2]*spec;
-      if(yv>0.78){var hw=Math.min(1,(yv-0.78)/0.22)*0.35;nr=nr*(1-hw)+hi[0]*hw;ng=ng*(1-hw)+hi[1]*hw;nb=nb*(1-hw)+hi[2]*hw}
+      mix=lerp3(mix,violet,Math.max(0,(yv-0.35)/0.55)*0.72);
+      var sh=0.68+yv*0.36;
+      nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
+      if(yv>0.78){var hw=Math.min(1,(yv-0.78)/0.22)*0.18;nr=nr*(1-hw)+ice[0]*hw;ng=ng*(1-hw)+ice[1]*hw;nb=nb*(1-hw)+ice[2]*hw}
     }else if(kind==="jade"){
       var deep=[10,54,38],jade=[58,196,118],leaf=[36,150,88];
       var mix=lerp3(deep,jade,Math.max(0,Math.min(1,(yv-0.10)/0.58)));
@@ -900,11 +897,10 @@ for(var y=0;y<IH;y++){
       ng=mix[1]*(1-spec)+255*spec;
       nb=mix[2]*(1-spec)+255*spec;
     }else if(kind==="bloodmoon"){
-      var red=[220,28,42],rose=[255,92,104],white=[255,246,248];
-      var u=Math.max(0,Math.min(1,yv*0.85+nx*0.08));
-      var mix=lerp3(red,rose,Math.max(0,Math.min(1,u*1.15)));
-      mix=lerp3(mix,white,Math.max(0,(u-0.38)/0.62));
-      var sh=0.92+yv*0.12;
+      var wine=[42,6,10],blood=[122,14,22],ember=[168,22,28];
+      var mix=lerp3(wine,blood,Math.max(0,Math.min(1,(yv-0.08)/0.62)));
+      mix=lerp3(mix,ember,Math.max(0,(yv-0.58)/0.42)*0.28);
+      var sh=0.62+yv*0.32;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="koi"){
       var cream=[255,252,236],orange=[255,88,8],ink=[10,8,8];
@@ -957,9 +953,11 @@ for(var y=0;y<IH;y++){
     p[i+3]=255;
   }
 }
-if(kind==="eclipse"||kind==="storm"||kind==="jade"){
+if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
   var goldLo=[232,192,64],goldHi=[255,233,176];
-  var vioLo=[118,52,210],vioHi=[210,168,255];
+  var vioLo=[138,77,255],vioHi=[216,176,255];
+  var stormLo=[40,160,255],stormHi=[180,240,255];
+  var moonLo=[255,255,255],moonHi=[255,246,248];
   for(var y=0;y<IH;y++){
     for(var x=0;x<IW;x++){
       var k=y*IW+x,i=k*4,a=srcA[k];
@@ -976,12 +974,15 @@ if(kind==="eclipse"||kind==="storm"||kind==="jade"){
         else if(yv-srcY[nk]>0.16)edge=Math.max(edge,Math.min(1,(yv-srcY[nk])/0.32));
       }
       var ridge=Math.max(0,Math.min(1,(yv-0.52)/0.38));
-      var amt=Math.max(edge,ridge*0.72);
+      var rimOnly=(kind==="jade"||kind==="bloodmoon");
+      var amt=rimOnly?edge:Math.max(edge,ridge*0.72);
       if(amt<0.14)continue;
-      var w=Math.min(1,amt*1.2);
+      var w=rimOnly?Math.min(1,amt*1.85):Math.min(1,amt*1.2);
       var hiMix=Math.max(0,Math.min(1,yv*0.55+amt*0.45));
       var lo,hi;
       if(kind==="jade"){lo=vioLo;hi=vioHi}
+      else if(kind==="storm"){lo=stormLo;hi=stormHi}
+      else if(kind==="bloodmoon"){lo=moonLo;hi=moonHi}
       else{lo=goldLo;hi=goldHi}
       var mix=lerp3(lo,hi,hiMix);
       p[i]=p[i]*(1-w)+mix[0]*w;
