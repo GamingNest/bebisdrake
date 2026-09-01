@@ -553,13 +553,8 @@ bx.putImageData(cur,0,0);
 function addGhostGlow(bx,IW,IH){
 var c=document.createElement("canvas");c.width=IW;c.height=IH;
 var x=c.getContext("2d");
-x.shadowColor="rgba(230,245,255,1)";
-x.shadowBlur=Math.max(36,Math.floor(IW*0.12));
-x.drawImage(bx.canvas,0,0);
-x.shadowBlur=Math.max(22,Math.floor(IW*0.07));
-x.drawImage(bx.canvas,0,0);
-x.shadowColor="rgba(255,255,255,0.9)";
-x.shadowBlur=Math.max(12,Math.floor(IW*0.035));
+x.shadowColor="rgba(255,255,255,0.28)";
+x.shadowBlur=Math.max(10,Math.floor(IW*0.03));
 x.drawImage(bx.canvas,0,0);
 x.shadowColor="transparent";x.shadowBlur=0;
 x.drawImage(bx.canvas,0,0);
@@ -616,9 +611,9 @@ function part(sx,sy,sw,sh,jx,jy,rot){
 }
 if(ghostAura){
   g.save();
-  g.shadowColor="rgba(220,240,255,0.95)";
-  g.shadowBlur=28;
-  g.globalAlpha=0.9;
+  g.shadowColor="rgba(255,255,255,0.35)";
+  g.shadowBlur=12;
+  g.globalAlpha=0.45;
   g.drawImage(src,-cx*sc,-cy*sc,IW*sc,IH*sc);
   g.restore();
 }
