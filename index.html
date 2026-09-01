@@ -666,12 +666,16 @@ for(var y=0;y<IH;y++){
       ng=mix[1]*sh*(1-spec)+120*spec;
       nb=mix[2]*sh*(1-spec)+80*spec;
     }else if(kind==="koi"){
-      var px=Math.floor(nx*18+Math.abs(Math.sin(ny*41))*1.4);
-      var py=Math.floor(ny*14+Math.abs(Math.cos(nx*37))*1.2);
-      var u=(hash32(px*131+py*917+sid*19)&255)/255;
-      var cream=[255,252,236],orange=[255,92,8],ink=[10,8,8];
-      var mix=u<0.34?cream:(u<0.72?orange:ink);
-      nr=mix[0];ng=mix[1];nb=mix[2];
+      var cream=[255,252,236],orange=[255,88,8],ink=[10,8,8];
+      if(style==="ice"){cream=[252,250,255];orange=[255,96,28];ink=[12,10,18]}
+      else if(style==="fire"){cream=[255,248,232];orange=[255,70,6]}
+      else if(style==="forest"){cream=[252,252,232];orange=[236,84,10]}
+      else if(style==="shadow"||style==="void"){cream=[248,244,236];orange=[255,72,10];ink=[8,6,10]}
+      else if(style==="gold"){cream=[255,250,230];orange=[255,80,8]}
+      var u=Math.max(0,Math.min(1,yv*0.82+(1-nx)*0.12+ny*0.06));
+      var mix=u<0.48?lerp3(ink,orange,u/0.48):lerp3(orange,cream,(u-0.48)/0.52);
+      var sh=0.78+yv*0.32;
+      nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="ghost"){
       var mix=lerp3([200,214,230],[245,250,255],yv);
       mix=lerp3(mix,[140,190,255],Math.max(0,0.25-ny)*0.8);
@@ -943,28 +947,40 @@ var cx=IW*0.5, cy=IH*0.52;
 function drawNeonLight(){
   var tm=t||0;
   var pulse=0.86+0.14*Math.sin(tm*3.4);
-  var ox=IW*0.02*sc, oy=IH*0.04*sc;
-  var rx=IW*0.36*sc, ry=IH*0.30*sc;
+  var sid=spriteId(d);
+  var NEON_TAIL={baby:[0.22,0.54],fire:[0.16,0.52],ice:[0.18,0.50],forest:[0.16,0.52],gold:[0.16,0.48],shadow:[0.18,0.56],void:[0.16,0.50],knight:[0.14,0.50]};
+  var anc=NEON_TAIL[sid]||NEON_TAIL.baby;
+  var ax=(anc[0]*IW-cx)*sc, ay=(anc[1]*IH-cy)*sc;
+  var len=78+22*(0.5+0.5*Math.sin(tm*1.55));
+  var wave=7*Math.sin(tm*2.35);
+  function ribbon(w0,a0,col){
+    g.beginPath();
+    var n=22,i,u,x,y,th;
+    for(i=0;i<=n;i++){
+      u=i/n;
+      x=-u*len;
+      y=Math.sin(u*2.35+tm*2.2)*wave*u+Math.sin(u*4.6+tm*1.1)*2.2*u;
+      th=(1-u)*(1-u)*w0+1.1;
+      if(i===0)g.moveTo(2,y-th*0.55);else g.lineTo(x,y-th);
+    }
+    for(i=n;i>=0;i--){
+      u=i/n;
+      x=-u*len;
+      y=Math.sin(u*2.35+tm*2.2)*wave*u+Math.sin(u*4.6+tm*1.1)*2.2*u;
+      th=(1-u)*(1-u)*w0+1.1;
+      g.lineTo(i===0?2:x,i===0?y+th*0.55:y+th);
+    }
+    g.closePath();
+    g.fillStyle=col;
+    g.globalAlpha=a0*pulse;
+    g.fill();
+  }
   g.save();
   g.globalCompositeOperation="lighter";
-  var aura=g.createRadialGradient(ox,oy,rx*0.08,ox,oy,rx);
-  aura.addColorStop(0,"rgba(216,255,154,"+(0.98*pulse)+")");
-  aura.addColorStop(0.16,"rgba(19,255,74,"+(0.78*pulse)+")");
-  aura.addColorStop(0.38,"rgba(124,255,58,"+(0.32*pulse)+")");
-  aura.addColorStop(0.62,"rgba(19,255,74,0.08)");
-  aura.addColorStop(1,"rgba(124,255,58,0)");
-  g.fillStyle=aura;
-  g.beginPath();
-  g.ellipse(ox,oy,rx,ry,0,0,Math.PI*2);
-  g.fill();
-  var core=g.createRadialGradient(ox,oy,0,ox,oy,rx*0.22);
-  core.addColorStop(0,"rgba(216,255,154,"+(1*pulse)+")");
-  core.addColorStop(0.45,"rgba(19,255,74,"+(0.55*pulse)+")");
-  core.addColorStop(1,"rgba(124,255,58,0)");
-  g.fillStyle=core;
-  g.beginPath();
-  g.ellipse(ox,oy,rx*0.22,ry*0.20,0,0,Math.PI*2);
-  g.fill();
+  g.translate(ax,ay);
+  ribbon(22,0.28,"#7cff3a");
+  ribbon(14,0.48,"#13ff4a");
+  ribbon(6.5,0.95,"#d8ff9a");
   g.restore();
 }
 var cidNow=(getColor&&getColor())?getColor().id:"";
