@@ -224,7 +224,10 @@ var dragons=[
  {id:"nimbus",name:"Nimbus",price:800,body:"#c8e6fa",wing:"#7ec8f0",eye:"#ffffff",accent:"#f4fbff",style:"nimbus",scale:.68},
  {id:"coral",name:"Coral",price:1100,body:"#ef8aa8",wing:"#2eb8b4",eye:"#fff4e8",accent:"#ffe0d8",style:"coral",scale:.68},
  {id:"thorn",name:"Thorn",price:50000,body:"#d4b07a",wing:"#5a9c4a",eye:"#fff6e8",accent:"#f3e0b8",style:"thorn",scale:.68,exclusive:true},
- {id:"mochi",name:"Mochi",price:50000,body:"#ffc4d4",wing:"#f2c4b4",eye:"#fff8ee",accent:"#fff3e8",style:"mochi",scale:.62,exclusive:true}
+ {id:"mochi",name:"Mochi",price:50000,body:"#ffc4d4",wing:"#f2c4b4",eye:"#fff8ee",accent:"#fff3e8",style:"mochi",scale:.62,exclusive:true},
+ {id:"viking",name:"Viking",price:1800,body:"#9a2a22",wing:"#c45a38",eye:"#fff4d0",accent:"#e8d2a0",style:"viking",scale:.68},
+ {id:"pirate",name:"Pirate",price:2200,body:"#1e8a82",wing:"#d2b08a",eye:"#fff8e8",accent:"#e8c040",style:"pirate",scale:.68},
+ {id:"skeleton",name:"Skeleton",price:50000,body:"#e8dcc4",wing:"#d2c4a8",eye:"#3ecfc8",accent:"#7dffef",style:"skeleton",scale:.68,exclusive:true}
 ];
 var colors=[
 {id:"natural",name:"Natural",body:null,wing:null},
@@ -515,6 +518,16 @@ if(kind==="storm"){
   crashSparkBurst(x,y,["#5a9c4a","#d4b07a","#3d6a30"],24,{type:"needle",sp:120,spR:240,up:20,size:8,sizeR:10,life:.45,lifeR:.4,g:140});
 }else if(kind==="mochi"){
   crashSparkBurst(x,y,["#ffc4d4","#f2c4b4","#fff3e8","#ff9ab0"],20,{type:"blob",sp:50,spR:110,up:40,size:7,sizeR:10,life:.6,lifeR:.5,g:320});
+}else if(kind==="viking"){
+  crashSparkBurst(x,y,["#9a2a22","#c45a38","#8a5a28"],16,{type:"spark",sp:90,spR:180,up:40,size:3,sizeR:5,life:.4,lifeR:.4,g:200});
+  crashSparkBurst(x,y,["#c8d0dc","#ffffff","#a8b0bc"],14,{type:"spark",sp:140,spR:220,up:20,size:2,sizeR:3,life:.3,lifeR:.3,g:70});
+  crashSparkBurst(x,y,["#e8c040","#fff0a8","#e8d2a0"],8,{type:"star",sp:60,spR:120,up:50,size:4,sizeR:5,life:.45,lifeR:.4,g:80});
+}else if(kind==="pirate"){
+  crashSparkBurst(x,y,["#e8c040","#fff0a8","#ffd24d"],20,{type:"star",sp:80,spR:180,up:80,size:4,sizeR:6,life:.5,lifeR:.5,g:200});
+  crashSparkBurst(x,y,["#1e8a82","#7dffef","#2eb8b4"],16,{type:"spark",sp:90,spR:170,up:40,size:3,sizeR:5,life:.4,lifeR:.4,g:160});
+}else if(kind==="skeleton"){
+  crashSparkBurst(x,y,["#e8dcc4","#fff8ee","#d2c4a8"],22,{type:"shard",sp:90,spR:210,up:40,size:5,sizeR:9,life:.45,lifeR:.45,g:220});
+  crashSparkBurst(x,y,["#3ecfc8","#7dffef","#ffffff"],16,{sp:100,spR:180,up:50,size:2,sizeR:4,life:.4,lifeR:.4,g:80});
 }else{
   crashSparkBurst(x,y,[body,wing,acc||"#fff"],28,{sp:70,spR:230,up:80,size:3,sizeR:7,life:.45,lifeR:.5,g:380});
 }
@@ -824,7 +837,7 @@ drawCoinPrint();
 ctx.restore()}
 }
 var dragonImgs={};
-["baby","fire","ice","forest","shadow","gold","void","knight","nimbus","coral","thorn","mochi"].forEach(function(id){
+["baby","fire","ice","forest","shadow","gold","void","knight","nimbus","coral","thorn","mochi","viking","skeleton","pirate"].forEach(function(id){
   var im=new Image();
   im.onload=function(){if(typeof schedulePreviews==="function")schedulePreviews()};
   im.src="dragons/"+id+".png?v=3cb93b1";
@@ -1011,7 +1024,7 @@ bx.putImageData(img,0,0);
 function applyExclusiveSkin(bx,im,IW,IH,kind,style,phase){
 bx.clearRect(0,0,IW,IH);bx.drawImage(im,0,0);
 var img=bx.getImageData(0,0,IW,IH),p=img.data;
-var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7,knight:8,nimbus:9,coral:10,thorn:11,mochi:12}[style]||1;
+var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7,knight:8,nimbus:9,coral:10,thorn:11,mochi:12,viking:13,pirate:14,skeleton:15}[style]||1;
 var h1=hash32((prismSeed|0)*17+sid*997),h2=hash32(h1+91),h3=hash32(h2+13);
 var knightArmor=(style==="knight")?armorKeepMask(p,IW,IH):null;
 var eyeKeep=eyeKeepMask(p,IW,IH,style);
@@ -1354,7 +1367,10 @@ var EYE_PUPILS={
   nimbus:[{cx:0.821,cy:0.457,pr:0.016}],
   coral:[{cx:0.834,cy:0.443,pr:0.016}],
   thorn:[{cx:0.800,cy:0.400,pr:0.016}],
-  mochi:[{cx:0.753,cy:0.384,pr:0.017},{cx:0.888,cy:0.359,pr:0.016}]
+  mochi:[{cx:0.753,cy:0.384,pr:0.017},{cx:0.888,cy:0.359,pr:0.016}],
+  viking:[{cx:0.760,cy:0.382,pr:0.016}],
+  pirate:[{cx:0.750,cy:0.441,pr:0.016}],
+  skeleton:[{cx:0.693,cy:0.460,pr:0.016},{cx:0.792,cy:0.442,pr:0.015}]
 };
 function eyePr(e,IW){return Math.max(7,(e.pr||0.015)*IW)}
 function eyeCopyR(pr,IW){return Math.max(pr*1.8,8)}
@@ -1727,7 +1743,7 @@ if(sid==="fire") tailA=Math.sin(tm*6.2)*0.16 + pitch*0.32 - tuck*0.08;
 /* Cropped profile sprites: belly sits toward the head seam (x>~0.56). Default body
    clip ends at 0.56 so head rotation punches a pie-wedge of scutes. Keep baby/fire/ice/
    forest/shadow/gold/void/knight on the original layout. */
-var profile=sid==="nimbus"||sid==="coral"||sid==="thorn"||sid==="mochi";
+var profile=sid==="nimbus"||sid==="coral"||sid==="thorn"||sid==="mochi"||sid==="viking"||sid==="pirate"||sid==="skeleton";
 part(IW*0.02,IH*0.02,IW*0.40,IH*0.40, IW*0.34,IH*0.28, -0.18+flapL);
 part(0,IH*0.32,IW*0.42,IH*0.48, IW*0.32,IH*0.56, tailA);
 if(sid==="fire" && !(anim&&anim.still)){
