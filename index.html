@@ -149,6 +149,7 @@ var dragons=[
  {id:"shadow",name:"Shadow Dragon",price:1500,body:"#40304f",wing:"#8c61b8",eye:"#f2b8ff",accent:"#c993e8",style:"shadow",scale:.68},
  {id:"gold",name:"Golden Dragon",price:2000,body:"#b87828",wing:"#ffd65a",eye:"#fff3a5",accent:"#fff0b8",style:"gold",scale:.68},
  {id:"voidwatcher",name:"Voidwatcher",price:50000,body:"#29223b",wing:"#7650c9",eye:"#e8b5ff",accent:"#d6a64a",style:"void",scale:1,exclusive:true}
+,{id:"sirpuff",name:"Sir Puff",price:50000,body:"#e8b84a",wing:"#c9a038",eye:"#fff8d0",accent:"#c8d0dc",style:"knight",scale:.72,exclusive:true}
 ];
 var colors=[
 {id:"natural",name:"Natural",body:null,wing:null},
@@ -352,12 +353,12 @@ ctx.shadowBlur=0;ctx.strokeStyle="#fff7a8";ctx.lineWidth=3;ctx.stroke();
 ctx.fillStyle="#8b5b00";ctx.font="900 16px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("1",0,1);ctx.restore()}
 }
 var dragonImgs={};
-["baby","fire","ice","forest","shadow","gold","void"].forEach(function(id){
+["baby","fire","ice","forest","shadow","gold","void","knight"].forEach(function(id){
   var im=new Image();
   im.src="dragons/"+id+".png";
   dragonImgs[id]=im;
 });
-function spriteId(d){return (d&&d.style==="void")?"void":((d&&d.style)||"baby")}
+function spriteId(d){return (d&&d.style)||"baby"}
 function hsvToRgb(h,s,v){
 h=((h%360)+360)%360/60;var c=v*s,x=c*(1-Math.abs(h%2-1)),m=v-c,r=0,g=0,b=0;
 if(h<1){r=c;g=x}else if(h<2){r=x;g=c}else if(h<3){g=c;b=x}else if(h<4){g=x;b=c}else if(h<5){r=x;b=c}else{r=c;b=x}
@@ -368,7 +369,7 @@ function hash32(n){n|=0;n=Math.imul(n^n>>>16,2246822507);n=Math.imul(n^n>>>13,32
 function applyExclusiveSkin(bx,im,IW,IH,kind,style){
 bx.clearRect(0,0,IW,IH);bx.drawImage(im,0,0);
 var img=bx.getImageData(0,0,IW,IH),p=img.data;
-var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7}[style]||1;
+var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7,knight:8}[style]||1;
 var h1=hash32((prismSeed|0)*17+sid*997),h2=hash32(h1+91),h3=hash32(h2+13);
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
