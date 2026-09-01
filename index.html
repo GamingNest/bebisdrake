@@ -179,7 +179,7 @@ var colors=[
 {id:"cobalt",name:"Cobalt",body:"#1236b8",wing:"#7ab8ff"},
 {id:"prism",name:"Prism",exclusive:true,price:50000,body:"#ff4d9a",wing:"#4df0ff",accent:"#ffd24d",stops:["#ff4d9a","#ffd24d","#4dff88","#4df0ff","#b44dff"]},
 {id:"nebula",name:"Nebula",exclusive:true,price:50000,body:"#2a1060",wing:"#ff64d8",accent:"#48d0ff",stops:["#120824","#6b2cff","#ff64d8","#48d0ff"]},
-{id:"koi",name:"Koi",exclusive:true,price:50000,body:"#fff1dc",wing:"#e24a1c",accent:"#1a1412",stops:["#f7f2ea","#e95416","#1a1210"]},
+{id:"koi",name:"Koi",exclusive:true,price:50000,body:"#fff8e8",wing:"#ff3408",accent:"#ffaa28",stops:["#fff8ee","#ff3408","#ffb02a"]},
 {id:"magma",name:"Magma",exclusive:true,price:50000,body:"#1a0804",wing:"#ff4a12",accent:"#ffd24a",stops:["#140804","#ff3a00","#ffb020"]},
 {id:"venom",name:"Venom",exclusive:true,price:50000,body:"#0c1808",wing:"#b6ff1a",accent:"#f6ff6a",stops:["#081208","#5cff14","#e8ff4a"]},
 {id:"aurora",name:"Aurora",exclusive:true,price:50000,body:"#12382a",wing:"#3cffc8",accent:"#ff7ad2",stops:["#0a2a24","#2bffb0","#7ad0ff","#ff73d2"]},
@@ -441,13 +441,16 @@ for(var y=0;y<IH;y++){
       var sh=0.52+yv*0.58;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="koi"){
-      var wave=0.5+0.5*Math.sin(nx*4.8-ny*3.2+yv*1.8);
-      var u=Math.max(0,Math.min(1,yv*0.55+wave*0.45));
-      var cream=[248,244,236],orange=[232,74,22],ink=[22,16,14];
+      var wave=0.5+0.5*Math.sin(nx*5.2-ny*3.4+yv*2);
+      var u=Math.max(0,Math.min(1,Math.pow(0.15+yv*0.7+wave*0.35,0.85)));
+      var cream=[255,250,240],orange=[255,52,8],hot=[255,170,40];
       var mix=lerp3(cream,orange,u);
-      mix=lerp3(mix,ink,Math.max(0,(u-0.78)/0.22)*0.4);
-      var sh=0.62+yv*0.48;
-      nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
+      mix=lerp3(mix,hot,Math.max(0,(yv-0.62)/0.38)*0.55);
+      var sh=0.92+yv*0.18;
+      var spec=Math.pow(Math.max(0,yv-0.7)/0.3,1.6)*0.35;
+      nr=mix[0]*sh*(1-spec)+255*spec;
+      ng=mix[1]*sh*(1-spec)+255*spec;
+      nb=mix[2]*sh*(1-spec)+245*spec;
     }else if(kind==="ghost"){
       var mix=lerp3([200,214,230],[245,250,255],yv);
       mix=lerp3(mix,[140,190,255],Math.max(0,0.25-ny)*0.8);
