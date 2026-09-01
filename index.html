@@ -183,7 +183,7 @@ var colors=[
 {id:"magma",name:"Magma",exclusive:true,price:50000,body:"#1a0804",wing:"#ff4a12",accent:"#ffd24a",stops:["#140804","#ff3a00","#ffb020"]},
 {id:"venom",name:"Venom",exclusive:true,price:50000,body:"#0c1808",wing:"#b6ff1a",accent:"#f6ff6a",stops:["#081208","#5cff14","#e8ff4a"]},
 {id:"aurora",name:"Aurora",exclusive:true,price:50000,body:"#12382a",wing:"#3cffc8",accent:"#ff7ad2",stops:["#0a2a24","#2bffb0","#7ad0ff","#ff73d2"]},
-{id:"carbon",name:"Carbon",exclusive:true,price:50000,body:"#0c0e12",wing:"#2af0ff",accent:"#ff3cc8",stops:["#07080c","#2af0ff","#ff3cc8","#1a1e28"]},
+{id:"carbon",name:"Carbon",exclusive:true,price:50000,body:"#0c0e12",wing:"#2af0ff",accent:"#d8f6ff",stops:["#07080c","#2a3444","#2af0ff"]},
 {id:"ghost",name:"Ghost",exclusive:true,price:50000,body:"#dce8f4",wing:"#9fd4ff",accent:"#ffffff",stops:["#c8d8ea","#eef6ff","#8ec8ff"]}
 ,{id:"onyx",name:"Onyx",exclusive:true,price:50000,body:"#121010",wing:"#e01422",accent:"#ff4a3a",stops:["#070707","#c81018","#1a0505","#ff2a28","#0a0a0a"]}
 ];
@@ -432,18 +432,14 @@ for(var y=0;y<IH;y++){
       var spec=Math.pow(Math.max(0,yv-0.5)/0.5,1.5);
       nr=rgb[0]*(1-spec)+255*spec;ng=rgb[1]*(1-spec)+255*spec;nb=rgb[2]*(1-spec)+255*spec;
     }else if(kind==="carbon"){
-      var weave=Math.abs(Math.sin((nx+ny)*42))+Math.abs(Math.sin((nx-ny)*38));
-      var fiber=0.12+0.22*weave+yv*0.45;
-      var base=[10+fiber*28,12+fiber*32,16+fiber*40];
-      var seam=Math.abs(Math.sin((nx*14+ny*9)*Math.PI))>0.96||Math.abs(Math.sin((nx*9-ny*16)*Math.PI))>0.97;
-      var glow=Math.pow(Math.max(0,Math.sin(nx*11+ny*7)),18);
-      if(seam||glow>0.35){base=[20,230,255]}
-      if(Math.sin(nx*9-ny*13)>0.97){base=[255,40,200]}
-      var spec=Math.pow(Math.max(0,yv-0.62)/0.38,1.7);
-      var sh=0.85+yv*0.28;
-      nr=base[0]*sh*(1-spec)+220*spec;
-      ng=base[1]*sh*(1-spec)+250*spec;
-      nb=base[2]*sh*(1-spec)+255*spec;
+      var wave=0.5+0.5*Math.sin(nx*2.2+ny*1.6+yv*1.4);
+      var u=Math.max(0,Math.min(1,yv*0.7+wave*0.3));
+      var ink=[8,10,14],steel=[36,44,56],cyan=[32,220,255],hot=[210,245,255];
+      var mix=lerp3(ink,steel,Math.min(1,u*1.35));
+      mix=lerp3(mix,cyan,Math.max(0,(u-0.38)/0.42));
+      mix=lerp3(mix,hot,Math.max(0,(u-0.78)/0.22));
+      var sh=0.82+yv*0.28;
+      nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="onyx"){
       var dark=style==="void"||style==="shadow";
       var y2=dark?Math.min(1,yv*1.55+0.12):yv;
