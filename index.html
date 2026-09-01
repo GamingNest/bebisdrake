@@ -340,15 +340,26 @@ var skin=pal||{};
 var tint=skin.body&&!skin._natural;
 if(getColor&&getColor().id==="natural")tint=false;
 if(tint){
-  if(!paintDragon.buf){paintDragon.buf=document.createElement("canvas")}
-  var b=paintDragon.buf; b.width=IW; b.height=IH;
-  var bx=b.getContext("2d");
-  bx.clearRect(0,0,IW,IH);
-  bx.drawImage(im,0,0);
-  bx.globalCompositeOperation="source-atop";
-  bx.fillStyle=skin.body;bx.globalAlpha=0.5;bx.fillRect(0,0,IW,IH);
-  bx.globalCompositeOperation="source-over";bx.globalAlpha=1;
-  src=b;
+  paintDragon.cache=paintDragon.cache||{};
+  var key=spriteId(d)+":"+(getColor()?getColor().id:"x");
+  if(!paintDragon.cache[key]){
+    var b=document.createElement("canvas"); b.width=IW; b.height=IH;
+    var bx=b.getContext("2d");
+    bx.drawImage(im,0,0);
+    bx.globalCompositeOperation="saturation";
+    bx.fillStyle="#ffffff";bx.fillRect(0,0,IW,IH);
+    bx.globalCompositeOperation="color";
+    var grd=bx.createLinearGradient(0,IH*0.15,0,IH*0.9);
+    grd.addColorStop(0,skin.wing||skin.body);
+    grd.addColorStop(0.4,skin.body);
+    grd.addColorStop(1,skin.accent||skin.body);
+    bx.fillStyle=grd;bx.fillRect(0,0,IW,IH);
+    bx.globalCompositeOperation="destination-in";
+    bx.drawImage(im,0,0);
+    bx.globalCompositeOperation="source-over";
+    paintDragon.cache[key]=b;
+  }
+  src=paintDragon.cache[key];
 }
 g.imageSmoothingEnabled=true;
 var sc=124/IW;
