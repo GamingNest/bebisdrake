@@ -488,16 +488,16 @@ function drawCoins(){
 for(var i=0;i<coinItems.length;i++){var c=coinItems[i];if(c.collected)continue;
 c.spin+=.07;c.bob+=.05;ctx.save();ctx.translate(c.x,c.y+Math.sin(c.bob)*2);
 var a=Math.cos(c.spin),aa=Math.abs(a);if(aa<0.08)aa=0.08;
-ctx.fillStyle="rgba(255,210,70,.14)";
-ctx.beginPath();ctx.arc(0,0,c.r+3.5,0,Math.PI*2);ctx.fill();
 var thick=(1-aa)*5;
 ctx.fillStyle="#9a6a12";
 ctx.beginPath();ctx.ellipse(a>0?thick*0.45:-thick*0.45,0,c.r,c.r,0,0,Math.PI*2);ctx.fill();
-var grd=ctx.createRadialGradient(-c.r*0.35*aa,-c.r*0.35,1,0,0,c.r);
-grd.addColorStop(0,"#ffe58a");grd.addColorStop(.55,"#e8b430");grd.addColorStop(1,"#8a5a10");
+var grd=ctx.createRadialGradient(-c.r*0.32*aa,-c.r*0.38,1,0,0,c.r);
+grd.addColorStop(0,"#fff3b0");grd.addColorStop(.4,"#ffd45a");grd.addColorStop(1,"#c48a18");
 ctx.fillStyle=grd;
 ctx.beginPath();ctx.ellipse(0,0,c.r*aa,c.r,0,0,Math.PI*2);ctx.fill();
-ctx.strokeStyle="rgba(255,240,180,.55)";ctx.lineWidth=1.6;
+ctx.fillStyle="rgba(255,255,230,.28)";
+ctx.beginPath();ctx.ellipse(-c.r*0.22*aa,-c.r*0.28,c.r*aa*0.35,c.r*0.28,0,0,Math.PI*2);ctx.fill();
+ctx.strokeStyle="rgba(255,236,170,.5)";ctx.lineWidth=1.4;
 ctx.beginPath();ctx.ellipse(0,0,c.r*aa*0.78,c.r*0.78,0,0,Math.PI*2);ctx.stroke();
 ctx.save();ctx.scale(a<0?-aa:aa,1);drawCoinHead();ctx.restore();
 ctx.restore()}
