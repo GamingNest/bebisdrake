@@ -338,10 +338,12 @@ var m=getMap(),g=ctx.createLinearGradient(0,0,0,H);
 g.addColorStop(0,m.a);g.addColorStop(1,m.b);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
 var id=m.id;
 if(id==="bones"){
-  ctx.fillStyle="rgba(240,220,180,.12)";
-  for(var i=0;i<14;i++){var x=((i*211-scroll*.12)%(W+180))-90,y=40+(i*67)%(Math.max(1,H-160));ctx.beginPath();ctx.ellipse(x,y,18,7,i*.4,0,Math.PI*2);ctx.fill()}
-  ctx.fillStyle="rgba(40,24,14,.35)";
-  for(var j=0;j<5;j++){var sx=((j*290-scroll*.04)%(W+220))-80;ctx.beginPath();ctx.arc(sx,H-140,46,Math.PI,0);ctx.fill();ctx.fillRect(sx-8,H-160,16,30)}
+  ctx.fillStyle="rgba(240,220,180,.10)";
+  for(var i=0;i<10;i++){var x=((i*211-scroll*.12)%(W+180))-90,y=40+(i*67)%(Math.max(1,H-160));ctx.beginPath();ctx.ellipse(x,y,16,6,i*.4,0,Math.PI*2);ctx.fill()}
+  for(var j=0;j<6;j++){
+    var sx=((j*310-scroll*.045)%(W+280))-90,sy=70+(j*97)%(H-200),sc=0.85+(j%3)*0.28,fl=j%2?1:-1;
+    drawBoneDragonSkull(sx,sy,sc,fl,0.55+(j%3)*0.12);
+  }
 }else if(id==="nightmare"){
   ctx.fillStyle="rgba(255,30,50,.08)";
   for(var i=0;i<18;i++){var x=((i*157-scroll*.06)%(W+200))-70,y=30+(i*83)%(Math.max(1,H-150));ctx.beginPath();ctx.ellipse(x,y,70,18,0,0,Math.PI*2);ctx.fill()}
@@ -377,30 +379,50 @@ g.addColorStop(0,"#43209a");g.addColorStop(.5,"#a65cff");g.addColorStop(1,"#4a20
 ctx.fillStyle=g;ctx.fillRect(p.x,0,76,p.top);ctx.fillRect(p.x,p.top+p.gap,76,ground-p.top-p.gap);
 ctx.fillStyle="#d6a2ff";ctx.fillRect(p.x-7,p.top-20,90,20);ctx.fillRect(p.x-7,p.top+p.gap,90,20)}
 }
+function drawBoneDragonSkull(cx,cy,sc,flip,alpha){
+ctx.save();ctx.translate(cx,cy);ctx.scale((flip<0?-sc:sc),sc);ctx.globalAlpha=alpha==null?1:alpha;
+ctx.fillStyle="#e8dcc4";
+ctx.beginPath();ctx.ellipse(0,0,24,19,0,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.moveTo(6,-8);ctx.lineTo(40,-4);ctx.lineTo(42,5);ctx.lineTo(8,12);ctx.closePath();ctx.fill();
+ctx.fillStyle="#d2c4a4";
+ctx.beginPath();ctx.moveTo(-8,-14);ctx.lineTo(-4,-36);ctx.lineTo(8,-12);ctx.fill();
+ctx.beginPath();ctx.moveTo(6,-16);ctx.lineTo(18,-34);ctx.lineTo(14,-10);ctx.fill();
+ctx.fillStyle="#2a1a10";
+ctx.beginPath();ctx.ellipse(6,-2,6,7,0.15,0,Math.PI*2);ctx.fill();
+ctx.beginPath();ctx.ellipse(28,0,3.2,3.6,0,0,Math.PI*2);ctx.fill();
+ctx.fillStyle="#f6efe0";
+for(var t=0;t<5;t++){ctx.beginPath();ctx.moveTo(12+t*5.4,10);ctx.lineTo(16+t*5.4,10);ctx.lineTo(14+t*5.4,18);ctx.fill()}
+ctx.restore();
+}
+function drawBoneTail(x,w,y0,y1,dir){
+var mid=x+w/2;
+for(var y=y0+10;y<y1-6;y+=16){
+  var t=(y-y0)/(y1-y0||1);
+  var sway=Math.sin(t*Math.PI*1.6)*10;
+  var r=26-t*8;
+  var cx=mid+sway;
+  ctx.fillStyle="#efe6d2";
+  ctx.beginPath();ctx.ellipse(cx,y,r,8,0.15*dir,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#c4b090";
+  ctx.beginPath();ctx.moveTo(cx-r+2,y);ctx.lineTo(cx-r-12,y-9);ctx.lineTo(cx-r-2,y);ctx.lineTo(cx-r-12,y+9);ctx.fill();
+  ctx.beginPath();ctx.moveTo(cx+r-2,y);ctx.lineTo(cx+r+12,y-9);ctx.lineTo(cx+r+2,y);ctx.lineTo(cx+r+12,y+9);ctx.fill();
+  ctx.fillStyle="#a89070";ctx.fillRect(cx-4,y-3,8,6);
+}
+var tipY=dir>0?y1-2:y0+2;
+var tipX=mid+Math.sin(0.9)*8;
+ctx.fillStyle="#efe6d2";
+ctx.beginPath();
+if(dir>0){ctx.moveTo(tipX-16,tipY);ctx.lineTo(tipX+16,tipY);ctx.lineTo(tipX,tipY+18)}
+else{ctx.moveTo(tipX-16,tipY);ctx.lineTo(tipX+16,tipY);ctx.lineTo(tipX,tipY-18)}
+ctx.closePath();ctx.fill();
+}
 function drawDragonGates(ground){
 var id=getMap().id;
 for(var i=0;i<gates.length;i++){
   var p=gates[i],x=p.x,w=76,top=p.top,bot=p.top+p.gap;
   if(id==="bones"){
-    var g=ctx.createLinearGradient(x,0,x+w,0);
-    g.addColorStop(0,"#cbb89a");g.addColorStop(.5,"#efe6d2");g.addColorStop(1,"#a89070");
-    ctx.fillStyle=g;ctx.fillRect(x+10,0,w-20,top);ctx.fillRect(x+10,bot,w-20,ground-bot);
-    ctx.fillStyle="#8a7048";
-    for(var r=12;r<top-20;r+=22){ctx.beginPath();ctx.ellipse(x+w/2,r,28,8,0,0,Math.PI*2);ctx.fill()}
-    for(var r=bot+24;r<ground-10;r+=22){ctx.beginPath();ctx.ellipse(x+w/2,r,28,8,0,0,Math.PI*2);ctx.fill()}
-    ctx.fillStyle="#efe6d2";
-    ctx.beginPath();ctx.arc(x+w/2,top-2,28,Math.PI,0);ctx.fill();
-    ctx.beginPath();ctx.arc(x+w/2,bot+2,28,0,Math.PI);ctx.fill();
-    ctx.fillStyle="#1a120c";
-    ctx.beginPath();ctx.ellipse(x+w/2-10,top-10,6,7,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(x+w/2+10,top-10,6,7,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(x+w/2-10,bot+10,6,7,0,0,Math.PI*2);ctx.fill();
-    ctx.beginPath();ctx.ellipse(x+w/2+10,bot+10,6,7,0,0,Math.PI*2);ctx.fill();
-    ctx.fillStyle="#f3ead8";
-    ctx.beginPath();ctx.moveTo(x+18,top);ctx.lineTo(x+26,top);ctx.lineTo(x+20,top-22);ctx.fill();
-    ctx.beginPath();ctx.moveTo(x+w-18,top);ctx.lineTo(x+w-26,top);ctx.lineTo(x+w-20,top-22);ctx.fill();
-    ctx.beginPath();ctx.moveTo(x+18,bot);ctx.lineTo(x+26,bot);ctx.lineTo(x+22,bot+20);ctx.fill();
-    ctx.beginPath();ctx.moveTo(x+w-18,bot);ctx.lineTo(x+w-26,bot);ctx.lineTo(x+w-22,bot+20);ctx.fill();
+    drawBoneTail(x,w,0,top,1);
+    drawBoneTail(x,w,bot,ground,-1);
   }else if(id==="nightmare"){
     ctx.fillStyle="#0c0610";
     ctx.beginPath();ctx.moveTo(x+4,0);ctx.lineTo(x+w-4,0);ctx.quadraticCurveTo(x+w+10,top/2,x+w-6,top);ctx.lineTo(x+6,top);ctx.quadraticCurveTo(x-10,top/2,x+4,0);ctx.fill();
