@@ -834,20 +834,6 @@ part(IW*0.20,IH*0.28,IW*0.36,IH*0.42, IW*0.42,IH*0.50, 0);
 part(IW*0.34,IH*0.56,IW*0.30,IH*0.36, IW*0.50,IH*0.70, legF);
 part(IW*0.22,IH*0.02,IW*0.32,IH*0.38, IW*0.42,IH*0.28, 0.12+flapR);
 part(IW*0.48,IH*0.08,IW*0.52,IH*0.54, IW*0.70,IH*0.36, headN);
-g.save();g.globalCompositeOperation="lighter";
-var sheen=0.08+0.07*(0.5+0.5*Math.sin(tm*2.2));
-g.fillStyle="rgba(255,255,255,"+sheen+")";
-g.beginPath();g.ellipse(Math.sin(tm*1.5)*16,-10+Math.cos(tm*1.15)*8,16,6.5,0.35,0,Math.PI*2);g.fill();
-var extra=(getColor&&getColor().id==="nebula")?8:5;
-for(var s=0;s<extra;s++){
-  var h=hash32((s+3)*91711+spriteId(d).charCodeAt(0)*19);
-  var px=((h%91)-45)*1.05, py=(((h>>>8)%67)-32)*0.95;
-  var tw=0.5+0.5*Math.sin(tm*3.4+s*2.1+(h%8));
-  if(tw<0.72)continue;
-  g.fillStyle="rgba(255,255,255,"+(0.14+0.22*tw)+")";
-  g.beginPath();g.arc(px,py,0.6+0.9*tw,0,Math.PI*2);g.fill();
-}
-g.restore();
 }
 
 function drawDragon(){
