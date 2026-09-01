@@ -953,22 +953,25 @@ function drawNeonLight(){
   var ax=(anc[0]*IW-cx)*sc, ay=(anc[1]*IH-cy)*sc;
   var len=78+22*(0.5+0.5*Math.sin(tm*1.55));
   var wave=7*Math.sin(tm*2.35);
+  function pathY(u){return Math.sin(u*2.35+tm*2.2)*wave*u+Math.sin(u*4.6+tm*1.1)*2.2*u}
+  /* thin at the dragon (u~0), a bit fuller further back on the ribbon */
+  function thick(u,w0){return (0.16+0.92*u-0.18*u*u)*w0+0.7}
   function ribbon(w0,a0,col){
     g.beginPath();
     var n=22,i,u,x,y,th;
     for(i=0;i<=n;i++){
       u=i/n;
       x=-u*len;
-      y=Math.sin(u*2.35+tm*2.2)*wave*u+Math.sin(u*4.6+tm*1.1)*2.2*u;
-      th=(1-u)*(1-u)*w0+1.1;
-      if(i===0)g.moveTo(2,y-th*0.55);else g.lineTo(x,y-th);
+      y=pathY(u);
+      th=thick(u,w0);
+      if(i===0)g.moveTo(2,y-th*0.42);else g.lineTo(x,y-th);
     }
     for(i=n;i>=0;i--){
       u=i/n;
       x=-u*len;
-      y=Math.sin(u*2.35+tm*2.2)*wave*u+Math.sin(u*4.6+tm*1.1)*2.2*u;
-      th=(1-u)*(1-u)*w0+1.1;
-      g.lineTo(i===0?2:x,i===0?y+th*0.55:y+th);
+      y=pathY(u);
+      th=thick(u,w0);
+      g.lineTo(i===0?2:x,i===0?y+th*0.42:y+th);
     }
     g.closePath();
     g.fillStyle=col;
@@ -978,9 +981,52 @@ function drawNeonLight(){
   g.save();
   g.globalCompositeOperation="lighter";
   g.translate(ax,ay);
-  ribbon(22,0.28,"#7cff3a");
-  ribbon(14,0.48,"#13ff4a");
-  ribbon(6.5,0.95,"#d8ff9a");
+  /* soft neon-green smoke wrapping the trail (drawn first, under the core) */
+  g.save();
+  g.shadowColor="rgba(80,255,70,0.55)";
+  g.shadowBlur=18;
+  ribbon(28,0.10,"#5ae830");
+  g.shadowBlur=12;
+  ribbon(20,0.14,"#7cff3a");
+  g.restore();
+  var wi,u,x,y,wx,wy,wr,wa;
+  for(wi=0;wi<9;wi++){
+    u=0.12+wi/9*0.86;
+    x=-u*len;
+    y=pathY(u);
+    wx=x+Math.sin(tm*1.7+wi*1.9)*4.5;
+    wy=y+Math.cos(tm*1.35+wi*2.4)*(6+u*7);
+    wr=5.5+u*9+Math.sin(tm*2.1+wi)*2.2;
+    wa=(0.07+0.06*(1-u))*pulse*(0.7+0.3*Math.sin(tm*2.6+wi*1.3));
+    g.globalAlpha=wa;
+    g.fillStyle="#6dff3a";
+    g.beginPath();g.ellipse(wx,wy,wr*1.7,wr*0.72,0.35*Math.sin(tm+wi),0,Math.PI*2);g.fill();
+    g.globalAlpha=wa*0.55;
+    g.beginPath();g.ellipse(wx-u*3,-wy*0.55,wr*1.2,wr*0.5,-0.28,0,Math.PI*2);g.fill();
+  }
+  ribbon(16,0.32,"#7cff3a");
+  ribbon(10,0.55,"#13ff4a");
+  ribbon(4.6,0.96,"#d8ff9a");
+  /* sparse glitter / sparkles along the ribbon */
+  var gi,h,tw,gs;
+  for(gi=0;gi<11;gi++){
+    h=hash32((gi+1)*9973+(sid.charCodeAt(0)||1)*131);
+    u=0.08+((h%870)/870)*0.88;
+    tw=0.35+0.65*Math.max(0,Math.sin(tm*4.1+(h%360)*0.017+gi));
+    if(((h>>>8)%5)===0)continue;
+    if(tw<0.42)continue;
+    x=-u*len+((h%13)-6)*0.35;
+    y=pathY(u)+(((h>>>4)%11)-5)*0.55;
+    gs=0.7+((h>>>12)%8)*0.18;
+    g.globalAlpha=0.35+0.55*tw*pulse;
+    g.fillStyle=(gi%3===0)?"#ffffff":"#e8ffb0";
+    g.beginPath();g.arc(x,y,gs,0,Math.PI*2);g.fill();
+    g.globalAlpha=0.22+0.28*tw;
+    g.strokeStyle="#e8ffb0";
+    g.lineWidth=0.7;
+    g.beginPath();g.moveTo(x-gs*2.4,y);g.lineTo(x+gs*2.4,y);g.stroke();
+    g.beginPath();g.moveTo(x,y-gs*2.4);g.lineTo(x,y+gs*2.4);g.stroke();
+  }
   g.restore();
 }
 var cidNow=(getColor&&getColor())?getColor().id:"";
