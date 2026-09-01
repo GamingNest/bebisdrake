@@ -843,6 +843,7 @@ var img=bx.getImageData(0,0,IW,IH),p=img.data;
 var sid={baby:1,fire:2,ice:3,forest:4,shadow:5,gold:6,void:7,knight:8,nimbus:9,coral:10,thorn:11,mochi:12}[style]||1;
 var h1=hash32((prismSeed|0)*17+sid*997),h2=hash32(h1+91),h3=hash32(h2+13);
 var knightArmor=(style==="knight")?armorKeepMask(p,IW,IH):null;
+var eyeKeep=eyeKeepMask(p,IW,IH,style);
 var srcY=null,srcA=null;
 if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
   srcY=new Float32Array(IW*IH);srcA=new Uint8Array(IW*IH);
@@ -857,6 +858,7 @@ if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
 for(var y=0;y<IH;y++){
   for(var x=0;x<IW;x++){
     var i=(y*IW+x)*4,a=p[i+3];if(a<12)continue;
+    if(eyeKeep[y*IW+x])continue;
     var r=p[i],g=p[i+1],b=p[i+2];
     var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
     if(style==="void"||style==="shadow") yv=Math.min(1,yv*1.55+0.12);
@@ -1071,6 +1073,7 @@ if(kind==="eclipse"||kind==="storm"||kind==="jade"||kind==="bloodmoon"){
     for(var x=0;x<IW;x++){
       var k=y*IW+x,i=k*4,a=srcA[k];
       if(a<12)continue;
+      if(eyeKeep[k])continue;
       var yv=srcY[k];
       var edge=0;
       var nbs=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]];
@@ -1107,10 +1110,10 @@ bx.globalCompositeOperation="destination-in";
 bx.drawImage(im,0,0);
 bx.globalCompositeOperation="source-over";
 if(puff)fillInteriorHoles(bx,IW,IH,knightArmor);
-restoreEyes(bx,im,IW,IH,style);
 if(kind==="ghost")addGhostGlow(bx,IW,IH);
 if(kind==="jade")addJadeGlow(bx,IW,IH);
 if(puff)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),knightArmor);
+restoreEyes(bx,im,IW,IH,style);
 }
 
 
@@ -1182,50 +1185,64 @@ var EYE_PUPILS={
   thorn:[{cx:0.800,cy:0.400,pr:0.016}],
   mochi:[{cx:0.650,cy:0.394,pr:0.016},{cx:0.803,cy:0.386,pr:0.016}]
 };
+function eyeKeepMask(o,IW,IH,style){
+var mask=new Uint8Array(IW*IH);
+var mapped=EYE_PUPILS[style];
+if(!mapped||!mapped.length)return mask;
+for(var m=0;m<mapped.length;m++){
+  var e=mapped[m];
+  var cx=e.cx*IW,cy=e.cy*IH,pr=Math.max(3.2,Math.min(12,(e.pr||0.015)*IW));
+  var copyR=pr*2.5,outerR=pr*2.8;
+  var copyR2=copyR*copyR,outerR2=outerR*outerR;
+  var y0=Math.max(0,Math.floor(cy-outerR)),y1=Math.min(IH-1,Math.ceil(cy+outerR));
+  var x0=Math.max(0,Math.floor(cx-outerR)),x1=Math.min(IW-1,Math.ceil(cx+outerR));
+  for(var y=y0;y<=y1;y++){
+    for(var x=x0;x<=x1;x++){
+      var dx=x-cx,dy=y-cy,d2=dx*dx+dy*dy;
+      if(d2>outerR2)continue;
+      var i=(y*IW+x)*4;
+      if(o[i+3]<=40)continue;
+      if(d2<=copyR2){mask[y*IW+x]=1;continue}
+      var mx=Math.max(o[i],o[i+1],o[i+2]),mn=Math.min(o[i],o[i+1],o[i+2]),ch=mx-mn;
+      var lu=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
+      var pupil=lu<0.22&&ch<60;
+      var spec=lu>0.78&&ch<45;
+      var iris=ch>28&&lu>0.12&&lu<0.78;
+      if(pupil||spec||iris)mask[y*IW+x]=1;
+    }
+  }
+}
+return mask;
+}
+function copyEyeSockets(p,o,IW,IH,style){
+var mapped=EYE_PUPILS[style],discs=[];
+if(!mapped||!mapped.length)return discs;
+for(var m=0;m<mapped.length;m++){
+  var e=mapped[m];
+  var cx=e.cx*IW,cy=e.cy*IH,pr=Math.max(3.2,Math.min(12,(e.pr||0.015)*IW));
+  var copyR=pr*2.5;
+  discs.push({cx:cx,cy:cy,pr:pr,copyR:copyR});
+  for(var y=Math.floor(cy-copyR);y<=cy+copyR;y++){
+    for(var x=Math.floor(cx-copyR);x<=cx+copyR;x++){
+      if(x<0||y<0||x>=IW||y>=IH)continue;
+      var dx=x-cx,dy=y-cy;if(dx*dx+dy*dy>copyR*copyR)continue;
+      var i=(y*IW+x)*4;
+      if(o[i+3]>40){p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3]}
+    }
+  }
+}
+return discs;
+}
 function restoreEyes(bx,im,IW,IH,style){
 var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
 var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
 var o=tx.getImageData(0,0,IW,IH).data;
 var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
 var mapped=EYE_PUPILS[style];
-function stampMapped(e){
-  var cx=e.cx*IW,cy=e.cy*IH,pr=Math.max(3.2,Math.min(12,(e.pr||0.015)*IW));
-  var copyR=pr*1.35;
-  for(var y=Math.floor(cy-copyR);y<=cy+copyR;y++){
-    for(var x=Math.floor(cx-copyR);x<=cx+copyR;x++){
-      if(x<0||y<0||x>=IW||y>=IH)continue;
-      var dx=x-cx,dy=y-cy;if(dx*dx+dy*dy>copyR*copyR)continue;
-      var i=(y*IW+x)*4;
-      if(o[i+3]>90){
-        var lu=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
-        if(lu<0.22){p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3]}
-      }
-    }
-  }
-  for(var y=Math.floor(cy-pr);y<=cy+pr;y++){
-    for(var x=Math.floor(cx-pr);x<=cx+pr;x++){
-      if(x<0||y<0||x>=IW||y>=IH)continue;
-      var dx=x-cx,dy=y-cy;if(dx*dx+dy*dy>pr*pr)continue;
-      var i=(y*IW+x)*4;
-      p[i]=0;p[i+1]=0;p[i+2]=0;p[i+3]=255;
-    }
-  }
-  var hx=cx+pr*0.28,hy=cy-pr*0.32,hs=Math.max(1.2,pr*0.22);
-  for(var y=Math.floor(hy-hs);y<=hy+hs;y++){
-    for(var x=Math.floor(hx-hs);x<=hx+hs;x++){
-      if(x<0||y<0||x>=IW||y>=IH)continue;
-      var dx=x-hx,dy=y-hy;if(dx*dx+dy*dy>hs*hs)continue;
-      var i=(y*IW+x)*4;
-      p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=255;
-    }
-  }
-  return {cx:cx,cy:cy,pr:pr};
-}
 if(mapped&&mapped.length){
-  var discs=[];
-  for(var m=0;m<mapped.length;m++)discs.push(stampMapped(mapped[m]));
+  var discs=copyEyeSockets(p,o,IW,IH,style);
   bx.putImageData(cur,0,0);
-  if(bx.canvas)bx.canvas._eyePupils=discs;
+  if(bx.canvas){bx.canvas._eyePupils=discs;bx.canvas._eyeSrc=im}
   return;
 }
 var x0=Math.floor(IW*0.50),x1=Math.floor(IW*0.88),y0=Math.floor(IH*0.28),y1=Math.floor(IH*0.52);
@@ -1274,49 +1291,36 @@ var discs=[];
 for(var b=0;b<eyes.length;b++){
   var e=eyes[b];
   var pr=Math.max(3.6,Math.min(e.rx,e.ry)*0.62);
-  discs.push({cx:e.cx,cy:e.cy,pr:pr});
-  for(var y=Math.floor(e.cy-pr);y<=e.cy+pr;y++){
-    for(var x=Math.floor(e.cx-pr);x<=e.cx+pr;x++){
+  var copyR=pr*2.5;
+  discs.push({cx:e.cx,cy:e.cy,pr:pr,copyR:copyR});
+  for(var y=Math.floor(e.cy-copyR);y<=e.cy+copyR;y++){
+    for(var x=Math.floor(e.cx-copyR);x<=e.cx+copyR;x++){
       if(x<0||y<0||x>=IW||y>=IH)continue;
-      var dx=x-e.cx,dy=y-e.cy;if(dx*dx+dy*dy>pr*pr)continue;
+      var dx=x-e.cx,dy=y-e.cy;if(dx*dx+dy*dy>copyR*copyR)continue;
       var i=(y*IW+x)*4;
-      p[i]=0;p[i+1]=0;p[i+2]=0;p[i+3]=255;
-    }
-  }
-  var hx=e.cx+pr*0.28,hy=e.cy-pr*0.32,hs=Math.max(1.4,pr*0.22);
-  for(var y=Math.floor(hy-hs);y<=hy+hs;y++){
-    for(var x=Math.floor(hx-hs);x<=hx+hs;x++){
-      if(x<0||y<0||x>=IW||y>=IH)continue;
-      var dx=x-hx,dy=y-hy;if(dx*dx+dy*dy>hs*hs)continue;
-      var i=(y*IW+x)*4;
-      p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=255;
+      if(o[i+3]>40){p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3]}
     }
   }
 }
 bx.putImageData(cur,0,0);
-if(bx.canvas)bx.canvas._eyePupils=discs;
+if(bx.canvas){bx.canvas._eyePupils=discs;bx.canvas._eyeSrc=im}
 }
 function stampPupils(c){
-var discs=c&&c._eyePupils;if(!discs||!discs.length)return;
-var x=c.getContext("2d"),img=x.getImageData(0,0,c.width,c.height),p=img.data;
-var IW=c.width,IH=c.height;
+var discs=c&&c._eyePupils,im=c&&c._eyeSrc;
+if(!discs||!discs.length||!im||!im.complete)return;
+var x=c.getContext("2d"),IW=c.width,IH=c.height;
+var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
+var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
+var o=tx.getImageData(0,0,IW,IH).data;
+var img=x.getImageData(0,0,IW,IH),p=img.data;
 for(var b=0;b<discs.length;b++){
-  var e=discs[b],pr=e.pr;
-  for(var y=Math.floor(e.cy-pr);y<=e.cy+pr;y++){
-    for(var xx=Math.floor(e.cx-pr);xx<=e.cx+pr;xx++){
+  var e=discs[b],copyR=e.copyR||(e.pr*2.5);
+  for(var y=Math.floor(e.cy-copyR);y<=e.cy+copyR;y++){
+    for(var xx=Math.floor(e.cx-copyR);xx<=e.cx+copyR;xx++){
       if(xx<0||y<0||xx>=IW||y>=IH)continue;
-      var dx=xx-e.cx,dy=y-e.cy;if(dx*dx+dy*dy>pr*pr)continue;
+      var dx=xx-e.cx,dy=y-e.cy;if(dx*dx+dy*dy>copyR*copyR)continue;
       var i=(y*IW+xx)*4;
-      p[i]=0;p[i+1]=0;p[i+2]=0;p[i+3]=255;
-    }
-  }
-  var hx=e.cx+pr*0.28,hy=e.cy-pr*0.32,hs=Math.max(1.4,pr*0.22);
-  for(var y=Math.floor(hy-hs);y<=hy+hs;y++){
-    for(var xx=Math.floor(hx-hs);xx<=hx+hs;xx++){
-      if(xx<0||y<0||xx>=IW||y>=IH)continue;
-      var dx=xx-hx,dy=y-hy;if(dx*dx+dy*dy>hs*hs)continue;
-      var i=(y*IW+xx)*4;
-      p[i]=255;p[i+1]=255;p[i+2]=255;p[i+3]=255;
+      if(o[i+3]>40){p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3]}
     }
   }
 }
