@@ -474,9 +474,14 @@ for(var i=0;i<gates.length;i++){
 
 function drawCoins(){
 for(var i=0;i<coinItems.length;i++){var c=coinItems[i];if(c.collected)continue;
-c.spin+=.08;c.bob+=.05;ctx.save();ctx.translate(c.x,c.y+Math.sin(c.bob)*2);
-ctx.scale(Math.max(.4,Math.abs(Math.cos(c.spin))),1);
-ctx.shadowBlur=20;ctx.shadowColor="#ffd400";ctx.fillStyle="#ffd83d";
+c.spin+=.07;c.bob+=.05;ctx.save();ctx.translate(c.x,c.y+Math.sin(c.bob)*2);
+ctx.fillStyle="rgba(255,214,70,.22)";
+ctx.beginPath();ctx.arc(0,0,c.r*2.1,0,Math.PI*2);ctx.fill();
+ctx.fillStyle="rgba(255,230,120,.16)";
+ctx.beginPath();ctx.arc(0,0,c.r*1.45,0,Math.PI*2);ctx.fill();
+var sx=Math.cos(c.spin);if(Math.abs(sx)<0.08)sx=sx<0?-0.08:0.08;
+ctx.scale(sx,1);
+ctx.shadowBlur=12;ctx.shadowColor="rgba(255,210,60,.55)";ctx.fillStyle="#ffd83d";
 ctx.beginPath();ctx.arc(0,0,c.r,0,Math.PI*2);ctx.fill();
 ctx.shadowBlur=0;ctx.strokeStyle="#fff7a8";ctx.lineWidth=3;ctx.stroke();
 ctx.fillStyle="#8b5b00";ctx.font="900 16px Arial";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("1",0,1);ctx.restore()}
