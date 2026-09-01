@@ -433,13 +433,18 @@ for(var y=0;y<IH;y++){
       var sh=0.7+yv*0.4;
       nr=base[0]*sh;ng=base[1]*sh;nb=base[2]*sh;
     }else if(kind==="onyx"){
-      var wave=0.5+0.5*Math.sin(nx*5.4+ny*3.6+yv*2.2);
-      var u=Math.max(0,Math.min(1,yv*0.62+wave*0.38));
-      var ink=[8,6,6],red=[198,12,22],hot=[255,48,36];
+      var dark=style==="void"||style==="shadow";
+      var y2=dark?Math.min(1,yv*1.55+0.12):yv;
+      var wave=0.5+0.5*Math.sin(nx*5.4+ny*3.6+y2*2.2);
+      var u=Math.max(0,Math.min(1,y2*(dark?0.48:0.62)+wave*(dark?0.52:0.38)));
+      var ink=dark?[18,8,8]:[8,6,6],red=dark?[255,28,32]:[198,12,22],hot=dark?[255,90,50]:[255,48,36];
       var mix=lerp3(ink,red,u);
-      mix=lerp3(mix,hot,Math.max(0,(u-0.72)/0.28)*0.8);
-      var sh=0.52+yv*0.58;
-      nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
+      mix=lerp3(mix,hot,Math.max(0,(u-0.58)/0.42)*(dark?1:0.8));
+      var sh=dark?(0.78+y2*0.42):(0.52+yv*0.58);
+      var spec=dark?Math.pow(Math.max(0,y2-0.55)/0.45,1.4)*0.28:0;
+      nr=mix[0]*sh*(1-spec)+255*spec;
+      ng=mix[1]*sh*(1-spec)+120*spec;
+      nb=mix[2]*sh*(1-spec)+80*spec;
     }else if(kind==="koi"){
       var wave=0.5+0.5*Math.sin(nx*4.6-ny*3.1+yv*1.6);
       var u=Math.max(0,Math.min(1,wave*0.72+yv*0.28));
