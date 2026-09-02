@@ -80,8 +80,16 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 #toast{position:fixed;z-index:30;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);opacity:0;transition:.18s;background:#111832ee;border:1px solid #7d6cff55;padding:9px 13px;border-radius:12px;font-size:11px;font-weight:900;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,0)!important}
 
 /* Purchase confirmation */
-#confirmOverlay,#choiceOverlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:#02030ccc;backdrop-filter:blur(7px)}
-#confirmOverlay.showConfirm,#choiceOverlay.showConfirm{display:flex}
+#confirmOverlay,#choiceOverlay,#resultOverlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:#02030ccc;backdrop-filter:blur(7px)}
+#confirmOverlay.showConfirm,#choiceOverlay.showConfirm,#resultOverlay.showResult{display:flex}
+.resultStats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 16px}
+.resultStat{background:#0e1430;border:1px solid #ffffff14;border-radius:14px;padding:11px 8px}
+.resultStat small{display:block;color:#aab3d2;font-size:9px;font-weight:900;letter-spacing:.12em}
+.resultStat b{display:block;font-size:22px;font-weight:950;margin-top:4px}
+.resultStat.newBest{border-color:#ffd35a88;box-shadow:0 0 16px #ffd35a33}
+.resultStat.newBest small{color:#ffd35a}
+.resultNew{display:none;color:#ffd35a;font-size:11px;font-weight:950;letter-spacing:.08em;margin:-2px 0 8px}
+.resultNew.show{display:block}
 .confirmBox{width:min(360px,92vw);padding:22px 18px 18px;border-radius:22px;border:1px solid #9365ff66;background:linear-gradient(160deg,#151b3cf8,#080b19f8);box-shadow:0 30px 90px #000d;text-align:center}
 .confirmIcon{font-size:42px;margin-bottom:6px}.confirmTitle{font-size:20px;font-weight:950;margin-bottom:8px}.confirmText{color:#cbd3eb;font-size:12px;line-height:1.45;margin-bottom:17px}
 .confirmButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.confirmButtons button{padding:12px;border-radius:12px;font-size:12px;font-weight:950}
@@ -190,6 +198,24 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
   </div>
 </div>
 
+<div id="resultOverlay">
+  <div class="confirmBox">
+    <div class="confirmIcon" id="resultIcon">💥</div>
+    <div class="confirmTitle" id="resultTitle">Game Over</div>
+    <div class="resultNew" id="resultNew">NEW HIGHSCORE</div>
+    <div class="resultStats">
+      <div class="resultStat"><small>SCORE</small><b id="resultScore">0</b></div>
+      <div class="resultStat"><small>COINS</small><b id="resultCoins">0</b></div>
+      <div class="resultStat" id="resultBestBox"><small>HIGHSCORE</small><b id="resultBest">0</b></div>
+      <div class="resultStat"><small>TIME</small><b id="resultTime">0s</b></div>
+    </div>
+    <div class="confirmButtons">
+      <button type="button" class="confirmCancel" id="resultHome">Home</button>
+      <button type="button" class="confirmBuy" id="resultPlay">Play again</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -211,8 +237,16 @@ var choiceText=document.getElementById("choiceText");
 var choiceBuy=document.getElementById("choiceBuy");
 var choiceInspect=document.getElementById("choiceInspect");
 var choiceCancel=document.getElementById("choiceCancel");
+var resultOverlay=document.getElementById("resultOverlay");
+var resultScoreEl=document.getElementById("resultScore");
+var resultCoinsEl=document.getElementById("resultCoins");
+var resultBestEl=document.getElementById("resultBest");
+var resultTimeEl=document.getElementById("resultTime");
+var resultBestBox=document.getElementById("resultBestBox");
+var resultNewEl=document.getElementById("resultNew");
+var resultTitleEl=document.getElementById("resultTitle");
 
-var W=0,H=0,dpr=1,last=0,mode="menu",paused=false,score=0,scroll=0,wing=0,lastInput=0,playTime=0;
+var W=0,H=0,dpr=1,last=0,mode="menu",paused=false,score=0,scroll=0,wing=0,lastInput=0,playTime=0,runCoins=0,runNewBest=false;
 var best=Number(localStorage.getItem("gn_best")||0);
 /* Personal build: starts with 2,000,000 coins when no saved balance exists. */
 var coins=2000000; localStorage.setItem("gn_coins","2000000");
@@ -416,18 +450,18 @@ var m=Math.floor(t/60),sec=t%60;
 return m+":"+(sec<10?"0":"")+sec;
 }
 function resetGame(){
-score=0;scroll=0;wing=0;playTime=0;
+score=0;scroll=0;wing=0;playTime=0;runCoins=0;runNewBest=false;
 dragon.x=W*.28;dragon.y=H*.42;dragon.vy=0;dragon.rot=0;dragon.bank=0;dragon.stretch=0;crash.active=false;crash.time=0;crash.particles=[];crash.kind="";
 gates=[makeGate(W+100),makeGate(W+100+Math.max(285,W*.55))];
 addCoinsForCurrentGates();
 scoreEl.textContent="0";coinsEl.textContent=String(coins);
 if(runTimeEl)runTimeEl.textContent="0:00";
 }
-function startGame(){prismSeed=Math.random()*1e9;if(paintDragon.cache){for(var k in paintDragon.cache)if(k.indexOf(":prism")!==-1)delete paintDragon.cache[k]}resetGame();mode="playing";paused=false;crash.active=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");overlay.classList.remove("home-open");flap()}
+function startGame(){closeResult();prismSeed=Math.random()*1e9;if(paintDragon.cache){for(var k in paintDragon.cache)if(k.indexOf(":prism")!==-1)delete paintDragon.cache[k]}resetGame();mode="playing";paused=false;crash.active=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");overlay.classList.remove("home-open");flap()}
 function flap(){
 if(mode==="crashing")return;
 if(mode==="playing"){if(paused)return;dragon.vy=-455;wing=1;sfxFlap()}
-else if(mode==="menu"||mode==="dead")startGame();
+else if(mode==="menu"||mode==="dead"){if(resultOverlay&&resultOverlay.classList.contains("showResult"))return;startGame();}
 }
 function crashPush(p){crash.particles.push(p)}
 function crashSparkBurst(x,y,cols,n,opt){
@@ -567,14 +601,38 @@ crash.active=true;crash.time=0;crash.rot=(dragon.vy>=0?1:-1)*(2.6+Math.random()*
 crash.kind=resolveCrashKind(d,c);
 crash.duration=(crash.kind==="magma"||crash.kind==="lava")?1200:900;
 spawnCrashFX(crash.kind,d,c,dragon.x,dragon.y);
-if(score>best)best=score;
-coins+=score*2;save();
+runNewBest=score>best;
+if(runNewBest)best=score;
+runCoins+=score*2;coins+=score*2;save();
 setTimeout(function(){
   if(mode!=="crashing")return;
   mode="dead";crash.active=false;
-  document.getElementById("status").innerHTML="Score <b>"+score+"</b> · Best <b>"+best+"</b> · Level <b>"+getPlayerLevel()+"</b><br>🪙 <b>"+coins+"</b> coins · GamingNest";
   overlay.classList.remove("hidden");show("home");
+  showResult();
 },crash.duration);
+}
+function formatRunSeconds(t){
+var sec=Math.floor(Math.max(0,t));
+if(sec<60)return sec+"s";
+return formatRunTime(sec)+" ("+sec+"s)";
+}
+function showResult(){
+if(!resultOverlay)return;
+resultScoreEl.textContent=String(score);
+resultCoinsEl.textContent="+"+runCoins;
+resultBestEl.textContent=String(best);
+resultTimeEl.textContent=formatRunSeconds(playTime);
+resultTitleEl.textContent=runNewBest?"New Highscore":"Game Over";
+if(runNewBest){resultBestBox.classList.add("newBest");resultNewEl.classList.add("show")}
+else{resultBestBox.classList.remove("newBest");resultNewEl.classList.remove("show")}
+resultOverlay.classList.add("showResult");
+}
+function closeResult(){
+if(resultOverlay)resultOverlay.classList.remove("showResult");
+}
+function resultGoHome(){
+closeResult();
+overlay.classList.remove("hidden");show("home");
 }
 function drawBackground(){
 var m=getMap(),g=ctx.createLinearGradient(0,0,0,H);
@@ -2047,10 +2105,10 @@ dragon.bank+=(targetRot*.35-dragon.bank)*Math.min(1,dt*7);
 dragon.stretch+=((Math.max(-.08,Math.min(.12,-dragon.vy/2200)))-dragon.stretch)*Math.min(1,dt*8);
 var speed=205+Math.min(140,score*5);
 for(var i=0;i<gates.length;i++){var p=gates[i];p.x-=speed*dt;
-if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=2;scoreEl.textContent=String(score);sfxGate();coinsEl.textContent=String(coins);save()}}
+if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=2;runCoins+=2;scoreEl.textContent=String(score);sfxGate();coinsEl.textContent=String(coins);save()}}
 for(var c=0;c<coinItems.length;c++){var coin=coinItems[c];if(coin.collected)continue;
 coin.x-=speed*dt;var dx=dragon.x-coin.x,dy=dragon.y-coin.y;
-if(Math.sqrt(dx*dx+dy*dy)<38){coin.collected=true;coins++;sfxCoin();coinsEl.textContent=String(coins);save();toast("+1 🪙")}}
+if(Math.sqrt(dx*dx+dy*dy)<38){coin.collected=true;coins++;runCoins+=1;sfxCoin();coinsEl.textContent=String(coins);save();toast("+1 🪙")}}
 if(gates[0].x<-100){gates.shift();gates.push(makeGate(gates[gates.length-1].x+Math.max(285,W*.55)));addCoinsForCurrentGates()}
 var hitScale=(getDragon().scale||.68)*.82;var ground=H-85;if(dragon.y-15*hitScale<0||dragon.y+15*hitScale>ground){die();return}
 for(var j=0;j<gates.length;j++){var q=gates[j];
@@ -2416,6 +2474,7 @@ coins-=300;ownedMaps.add(p.id);selectedMap=p.id;save();render();sfxUnlock();toas
 
 document.addEventListener("click",function(e){
 if(e.target===choiceOverlay){e.preventDefault();e.stopPropagation();sfxClick();closeChoice();return;}
+if(e.target===resultOverlay){e.preventDefault();e.stopPropagation();sfxClick();resultGoHome();return;}
 var b=e.target.closest?e.target.closest("[data-action],button"):null;
 if(!b)return;
 try{
@@ -2426,6 +2485,8 @@ if(b.id==="confirmBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfx
 if(b.id==="choiceCancel"){e.preventDefault();e.stopPropagation();sfxClick();closeChoice();return;}
 if(b.id==="choiceInspect"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();doChoiceInspect();return;}
 if(b.id==="choiceBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();doChoiceBuy();return;}
+if(b.id==="resultHome"){e.preventDefault();e.stopPropagation();sfxClick();resultGoHome();return;}
+if(b.id==="resultPlay"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();startGame();return;}
 if(b.hasAttribute("data-screen")){e.stopPropagation();var targetScreen=b.getAttribute("data-screen");show(targetScreen);render();if(targetScreen==="shop")setShopTab(b.getAttribute("data-open-shop-tab")||"dragons");if(targetScreen==="customize")setCustomTab("dragons");return;}
 if(b.hasAttribute("data-shop-tab")){setShopTab(b.getAttribute("data-shop-tab"));sfxClick();return;}
 if(b.hasAttribute("data-custom-tab")){setCustomTab(b.getAttribute("data-custom-tab"));sfxClick();return;}
