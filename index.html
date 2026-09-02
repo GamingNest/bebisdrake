@@ -194,8 +194,8 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 
 <div id="confirmOverlay">
   <div class="confirmBox">
-    <div class="confirmIcon">🛒</div>
-    <div class="confirmTitle">Confirm Purchase</div>
+    <div class="confirmIcon" id="confirmIcon">🛒</div>
+    <div class="confirmTitle" id="confirmTitle">Confirm Purchase</div>
     <div class="confirmText" id="confirmText">Are you sure you want to buy this item?</div>
     <div class="confirmButtons">
       <button type="button" class="confirmCancel" id="confirmCancel">Cancel</button>
@@ -250,6 +250,9 @@ var confirmOverlay=document.getElementById("confirmOverlay");
 var confirmText=document.getElementById("confirmText");
 var confirmBuy=document.getElementById("confirmBuy");
 var confirmCancel=document.getElementById("confirmCancel");
+var confirmIcon=document.getElementById("confirmIcon");
+var confirmTitle=document.getElementById("confirmTitle");
+var confirmMode="buy";
 var choiceOverlay=document.getElementById("choiceOverlay");
 var choiceTitle=document.getElementById("choiceTitle");
 var choiceText=document.getElementById("choiceText");
@@ -2404,7 +2407,7 @@ function openItemChoice(type,id){
   }else return;
   pendingChoice={type:type,id:id,name:name,owned:ownedItem};
   if(choiceTitle)choiceTitle.textContent=name;
-  if(choiceText)choiceText.textContent=ownedItem?"Inspect this item, or select it.":"Inspect this item, or unlock it.";
+  if(choiceText)choiceText.textContent=ownedItem?"Inspect this item, or select it.":("This item "+name+" is locked. Do you want to unlock it?");
   if(choiceBuy)choiceBuy.textContent=ownedItem?"Select":"Unlock";
   if(choiceOverlay)choiceOverlay.classList.add("showConfirm");
   sfxClick();
@@ -2459,13 +2462,40 @@ function doChoiceBuy(){
   }
 }
 
+function setConfirmChrome(mode,icon,title,buyLabel,cancelLabel){
+confirmMode=mode||"buy";
+if(confirmIcon)confirmIcon.textContent=icon||"🛒";
+if(confirmTitle)confirmTitle.textContent=title||"Confirm Purchase";
+if(confirmBuy)confirmBuy.textContent=buyLabel||"Buy";
+if(confirmCancel)confirmCancel.textContent=cancelLabel||"Cancel";
+}
+function askLockedUnlock(type,id){
+var name="",price=0;
+if(type==="dragon"){
+var d=findDragon(id);if(!d)return;
+name=d.name;price=d.exclusive?50000:d.price;
+}else if(type==="color"){
+var col=findColor(id);if(!col)return;
+name=col.name+(col.exclusive?" ★":"");price=colorPrice(col);
+}else if(type==="map"){
+var mp=findMap(id);if(!mp)return;
+name=mp.name;price=300;
+}else return;
+pendingPurchase={type:type,id:id,name:name,price:price};
+setConfirmChrome("locked","🔒","Locked","Unlock","Not now");
+confirmText.innerHTML="This item <b>"+name+"</b> is locked. Do you want to unlock it?";
+confirmOverlay.classList.add("showConfirm");
+sfxClick();
+}
 function askPurchase(type,id,name,price){
 pendingPurchase={type:type,id:id,name:name,price:price};
-confirmText.innerHTML='Are you sure you want to buy <b>'+name+'</b> for <b>'+price.toLocaleString()+" coins</b>?";
+setConfirmChrome("buy","🛒","Confirm Purchase","Buy","Cancel");
+confirmText.innerHTML='Are you sure you want to buy <b>'+name+'</b> for <b>'+Number(price).toLocaleString()+" coins</b>?";
 confirmOverlay.classList.add("showConfirm");
 }
 function closePurchase(){
 pendingPurchase=null;
+setConfirmChrome("buy","🛒","Confirm Purchase","Buy","Cancel");
 confirmOverlay.classList.remove("showConfirm");
 }
 function completePurchase(){
@@ -2510,7 +2540,7 @@ try{
 if(b.id==="play"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();startGame();return;}
 if(b.id==="pause"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}return;}
 if(b.id==="confirmCancel"){e.preventDefault();e.stopPropagation();sfxClick();closePurchase();return;}
-if(b.id==="confirmBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();completePurchase();return;}
+if(b.id==="confirmBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();if(confirmMode==="locked"){var lp=pendingPurchase;if(!lp){closePurchase();return;}askPurchase(lp.type,lp.id,lp.name,lp.price);return;}completePurchase();return;}
 if(b.id==="choiceCancel"){e.preventDefault();e.stopPropagation();sfxClick();closeChoice();return;}
 if(b.id==="choiceInspect"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();doChoiceInspect();return;}
 if(b.id==="choiceBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();doChoiceBuy();return;}
@@ -2544,18 +2574,18 @@ e.preventDefault();e.stopPropagation();openItemChoice("map",id);return;
 }
 if(action==="custom-dragon"){
 var d=dragons.find(function(x){return x.id===id});if(!d)return;
-if(!owned.has(id)){toast("Unlock this in the Shop");return;}
+if(!owned.has(id)){askLockedUnlock("dragon",id);return;}
 selectedDragon=id;save();render();sfxClick();toast(d.name+" equipped");return;
 }
 if(action==="custom-color"){
 var col=colors.find(function(x){return x.id===id});if(!col)return;
 if(col.id==="natural"){selectedColor="natural";if(!ownedColors.has("natural"))ownedColors.add("natural");save();render();sfxClick();toast("Natural color equipped");return;}
-if(!ownedColors.has(id)){toast("Unlock this in the Shop");return;}
+if(!ownedColors.has(id)){askLockedUnlock("color",id);return;}
 selectedColor=id;save();render();sfxClick();toast(col.name+" equipped");return;
 }
 if(action==="custom-map"){
 var mp=maps.find(function(x){return x.id===id});if(!mp)return;
-if(!ownedMaps.has(id)){toast("Unlock this in the Shop");return;}
+if(!ownedMaps.has(id)){askLockedUnlock("map",id);return;}
 selectedMap=id;save();render();sfxClick();toast(mp.name+" equipped");return;
 }
 if(action==="inspect-buy"){
