@@ -1787,9 +1787,11 @@ var headN=Math.sin(tm*4.6)*0.03 - pitch*0.06;
 var sid=spriteId(d);
 if(sid==="fire") tailA=Math.sin(tm*6.2)*0.16 + pitch*0.32 - tuck*0.08;
 /* Cropped profile sprites: belly sits toward the head seam (x>~0.56). Default body
-   clip ends at 0.56 so head rotation punches a pie-wedge of scutes. Keep baby/fire/ice/
-   forest/shadow/gold/void/knight on the original layout. */
+   clip ends at 0.56 so head rotation punches a pie-wedge of scutes. Keep baby/fire/
+   forest/shadow/gold/void/knight on the original layout. Ice uses a wider unrotated
+   torso so the front paw and neck crystals are not sliced. */
 var profile=sid==="nimbus"||sid==="coral"||sid==="thorn"||sid==="mochi"||sid==="viking"||sid==="pirate"||sid==="skeleton";
+var ice=sid==="ice";
 part(IW*0.02,IH*0.02,IW*0.40,IH*0.40, IW*0.34,IH*0.28, -0.18+flapL);
 part(0,IH*0.32,IW*0.42,IH*0.48, IW*0.32,IH*0.56, tailA);
 if(sid==="fire" && !(anim&&anim.still)){
@@ -1829,7 +1831,11 @@ if(sid==="fire" && !(anim&&anim.still)){
   g.restore();
 }
 part(IW*0.16,IH*0.56,IW*0.32,IH*0.36, IW*0.38,IH*0.68, legB);
-if(profile){
+if(ice){
+  /* Ice crystals + front paw sit past the default body clip; unrotated wide torso. */
+  part(IW*0.14,IH*0.22,IW*0.74,IH*0.56, IW*0.48,IH*0.50, 0);
+  part(IW*0.46,IH*0.20,IW*0.50,IH*0.38, IW*0.68,IH*0.40, 0);
+}else if(profile){
   /* Torso+belly+throat, unrotated, further right so chin/neck underside is not a hole. */
   part(IW*0.16,IH*0.24,IW*0.66,IH*0.50, IW*0.48,IH*0.50, 0);
   part(IW*0.48,IH*0.26,IW*0.44,IH*0.30, IW*0.68,IH*0.40, 0);
@@ -1838,7 +1844,9 @@ if(profile){
 }
 part(IW*0.34,IH*0.56,IW*0.30,IH*0.36, IW*0.50,IH*0.70, legF);
 part(IW*0.22,IH*0.02,IW*0.32,IH*0.38, IW*0.42,IH*0.28, 0.12+flapR);
-if(profile){
+if(ice){
+  part(IW*0.46,IH*0.06,IW*0.54,IH*0.56, IW*0.70,IH*0.36, headN);
+}else if(profile){
   /* Head; taller so neck underside stays attached when head nods. */
   part(IW*0.50,IH*0.10,IW*0.50,IH*0.44, IW*0.74,IH*0.32, headN);
 }else{
