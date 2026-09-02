@@ -377,6 +377,12 @@ var crash={active:false,time:0,duration:900,rot:0,scale:1,particles:[],kind:""};
 var pendingPurchase=null;
 var prismSeed=Math.random()*1e9;
 var audioCtx=null;
+/* Perf caches: gradients are expensive to build every frame, so we
+   memoize the ones whose inputs rarely change and reuse them. */
+var _bgGradCache={key:null,grad:null};
+var _vignetteCache={key:null,grad:null};
+var _pillarImgCache={};
+var _saveTimer=null,_savePending=false;
 function ensureAudio(){
 if(muted)return null;
 try{
@@ -400,7 +406,7 @@ function sfxDie(){tone(240,.22,"sawtooth",.045,-170)}
 function sfxClick(){tone(300,.045,"sine",.018,80)}
 function sfxUnlock(){tone(520,.08,"triangle",.035,180);setTimeout(function(){tone(780,.12,"triangle",.04,220)},70)}
 
-function save(){
+function persistNow(){
 localStorage.setItem("gn_best",String(best));
 localStorage.setItem("gn_coins",String(coins));
 localStorage.setItem("gn_owned",JSON.stringify(Array.from(owned)));localStorage.setItem("gn_owned_colors",JSON.stringify(Array.from(ownedColors)));localStorage.setItem("gn_owned_maps",JSON.stringify(Array.from(ownedMaps)));
@@ -408,10 +414,26 @@ localStorage.setItem("gn_dragon",selectedDragon);
 localStorage.setItem("gn_color",selectedColor);
 localStorage.setItem("gn_map",selectedMap);
 localStorage.setItem("gn_muted",muted?"1":"0");
+_savePending=false;
+}
+/* save() keeps HUD numbers instant every call, but batches the actual
+   localStorage writes (synchronous disk I/O) so rapid coin/gate pickups
+   during gameplay don't stall the frame. Anything time-critical (buying,
+   resetting, leaving the game) should call saveFlush() right after. */
+function save(){
 bestEl.textContent=String(best);coinsEl.textContent=String(coins);
 var sc=document.getElementById("shopCoins");if(sc)sc.textContent=String(coins);
 refreshHomeStats();
+_savePending=true;
+if(_saveTimer)return;
+_saveTimer=setTimeout(function(){_saveTimer=null;if(_savePending)persistNow()},400);
 }
+function saveFlush(){
+if(_saveTimer){clearTimeout(_saveTimer);_saveTimer=null}
+if(_savePending)persistNow();
+}
+window.addEventListener("pagehide",saveFlush);
+document.addEventListener("visibilitychange",function(){if(document.hidden)saveFlush()});
 
 function refreshHomeStats(){
 var hc=document.getElementById("homeCoins");if(hc)hc.textContent=Number(coins).toLocaleString();
@@ -437,7 +459,10 @@ if(!ctx)return;
 ctx.setTransform(dpr,0,0,dpr,0,0);
 ctx.globalAlpha=1;
 ctx.globalCompositeOperation="source-over";
+ctx.imageSmoothingEnabled=true;
+if("imageSmoothingQuality" in ctx)ctx.imageSmoothingQuality="high";
 ctx.clearRect(0,0,W,H);
+_bgGradCache.key=null;_vignetteCache.key=null;
 if(typeof paintHudCoins==="function")paintHudCoins();
 }
 window.addEventListener("resize",resize);resize();
@@ -652,7 +677,7 @@ crash.duration=(crash.kind==="magma"||crash.kind==="lava")?1200:900;
 spawnCrashFX(crash.kind,d,c,dragon.x,dragon.y);
 runNewBest=score>best;
 if(runNewBest)best=score;
-runCoins+=score*2;coins+=score*2;save();
+runCoins+=score*2;coins+=score*2;save();saveFlush();
 setTimeout(function(){
   if(mode!=="crashing")return;
   mode="dead";crash.active=false;
@@ -683,9 +708,16 @@ function resultGoHome(){
 closeResult();
 overlay.classList.remove("hidden");show("home");
 }
+function bgGradient(m){
+var key=m.id+"|"+H;
+if(_bgGradCache.key===key)return _bgGradCache.grad;
+var g=ctx.createLinearGradient(0,0,0,H);
+g.addColorStop(0,m.a);g.addColorStop(1,m.b);
+_bgGradCache.key=key;_bgGradCache.grad=g;
+return g;
+}
 function drawBackground(){
-var m=getMap(),g=ctx.createLinearGradient(0,0,0,H);
-g.addColorStop(0,m.a);g.addColorStop(1,m.b);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+var m=getMap();ctx.fillStyle=bgGradient(m);ctx.fillRect(0,0,W,H);
 var id=m.id;
 if(id==="bones"){
   ctx.fillStyle="rgba(240,220,180,.10)";
@@ -720,6 +752,17 @@ if(id==="bones"){
   for(var i=0;i<22;i++){var x=((i*173-scroll*.08)%(W+160))-80,y=55+(i*79)%(Math.max(1,H-170));ctx.beginPath();ctx.ellipse(x,y,45,13,0,0,Math.PI*2);ctx.fill()}
 }
 }
+function vignetteGrad(){
+var key=W+"x"+H;
+if(_vignetteCache.key===key)return _vignetteCache.grad;
+var cx=W/2,cy=H*0.42,r=Math.max(W,H)*0.78;
+var g=ctx.createRadialGradient(cx,cy,r*0.32,cx,cy,r);
+g.addColorStop(0,"rgba(0,0,0,0)");
+g.addColorStop(1,"rgba(0,0,0,.32)");
+_vignetteCache.key=key;_vignetteCache.grad=g;
+return g;
+}
+function drawVignette(){ctx.fillStyle=vignetteGrad();ctx.fillRect(0,0,W,H)}
 function drawGround(){
 var y=H-85,m=getMap(),id=m.id,floor="#080a18",line="#9c5cff";
 if(id==="bones"){floor="#2a1a10";line="#d8c49a"}
@@ -734,10 +777,30 @@ function pillarGrad(x,w,a,b){
 var g=ctx.createLinearGradient(x,0,x+w,0);
 g.addColorStop(0,a);g.addColorStop(.5,b);g.addColorStop(1,a);return g
 }
+/* Pillars scroll continuously, so a gradient built from their live x
+   position can't be reused frame-to-frame. Instead we bake the a-b-a
+   gradient into a tiny 1px-tall offscreen canvas once per color pair,
+   then stretch it into place with drawImage - visually identical to
+   the original fillRect+gradient, but skips rebuilding the gradient
+   on every single frame. */
+function pillarBodyImg(a,b){
+var key=a+"|"+b,img=_pillarImgCache[key];
+if(img)return img;
+var oc=document.createElement("canvas");oc.width=76;oc.height=1;
+var octx=oc.getContext("2d");
+var g=octx.createLinearGradient(0,0,76,0);
+g.addColorStop(0,a);g.addColorStop(.5,b);g.addColorStop(1,a);
+octx.fillStyle=g;octx.fillRect(0,0,76,1);
+_pillarImgCache[key]=oc;return oc;
+}
+function fillPillarBody(x,w,y0,y1,a,b){
+if(y1<=y0)return;
+ctx.drawImage(pillarBodyImg(a,b),0,0,76,1,x,y0,w,y1-y0);
+}
 function drawBlockPillar(p,ground,m){
 var col=pillarPal(m),x=p.x,w=76;
-ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
-ctx.fillRect(x,0,w,p.top);ctx.fillRect(x,p.top+p.gap,w,ground-p.top-p.gap);
+fillPillarBody(x,w,0,p.top,col.a,col.b);
+fillPillarBody(x,w,p.top+p.gap,ground,col.a,col.b);
 ctx.fillStyle=col.cap;ctx.fillRect(x-7,p.top-20,90,20);ctx.fillRect(x-7,p.top+p.gap,90,20)
 }
 function iceJagged(x,w,y0,y1,lipAtTop){
@@ -771,8 +834,8 @@ iceShards(x,top,1);iceShards(x,bot,-1)
 }
 function drawVolcanoPillar(p,ground,m){
 var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
-ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
-ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+fillPillarBody(x,w,0,top,col.a,col.b);
+fillPillarBody(x,w,bot,ground,col.a,col.b);
 ctx.strokeStyle="#ff5a18";ctx.lineWidth=2.2;
 function veins(y0,y1){
   for(var v=0;v<3;v++){
@@ -787,8 +850,8 @@ ctx.fillStyle="#ffd040";ctx.fillRect(x-7,top-3,90,3);ctx.fillRect(x-7,bot,90,3)
 }
 function drawForestPillar(p,ground,m){
 var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap,mid=x+w/2;
-ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
-ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+fillPillarBody(x,w,0,top,col.a,col.b);
+fillPillarBody(x,w,bot,ground,col.a,col.b);
 ctx.strokeStyle="rgba(30,16,6,.35)";ctx.lineWidth=2;
 function rings(y0,y1){for(var y=y0+10;y<y1-6;y+=18){ctx.beginPath();ctx.ellipse(mid,y,34,6,0,0,Math.PI*2);ctx.stroke()}}
 rings(0,top);rings(bot,ground);
@@ -818,8 +881,8 @@ ctx.fillStyle=col.cap;ctx.fillRect(x-7,top-16,90,16);ctx.fillRect(x-7,bot,90,16)
 }
 function drawCherryPillar(p,ground,m){
 var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
-ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
-ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+fillPillarBody(x,w,0,top,col.a,col.b);
+fillPillarBody(x,w,bot,ground,col.a,col.b);
 ctx.strokeStyle="rgba(90,30,40,.28)";ctx.lineWidth=1.5;
 for(var gy=8;gy<top;gy+=10){ctx.beginPath();ctx.moveTo(x+4,gy);ctx.lineTo(x+w-4,gy+3);ctx.stroke()}
 for(var gy=bot+8;gy<ground;gy+=10){ctx.beginPath();ctx.moveTo(x+4,gy);ctx.lineTo(x+w-4,gy+3);ctx.stroke()}
@@ -830,8 +893,8 @@ blossoms(top-8);blossoms(bot+8)
 }
 function drawStormPillar(p,ground,m){
 var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
-ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
-ctx.fillRect(x,0,w,top);ctx.fillRect(x,bot,w,ground-bot);
+fillPillarBody(x,w,0,top,col.a,col.b);
+fillPillarBody(x,w,bot,ground,col.a,col.b);
 ctx.strokeStyle="rgba(180,200,230,.12)";ctx.lineWidth=1;
 for(var c=0;c<4;c++){ctx.beginPath();ctx.moveTo(x+10+c*18,0);ctx.lineTo(x+6+c*18,top);ctx.stroke();ctx.beginPath();ctx.moveTo(x+10+c*18,bot);ctx.lineTo(x+6+c*18,ground);ctx.stroke()}
 ctx.shadowBlur=8;ctx.shadowColor="#4ec8ff";ctx.fillStyle=col.cap;
@@ -848,8 +911,8 @@ ctx.fillStyle=col.cap;ctx.fillRect(x-7,top-2,90,2);ctx.fillRect(x-7,bot,90,2)
 }
 function drawReefPillar(p,ground,m){
 var col=pillarPal(m),x=p.x,w=76,top=p.top,bot=p.top+p.gap;
-ctx.fillStyle=pillarGrad(x,w,col.a,col.b);
-ctx.fillRect(x+8,0,w-16,top);ctx.fillRect(x+8,bot,w-16,ground-bot);
+fillPillarBody(x+8,w-16,0,top,col.a,col.b);
+fillPillarBody(x+8,w-16,bot,ground,col.a,col.b);
 ctx.fillStyle=col.b;
 for(var k=0;k<8;k++){ctx.beginPath();ctx.arc(x+10+(k%2)*(w-20),8+k*((top-16)/8||8),8+(k%3),0,Math.PI*2);ctx.fill()}
 for(var k=0;k<8;k++){ctx.beginPath();ctx.arc(x+10+(k%2)*(w-20),bot+14+k*((ground-bot-18)/8||8),8+(k%3),0,Math.PI*2);ctx.fill()}
@@ -2232,7 +2295,7 @@ for(var i=0;i<gates.length;i++){var p=gates[i];p.x-=speed*dt;
 if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=2;runCoins+=2;scoreEl.textContent=String(score);sfxGate();coinsEl.textContent=String(coins);save()}}
 for(var c=0;c<coinItems.length;c++){var coin=coinItems[c];if(coin.collected)continue;
 coin.x-=speed*dt;var dx=dragon.x-coin.x,dy=dragon.y-coin.y;
-if(Math.sqrt(dx*dx+dy*dy)<38){coin.collected=true;coins++;runCoins+=1;sfxCoin();coinsEl.textContent=String(coins);save();toast("+1 🪙")}}
+if(dx*dx+dy*dy<1444){coin.collected=true;coins++;runCoins+=1;sfxCoin();coinsEl.textContent=String(coins);save();toast("+1 🪙")}}
 if(gates.length&&gates[0].x<-100){gates.shift();if(!gates.length)gates.push(makeGate(W+100));gates.push(makeGate(gates[gates.length-1].x+Math.max(285,W*.55)));addCoinsForCurrentGates()}
 var hitScale=(getDragon().scale||.68)*.82;var ground=H-85;if(dragon.y-15*hitScale<0||dragon.y+15*hitScale>ground){die();return}
 for(var j=0;j<gates.length;j++){var q=gates[j];
@@ -2261,6 +2324,7 @@ function loop(t){
   drawCoins();
   drawGround();
   drawDragon();
+  drawVignette();
   }
   }catch(loopErr){
     console.error("Dragon Tap frame:",loopErr);
@@ -2679,7 +2743,7 @@ var b=e.target.closest?e.target.closest("[data-action],button"):null;
 if(!b)return;
 try{
 if(b.id==="play"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();startGame();return;}
-if(b.id==="pause"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}return;}
+if(b.id==="pause"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed");if(paused)saveFlush()}return;}
 if(b.id==="confirmCancel"){e.preventDefault();e.stopPropagation();sfxClick();closePurchase();return;}
 if(b.id==="confirmBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();if(confirmMode==="locked"){var lp=pendingPurchase;if(!lp){closePurchase();return;}askPurchase(lp.type,lp.id,lp.name,lp.price);return;}completePurchase();return;}
 if(b.id==="choiceCancel"){e.preventDefault();e.stopPropagation();sfxClick();closeChoice();return;}
@@ -2777,7 +2841,7 @@ return;
 });
 
 play.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();startGame()});
-pause.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed")}});
+pause.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed");if(paused)saveFlush()}});
 
 function startFromHome(e){if(e){e.preventDefault();e.stopPropagation()}ensureAudio();sfxClick();startGame()}
 var nestStage=document.querySelector(".hatchFrame");
