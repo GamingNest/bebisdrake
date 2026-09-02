@@ -1201,23 +1201,26 @@ for(var y=0;y<IH;y++){
       var sh=0.65+yv*0.48;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="aurora"){
-      var band=Math.floor(((nx*22+ny*17)*8+yv*5)%8);
-      var hues=[168,128,188,300,268,148,318,208];
-      var stripe=Math.floor((nx*36-ny*14+yv*8)*10);
-      var hue=hues[band]+(stripe%3)*8;
-      hue=Math.floor(hue/10)*10;
-      var sat=0.94;
-      var val=Math.min(1.18,0.55+yv*0.5);
-      var valley=Math.pow(1-yv,1.35);
-      val=val*(1-0.12*valley);
-      var rgb=hsvToRgb(hue,sat,val);
-      var aniso=Math.pow(Math.abs(Math.sin((nx*1.4-ny*11.5)*Math.PI)),2.2);
-      var spec=Math.pow(Math.max(0,yv-0.52)/0.48,2.4)*(0.22+0.78*aniso);
-      var metal=0.70+yv*0.35;
-      nr=rgb[0]*metal*(1-spec)+250*spec;
-      ng=rgb[1]*metal*(1-spec)+255*spec;
-      nb=rgb[2]*metal*(1-spec)+255*spec;
-      if(aniso>0.82&&yv>0.58){nr=Math.min(255,nr+36);ng=Math.min(255,ng+16);nb=Math.min(255,nb+48)}
+      var deep=[10,42,36],mint=[43,255,176],ice=[122,208,255],pink=[255,115,210];
+      var wash=0.5+0.5*Math.sin(nx*2.4-ny*1.8+yv*1.2);
+      var u=Math.max(0,Math.min(1,yv*0.48+nx*0.18+(1-ny)*0.22+wash*0.18));
+      var mix;
+      if(u<0.34) mix=lerp3(deep,mint,u/0.34);
+      else if(u<0.67) mix=lerp3(mint,ice,(u-0.34)/0.33);
+      else mix=lerp3(ice,pink,(u-0.67)/0.33);
+      mix=lerp3(mix,ice,Math.max(0,(yv-0.42)/0.5)*0.2);
+      mix=lerp3(mix,pink,Math.max(0,(yv-0.62)/0.38)*0.16);
+      var sh=0.74+yv*0.4;
+      var spec=Math.pow(Math.max(0,yv-0.5)/0.5,1.7)*0.26;
+      nr=mix[0]*sh*(1-spec)+255*spec;
+      ng=mix[1]*sh*(1-spec)+255*spec;
+      nb=mix[2]*sh*(1-spec)+255*spec;
+      var spark=((x*374761+y*668265+(h3&255)*409)+h1)>>>0;
+      if((spark%61)<5&&yv>0.16){
+        var gl=0.45+0.55*((spark>>>9)%100)/100;
+        nr=Math.min(255,nr+70*gl);ng=Math.min(255,ng+120*gl);nb=Math.min(255,nb+130*gl);
+      }
+      if((spark%89)===0&&yv>0.2){nr=Math.min(255,nr+90);ng=Math.min(255,ng+30);nb=Math.min(255,nb+80)}
     }else if(kind==="carbon"){
       var wave=0.5+0.5*Math.sin(nx*2.2+ny*1.6+yv*1.4);
       var u=Math.max(0,Math.min(1,yv*0.7+wave*0.3));
