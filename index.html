@@ -349,7 +349,7 @@ var colors=[
 {id:"jade",name:"Jade",exclusive:true,price:50000,body:"#0c3a28",wing:"#3ecf7a",accent:"#8a4dff",stops:["#0c3a28","#3ecf7a","#6a38c8"]},
 {id:"holo",name:"Holo",exclusive:true,price:50000,body:"#141018",wing:"#ff4dff",accent:"#4dfff0",stops:["#141018","#ff4dff","#4dfff0","#ffe84d"]},
 {id:"bloodmoon",name:"Bloodmoon",exclusive:true,price:50000,body:"#4a0810",wing:"#8a1020",accent:"#ffffff",stops:["#2a0408","#4a0810","#8a1020"]},
-{id:"tiger",name:"Tiger",body:"#e07a18",wing:"#f4d48a",accent:"#1a120c",stops:["#e07a18","#1a120c","#f4d48a"]},
+{id:"tiger",name:"Tiger",body:"#ff7a12",wing:"#ffe3a8",accent:"#120c08",stops:["#ff7a12","#120c08","#ffe3a8"]},
 {id:"melon",name:"Melon",body:"#2f8a3a",wing:"#ff6a9a",accent:"#1a120c",stops:["#2f8a3a","#ff6a9a","#ffe0ec"]}
 ];
 var maps=[
@@ -659,7 +659,8 @@ if(kind==="storm"){
   crashSparkBurst(x,y,["#ffffff","#f2f4f8","#e8e0d4"],22,{type:"shard",sp:90,spR:200,up:50,size:4,sizeR:8,life:.45,lifeR:.45,g:200});
   crashSparkBurst(x,y,["#ffffff","#d8f0ff","#fff8ee"],18,{type:"glitter",sp:80,spR:180,up:70,size:2,sizeR:4,life:.5,lifeR:.5,g:120});
 }else if(kind==="tiger"){
-  crashSparkBurst(x,y,["#e07a18","#1a120c","#f4d48a"],28,{type:"shard",sp:90,spR:200,up:50,size:4,sizeR:8,life:.45,lifeR:.45,g:220});
+  crashSparkBurst(x,y,["#ff7a12","#ffb040","#ffe3a8"],20,{type:"spark",sp:90,spR:200,up:60,size:3,sizeR:6,life:.4,lifeR:.4,g:200});
+  crashSparkBurst(x,y,["#120c08","#2a1a10"],16,{type:"shard",sp:80,spR:180,up:30,size:4,sizeR:8,life:.4,lifeR:.4,g:240});
 }else if(kind==="melon"){
   crashSparkBurst(x,y,["#ff6a9a","#2f8a3a","#ffe0ec"],20,{type:"blob",sp:70,spR:150,up:40,size:5,sizeR:9,life:.5,lifeR:.5,g:280});
   crashSparkBurst(x,y,["#1a120c","#2a2018"],12,{type:"shard",sp:80,spR:160,up:20,size:2,sizeR:4,life:.35,lifeR:.35,g:200});
@@ -1510,30 +1511,42 @@ for(var y=0;y<IH;y++){
       var sh=0.88+yv*0.18;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="tiger"){
-      var fur=[214,96,18],cream=[244,214,150],ink=[18,12,8];
-      if(style==="fire"){fur=[232,78,10];cream=[255,196,120]}
-      else if(style==="ice"){fur=[220,108,36];cream=[255,228,186]}
-      else if(style==="gold"){fur=[196,84,12];cream=[255,220,150]}
-      else if(style==="void"||style==="shadow"){fur=[240,108,16];cream=[255,210,140];ink=[8,6,8]}
-      else if(style==="forest"||style==="thorn"){fur=[196,92,20];cream=[236,204,132]}
-      else if(style==="titan"||style==="nimbus"||style==="skeleton"){fur=[228,112,28];cream=[255,232,196]}
-      else if(style==="mochi"){fur=[232,120,48];cream=[255,224,186]}
-      else if(style==="knight"||style==="viking"){fur=[186,78,16];cream=[236,196,128]}
+      var furLo=[176,54,6],furHi=[255,142,28],cream=[255,234,188],ink=[10,7,5],rim=[56,24,8];
+      if(style==="fire"){furLo=[198,32,2];furHi=[255,108,14]}
+      else if(style==="ice"){furLo=[186,70,18];furHi=[255,168,64];cream=[255,242,214]}
+      else if(style==="gold"){furLo=[158,48,4];furHi=[255,176,40]}
+      else if(style==="void"||style==="shadow"){furLo=[210,56,4];furHi=[255,138,22];ink=[6,4,8]}
+      else if(style==="forest"||style==="thorn"){furLo=[158,50,8];furHi=[236,124,24]}
+      else if(style==="titan"||style==="nimbus"||style==="skeleton"){furLo=[186,66,10];furHi=[255,158,46];cream=[255,240,210]}
+      else if(style==="mochi"){furLo=[196,74,18];furHi=[255,154,56]}
+      else if(style==="knight"||style==="viking"){furLo=[148,44,6];furHi=[228,112,22]}
       var yMap=yv;
       if(style==="titan"||style==="ice"||style==="nimbus"||style==="skeleton"||style==="mochi") yMap=0.16+yv*yv*0.72;
-      var belly=smstep(0.38,0.78,yMap);
-      if(style==="titan"||style==="ice"||style==="nimbus") belly=Math.max(belly,smstep(0.46,0.78,ny)*0.55);
-      var mix=lerp3(fur,cream,belly*0.9);
-      var along=x*0.086+y*0.024+(sid%7)*0.37;
-      var wrap=y*0.062-x*0.016+yMap*1.15;
-      if(style==="mochi"){along=x*0.064+y*0.04;wrap=y*0.05}
-      if(style==="titan"){along=x*0.078+y*0.03}
-      var wave=Math.sin(along+Math.sin(wrap)*1.15);
-      var stripe=smstep(0.12,0.52,wave)*(1-belly*0.22);
+      var belly=smstep(0.44,0.84,yMap);
+      if(style==="titan"||style==="ice"||style==="nimbus") belly=Math.max(belly,smstep(0.52,0.84,ny)*0.48);
+      var mix=lerp3(furLo,furHi,Math.max(0,Math.min(1,yMap*1.12)));
+      mix=lerp3(mix,cream,belly*0.94);
+      var along=x*0.112+y*0.028+(sid%7)*0.41;
+      var wrap=y*0.07-x*0.02+yMap*1.35;
+      if(style==="mochi"){along=x*0.09+y*0.045;wrap=y*0.055}
+      if(style==="titan"){along=x*0.1+y*0.034}
+      if(nx>0.56&&ny<0.5){along=y*0.15+x*0.04+(sid%5)*0.2;wrap=x*0.05}
+      var jitter=((hash32((x>>1)*73856093+(y>>1)*19349663+sid+h1)&255)/255-0.5)*0.7;
+      var wave=Math.sin(along+Math.sin(wrap)*0.9+jitter);
+      var peak=Math.abs(wave);
+      var stripe=smstep(0.70,0.96,peak)*(1-belly*0.62);
+      var edge=smstep(0.52,0.70,peak)*(1-belly*0.62)*(1-stripe);
+      mix=lerp3(mix,rim,edge*0.9);
       mix=lerp3(mix,ink,stripe);
-      var sh=0.52+yv*0.58;
-      if(style==="void"||style==="shadow") sh=0.62+yv*0.5;
-      nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
+      var wave2=Math.sin(along*1.7+1.6+wrap*0.35);
+      var hair=smstep(0.90,0.995,Math.abs(wave2))*0.42*(1-belly)*(1-stripe);
+      mix=lerp3(mix,ink,hair);
+      var spec=Math.pow(Math.max(0,yv-0.56)/0.44,1.7)*0.26*(1-stripe);
+      var sh=0.78+yv*0.34;
+      if(style==="void"||style==="shadow") sh=0.86+yv*0.28;
+      nr=mix[0]*sh*(1-spec)+255*spec;
+      ng=mix[1]*sh*(1-spec)+210*spec;
+      nb=mix[2]*sh*(1-spec)+70*spec;
     }else if(kind==="melon"){
       var rind=[20,96,34],leaf=[48,168,58],flesh=[255,86,128],pale=[255,214,224],seed=[22,16,12];
       if(style==="void"||style==="shadow"){rind=[18,120,42];leaf=[64,210,78];flesh=[255,96,140]}
@@ -1648,7 +1661,8 @@ if(kind==="jade")addJadeGlow(bx,IW,IH);
 if(puff)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),orKeep(knightArmor,eyeKeep),style!=="void");
 if(style==="void")imprintSourceDetail(bx,im,IW,IH,eyeKeep,2.35);
 if(kind==="aurora")imprintSourceDetail(bx,im,IW,IH,eyeKeep,1.75);
-if(kind==="tiger"||kind==="melon")imprintSourceDetail(bx,im,IW,IH,eyeKeep,style==="void"?2.2:1.45);
+if(kind==="tiger")imprintSourceDetail(bx,im,IW,IH,eyeKeep,style==="void"?2.4:1.85);
+if(kind==="melon")imprintSourceDetail(bx,im,IW,IH,eyeKeep,style==="void"?2.2:1.45);
 restoreEyes(bx,im,IW,IH,style);
 }
 
