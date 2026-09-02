@@ -1351,6 +1351,7 @@ for(var y=0;y<IH;y++){
     var r=p[i],g=p[i+1],b=p[i+2];
     var yv=(0.2126*r+0.7152*g+0.0722*b)/255;
     if(style==="void"||style==="shadow") yv=Math.min(1,yv*1.55+0.12);
+    else if(style==="titan"||style==="ice"||style==="nimbus"||style==="skeleton"||style==="mochi") yv=0.12+yv*yv*0.78;
     var nx=x/IW,ny=y/IH,nr,ng,nb;
     if(kind==="prism"){
       var hx=(h1%360), sx=80+(h2%200), sy=40+(h3%170), swirl=((h1>>>8)%120);
@@ -1373,6 +1374,14 @@ for(var y=0;y<IH;y++){
       else if(style==="gold"){dark=[40,18,8];mid=[140,70,200];hot=[255,170,80];ice=[255,230,160]}
       else if(style==="baby"){dark=[24,10,48];mid=[120,70,255];hot=[255,130,200];ice=[140,220,255]}
       else if(style==="void"){dark=[6,4,16];mid=[90,30,255];hot=[255,70,200];ice=[80,240,255]}
+      else if(style==="shadow"){dark=[6,4,18];mid=[80,40,180];hot=[200,80,255];ice=[160,120,255]}
+      else if(style==="titan"){dark=[18,10,28];mid=[90,50,200];hot=[255,140,220];ice=[200,230,255]}
+      else if(style==="nimbus"){dark=[10,20,48];mid=[70,110,220];hot=[180,220,255];ice=[230,245,255]}
+      else if(style==="skeleton"){dark=[8,16,22];mid=[20,140,160];hot=[80,240,255];ice=[210,255,255]}
+      else if(style==="mochi"){dark=[32,8,28];mid=[200,70,160];hot=[255,140,200];ice=[255,210,230]}
+      else if(style==="pirate"){dark=[6,28,32];mid=[20,120,140];hot=[40,220,210];ice=[180,255,240]}
+      else if(style==="viking"){dark=[32,8,8];mid=[140,40,40];hot=[220,90,50];ice=[255,180,90]}
+      else if(style==="knight"){dark=[24,18,10];mid=[90,70,40];hot=[220,180,70];ice=[255,230,160]}
       var t1=Math.max(0,Math.min(1,(yv-0.18)/0.35));
       var t2=Math.max(0,Math.min(1,(yv-0.55)/0.35));
       var c1=lerp3(dark,mid,t1);
@@ -1521,7 +1530,6 @@ for(var y=0;y<IH;y++){
       else if(style==="mochi"){furLo=[196,74,18];furHi=[255,154,56]}
       else if(style==="knight"||style==="viking"){furLo=[148,44,6];furHi=[228,112,22]}
       var yMap=yv;
-      if(style==="titan"||style==="ice"||style==="nimbus"||style==="skeleton"||style==="mochi") yMap=0.16+yv*yv*0.72;
       var belly=smstep(0.44,0.84,yMap);
       if(style==="titan"||style==="ice"||style==="nimbus") belly=Math.max(belly,smstep(0.52,0.84,ny)*0.48);
       var mix=lerp3(furLo,furHi,Math.max(0,Math.min(1,yMap*1.12)));
@@ -1555,7 +1563,6 @@ for(var y=0;y<IH;y++){
       else if(style==="titan"||style==="skeleton"){rind=[32,122,48];leaf=[70,186,78]}
       else if(style==="mochi"){flesh=[255,110,150];pale=[255,228,234]}
       var yMap=yv;
-      if(style==="titan"||style==="ice"||style==="nimbus"||style==="skeleton"||style==="mochi") yMap=0.14+yv*yv*0.7;
       var fleshAmt=smstep(0.30,0.58,yMap);
       if(style==="titan"||style==="ice"||style==="nimbus"||style==="skeleton") fleshAmt=Math.max(fleshAmt*0.7,smstep(0.44,0.72,ny)*0.75);
       var mix=lerp3(rind,leaf,smstep(0.10,0.42,yMap));
@@ -1722,33 +1729,38 @@ for(var y=0;y<IH;y++){
 bx.putImageData(cur,0,0);
 }
 var EYE_PUPILS={
-  baby:[{cx:0.610,cy:0.452,pr:0.017},{cx:0.752,cy:0.435,pr:0.017}],
-  fire:[{cx:0.770,cy:0.412,pr:0.017},{cx:0.894,cy:0.411,pr:0.016}],
+  baby:[{cx:0.611,cy:0.452,pr:0.017},{cx:0.750,cy:0.435,pr:0.017}],
+  fire:[{cx:0.772,cy:0.411,pr:0.017},{cx:0.889,cy:0.411,pr:0.016}],
   ice:[{cx:0.746,cy:0.453,pr:0.018}],
-  forest:[{cx:0.736,cy:0.445,pr:0.015}],
-  shadow:[{cx:0.754,cy:0.451,pr:0.015}],
-  gold:[{cx:0.680,cy:0.432,pr:0.017},{cx:0.786,cy:0.427,pr:0.017}],
-  void:[{cx:0.768,cy:0.435,pr:0.016}],
-  knight:[{cx:0.554,cy:0.413,pr:0.016}],
-  nimbus:[{cx:0.821,cy:0.457,pr:0.016}],
-  coral:[{cx:0.834,cy:0.443,pr:0.016}],
-  thorn:[{cx:0.800,cy:0.400,pr:0.016}],
-  mochi:[{cx:0.753,cy:0.384,pr:0.017},{cx:0.888,cy:0.359,pr:0.016}],
-  viking:[{cx:0.760,cy:0.382,pr:0.016}],
-  pirate:[{cx:0.750,cy:0.441,pr:0.016}],
-  skeleton:[{cx:0.771,cy:0.413,pr:0.016},{cx:0.898,cy:0.400,pr:0.015}],
-  titan:[{cx:0.587,cy:0.399,pr:0.017},{cx:0.783,cy:0.375,pr:0.016}]
+  forest:[{cx:0.737,cy:0.443,pr:0.016}],
+  shadow:[{cx:0.756,cy:0.446,pr:0.016}],
+  gold:[{cx:0.680,cy:0.433,pr:0.017},{cx:0.784,cy:0.426,pr:0.017}],
+  void:[{cx:0.769,cy:0.435,pr:0.016}],
+  knight:[{cx:0.547,cy:0.410,pr:0.017}],
+  nimbus:[{cx:0.822,cy:0.456,pr:0.016}],
+  coral:[{cx:0.834,cy:0.441,pr:0.016}],
+  thorn:[{cx:0.800,cy:0.398,pr:0.016}],
+  mochi:[{cx:0.752,cy:0.383,pr:0.017},{cx:0.878,cy:0.362,pr:0.016}],
+  viking:[{cx:0.759,cy:0.381,pr:0.016}],
+  pirate:[{cx:0.750,cy:0.441,pr:0.017},{cx:0.584,cy:0.453,pr:0.040}],
+  skeleton:[{cx:0.785,cy:0.412,pr:0.028},{cx:0.886,cy:0.403,pr:0.022}],
+  titan:[{cx:0.592,cy:0.398,pr:0.018},{cx:0.779,cy:0.378,pr:0.017}]
 };
 function eyePr(e,IW){return Math.max(7,(e.pr||0.015)*IW)}
-function eyeCopyR(pr,IW){return Math.max(pr*1.8,8)}
-function copySocketPixel(p,o,i){
+function eyeCopyR(pr,IW){return Math.max(pr*1.55,7)}
+function isEyePixel(o,i){
   var a=o[i+3];
   var mx=Math.max(o[i],o[i+1],o[i+2]),mn=Math.min(o[i],o[i+1],o[i+2]),ch=mx-mn;
   var lu=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
   var pupil=(a<40&&lu<0.28&&ch<70)||(a>=40&&lu<0.22&&ch<60);
   var spec=a>=40&&lu>0.78&&ch<45;
-  var iris=a>=40&&ch>28&&lu>0.12&&lu<0.78;
-  if(!(pupil||spec||iris))return;
+  var iris=a>=40&&ch>28&&lu>0.12&&lu<0.92;
+  var glow=a>=40&&ch>70&&lu>=0.30;
+  return !!(pupil||spec||iris||glow);
+}
+function copySocketPixel(p,o,i){
+  if(!isEyePixel(o,i))return;
+  var a=o[i+3];
   if(a>=40){p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=o[i+3];return}
   p[i]=o[i];p[i+1]=o[i+1];p[i+2]=o[i+2];p[i+3]=255;
 }
@@ -1768,14 +1780,7 @@ for(var m=0;m<mapped.length;m++){
       var dx=x-cx,dy=y-cy,d2=dx*dx+dy*dy;
       if(d2>outerR2)continue;
       var i=(y*IW+x)*4;
-      
-      var mx=Math.max(o[i],o[i+1],o[i+2]),mn=Math.min(o[i],o[i+1],o[i+2]),ch=mx-mn;
-      var lu=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
-      var a=o[i+3];
-      var pupil=(a<40)||(lu<0.22&&ch<60);
-      var spec=a>=40&&lu>0.78&&ch<45;
-      var iris=a>=40&&ch>28&&lu>0.12&&lu<0.78;
-      if(pupil||spec||iris)mask[y*IW+x]=1;
+      if(isEyePixel(o,i))mask[y*IW+x]=1;
     }
   }
 }
