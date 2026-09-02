@@ -82,6 +82,7 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 .inspectKind button{flex:1;min-height:34px;padding:6px 4px;border-radius:10px;background:#10182f;border:1px solid #ffffff12;font-size:9px;font-weight:900}
 .inspectKind button.active{background:linear-gradient(135deg,#6f4cff,#3b8cff);border-color:#a56cff}
 .inspectStage{width:100%;height:180px;border-radius:14px;border:1px solid #a56cff55;display:block;background:#080616}
+.inspectStage.mapView{height:248px}
 .inspectMeta{margin:8px 0 6px;text-align:center}
 .inspectMeta b{display:block;font-size:13px;font-weight:950}
 .inspectMeta small{display:block;color:#aab3d2;font-size:10px;margin-top:3px;line-height:1.35}
@@ -2287,39 +2288,65 @@ function inspectTrio(){
   else m=findMap(inspectId)||m;
   return {d:d,c:c,m:m};
 }
-function drawInspectScene(canvas,mapObj,dragonObj,colorObj){
+function drawInspectScene(canvas,mapObj,dragonObj,colorObj,kind){
   if(!canvas||!mapObj||!dragonObj)return;
   var r=Math.max(2,Math.min(3,window.devicePixelRatio||2));
   var cssW=canvas.clientWidth||Number(canvas.getAttribute("width"))||360;
   var cssH=canvas.clientHeight||Number(canvas.getAttribute("height"))||180;
   if(cssW<2)cssW=Number(canvas.getAttribute("width"))||360;
   if(cssH<2)cssH=Number(canvas.getAttribute("height"))||180;
-  var saved={ctx:ctx,W:W,H:H,scroll:scroll,map:selectedMap,color:selectedColor,gates:gates};
+  var mapFocus=kind==="map";
+  var saved={ctx:ctx,W:W,H:H,scroll:scroll,map:selectedMap,color:selectedColor,gates:gates,coins:coinItems};
   try{
-    canvas.width=Math.round(cssW*r);canvas.height=Math.round(cssH*r);
-    var inspectCtx=canvas.getContext("2d");
+    var virtW=mapFocus?520:cssW;
+    var virtH=mapFocus?300:cssH;
+    var off=canvas;
+    if(mapFocus){
+      off=document.createElement("canvas");
+      off.width=Math.round(virtW*r);off.height=Math.round(virtH*r);
+    }else{
+      canvas.width=Math.round(cssW*r);canvas.height=Math.round(cssH*r);
+    }
+    var inspectCtx=off.getContext("2d");
     if(!inspectCtx)return;
     inspectCtx.setTransform(r,0,0,r,0,0);
     inspectCtx.imageSmoothingEnabled=true;inspectCtx.imageSmoothingQuality="high";
     inspectCtx.globalAlpha=1;inspectCtx.globalCompositeOperation="source-over";inspectCtx.shadowBlur=0;
-    inspectCtx.clearRect(0,0,cssW,cssH);
-    ctx=inspectCtx;W=cssW;H=cssH;scroll=90;selectedMap=mapObj.id;
-    var gap=Math.max(48,cssH*0.36),top=Math.max(14,cssH*0.14);
-    gates=[{x:cssW*0.55,top:top,gap:gap,passed:false},{x:cssW*0.85,top:top+10,gap:Math.max(40,gap-8),passed:false}];
+    inspectCtx.clearRect(0,0,virtW,virtH);
+    ctx=inspectCtx;W=virtW;H=virtH;scroll=mapFocus?180:90;selectedMap=mapObj.id;
+    if(mapFocus){
+      var gap=148,top=64;
+      gates=[{x:virtW*0.34,top:top,gap:gap,passed:false},{x:virtW*0.66,top:top+18,gap:gap-8,passed:false}];
+      coinItems=[{x:gates[0].x+38,y:gates[0].top+gap*0.5,r:15,collected:false,spin:.6,bob:1.1}];
+    }else{
+      var gap=Math.max(48,virtH*0.36),top=Math.max(14,virtH*0.14);
+      gates=[{x:virtW*0.55,top:top,gap:gap,passed:false},{x:virtW*0.85,top:top+10,gap:Math.max(40,gap-8),passed:false}];
+      coinItems=[];
+    }
     drawBackground();
     drawGround();
     drawGates();
+    if(mapFocus)drawCoins();
     ctx.shadowBlur=0;ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over";
     ctx.save();
-    ctx.translate(cssW*0.30,cssH*0.42);
-    var ds=(dragonObj.scale||.68)*1.35;
-    ctx.scale(ds,ds);
+    if(mapFocus){ctx.translate(virtW*0.20,virtH*0.50);ctx.scale((dragonObj.scale||.68)*0.82,(dragonObj.scale||.68)*0.82)}
+    else{ctx.translate(virtW*0.30,virtH*0.42);ctx.scale((dragonObj.scale||.68)*1.35,(dragonObj.scale||.68)*1.35)}
     paintDragon(ctx,dragonObj,paletteFor(dragonObj,colorObj||getColor()),0,{still:true});
     ctx.restore();
+    if(mapFocus){
+      canvas.width=Math.round(cssW*r);canvas.height=Math.round(cssH*r);
+      var dest=canvas.getContext("2d");
+      dest.setTransform(1,0,0,1,0,0);
+      dest.imageSmoothingEnabled=true;dest.imageSmoothingQuality="high";
+      dest.clearRect(0,0,canvas.width,canvas.height);
+      var sc=Math.max(canvas.width/off.width,canvas.height/off.height);
+      var dw=off.width*sc,dh=off.height*sc;
+      dest.drawImage(off,(canvas.width-dw)/2,(canvas.height-dh)*0.62,dw,dh);
+    }
   }catch(inspectErr){
     console.error("Dragon Tap inspect:",inspectErr);
   }finally{
-    ctx=saved.ctx;W=saved.W;H=saved.H;scroll=saved.scroll;selectedMap=saved.map;selectedColor=saved.color;gates=saved.gates;
+    ctx=saved.ctx;W=saved.W;H=saved.H;scroll=saved.scroll;selectedMap=saved.map;selectedColor=saved.color;gates=saved.gates;coinItems=saved.coins;
     try{if(ctx){ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over";ctx.shadowBlur=0}}catch(e3){}
   }
 }
@@ -2368,7 +2395,10 @@ function renderInspectPanel(which){
     else{btn.textContent=(price?"Unlock · "+price.toLocaleString()+" 🪙":"Unlock");btn.className="inspectBuy"}
   }
   var canvas=document.getElementById("shopInspectCanvas");
-  if(canvas)drawInspectScene(canvas,trio.m,trio.d,trio.c);
+  if(canvas){
+    canvas.classList.toggle("mapView",inspectKind==="map");
+    drawInspectScene(canvas,trio.m,trio.d,trio.c,inspectKind);
+  }
   schedulePreviews();
 }
 function refreshInspect(){
