@@ -41,7 +41,10 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 #overlay.home-open .menu button{background:linear-gradient(180deg,#fff,#f3e4ff);color:#5a3a68;border:2px solid #d8b8f0;border-radius:16px}
 .menu.util{grid-template-columns:1fr 1fr;margin-top:8px;max-width:220px;margin-left:auto;margin-right:auto}
 .menu.util button{padding:6px 3px;font-size:9px;opacity:.85;border-radius:12px!important}
-.homeCoins,.shopCoins{padding:6px 11px;border-radius:13px;background:#080a1ddd;border:1px solid #ffd35a55;text-align:center}.homeCoins small,.shopCoins small{display:block;color:#aeb8d7;font-size:8px;font-weight:900;letter-spacing:.12em}.homeCoins b,.shopCoins b{font-size:22px;color:#fff;font-weight:700}.homeCoins{position:absolute;top:10px;right:12px;z-index:2}.shopCoins{margin:8px auto 12px;width:max-content}
+.homeCoins,.shopCoins{padding:4px 8px;border-radius:11px;background:#080a1ddd;border:1px solid #ffd35a55;text-align:center}.homeCoins small,.shopCoins small{display:block;color:#aeb8d7;font-size:7px;font-weight:900;letter-spacing:.12em}.homeCoins b,.shopCoins b{font-size:16px;color:#fff;font-weight:700}.homeCoins{position:absolute;top:10px;right:12px;z-index:2}.shopCoins{margin:8px auto 12px;width:max-content}
+#coinBox{padding:4px 8px;border-radius:11px}#coinBox small{font-size:7px}#coinBox b{font-size:16px}
+.coinHudRow{display:flex;align-items:center;gap:5px;justify-content:center}
+canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 .nestStage{position:relative;height:110px;margin:2px auto 0;display:flex;align-items:flex-end;justify-content:center;cursor:pointer}
 #homeDragon{width:160px;height:96px;display:block;position:relative;z-index:2;filter:drop-shadow(0 8px 10px #5a3a1844);pointer-events:auto}
 .nestTwigs{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);width:168px;height:40px;z-index:1}
@@ -83,7 +86,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <div id="hud">
   <div id="bestBox" class="hudbox"><small>BEST</small><b id="best">0</b></div>
   <div id="score">0</div>
-  <div id="coinBox" class="hudbox"><small>COINS</small><b id="coins">0</b></div>
+  <div id="coinBox" class="hudbox"><small>COINS</small><div class="coinHudRow"><canvas class="coinGlyph" width="36" height="36"></canvas><b id="coins">0</b></div></div>
   <div id="timeBox" class="hudbox"><small>TIME</small><b id="runTime">0:00</b></div>
   <button id="pause" type="button">Ⅱ</button>
 </div>
@@ -91,7 +94,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 <div id="overlay" class="home-open">
 <div class="panel">
 <section id="home" class="screen active">
-<div class="homeCoins"><small>COINS</small><b id="homeCoins">0</b></div>
+<div class="homeCoins"><small>COINS</small><div class="coinHudRow"><canvas class="coinGlyph" width="36" height="36"></canvas><b id="homeCoins">0</b></div></div>
 <div class="nestStage">
   <div class="nestTwigs" aria-hidden="true"></div>
   <div class="nestEgg" aria-hidden="true"></div>
@@ -112,7 +115,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 </section>
 <section id="shop" class="screen">
 <button class="back" type="button" data-home>‹</button>
-<div class="title">Shop</div><div class="shopCoins"><small>COINS</small><b id="shopCoins">0</b></div>
+<div class="title">Shop</div><div class="shopCoins"><small>COINS</small><div class="coinHudRow"><canvas class="coinGlyph" width="36" height="36"></canvas><b id="shopCoins">0</b></div></div>
 <div class="shopTabs">
 <button type="button" class="shopTab active" data-shop-tab="dragons">🐉<span>Dragons</span></button>
 <button type="button" class="shopTab" data-shop-tab="colors">🎨<span>Colors / Skins</span></button>
@@ -344,6 +347,7 @@ ctx.setTransform(dpr,0,0,dpr,0,0);
 ctx.globalAlpha=1;
 ctx.globalCompositeOperation="source-over";
 ctx.clearRect(0,0,W,H);
+if(typeof paintHudCoins==="function")paintHudCoins();
 }
 window.addEventListener("resize",resize);resize();
 
@@ -820,15 +824,15 @@ for(var i=0;i<gates.length;i++){
 }
 }
 
-function drawCoinPrint(){
-ctx.fillStyle="#6a410c";
-ctx.beginPath();ctx.ellipse(0,3.4,4.4,3.3,0,0,Math.PI*2);ctx.fill();
-ctx.beginPath();ctx.ellipse(-4.4,-2.2,2.3,3.5,-0.45,0,Math.PI*2);ctx.fill();
-ctx.beginPath();ctx.ellipse(0,-4.2,2.2,3.8,0,0,Math.PI*2);ctx.fill();
-ctx.beginPath();ctx.ellipse(4.4,-2.2,2.3,3.5,0.45,0,Math.PI*2);ctx.fill();
-ctx.beginPath();ctx.moveTo(-5.6,-5.2);ctx.lineTo(-4.4,-9);ctx.lineTo(-3.2,-5);ctx.fill();
-ctx.beginPath();ctx.moveTo(-1.1,-7.4);ctx.lineTo(0,-11);ctx.lineTo(1.1,-7.4);ctx.fill();
-ctx.beginPath();ctx.moveTo(3.2,-5);ctx.lineTo(4.4,-9);ctx.lineTo(5.6,-5.2);ctx.fill();
+function drawCoinPrint(g){
+g.fillStyle="#6a410c";
+g.beginPath();g.ellipse(0,3.4,4.4,3.3,0,0,Math.PI*2);g.fill();
+g.beginPath();g.ellipse(-4.4,-2.2,2.3,3.5,-0.45,0,Math.PI*2);g.fill();
+g.beginPath();g.ellipse(0,-4.2,2.2,3.8,0,0,Math.PI*2);g.fill();
+g.beginPath();g.ellipse(4.4,-2.2,2.3,3.5,0.45,0,Math.PI*2);g.fill();
+g.beginPath();g.moveTo(-5.6,-5.2);g.lineTo(-4.4,-9);g.lineTo(-3.2,-5);g.fill();
+g.beginPath();g.moveTo(-1.1,-7.4);g.lineTo(0,-11);g.lineTo(1.1,-7.4);g.fill();
+g.beginPath();g.moveTo(3.2,-5);g.lineTo(4.4,-9);g.lineTo(5.6,-5.2);g.fill();
 }
 function drawCoins(){
 for(var i=0;i<coinItems.length;i++){var c=coinItems[i];if(c.collected)continue;
@@ -840,8 +844,36 @@ ctx.fillStyle="#e8b430";
 ctx.beginPath();ctx.arc(0,0,c.r,0,Math.PI*2);ctx.fill();
 ctx.strokeStyle="#c48a18";ctx.lineWidth=1.6;
 ctx.beginPath();ctx.arc(0,0,c.r*0.78,0,Math.PI*2);ctx.stroke();
-drawCoinPrint();
+drawCoinPrint(ctx);
 ctx.restore()}
+}
+function paintHudCoin(canvas){
+if(!canvas)return;
+var r=Math.max(2,Math.min(3,window.devicePixelRatio||2));
+var cssW=canvas.clientWidth||Number(canvas.getAttribute("width"))||36;
+var cssH=canvas.clientHeight||Number(canvas.getAttribute("height"))||36;
+if(cssW<2)cssW=Number(canvas.getAttribute("width"))||36;
+if(cssH<2)cssH=Number(canvas.getAttribute("height"))||36;
+canvas.width=Math.round(cssW*r);canvas.height=Math.round(cssH*r);
+var g=canvas.getContext("2d");
+g.setTransform(r,0,0,r,0,0);
+g.imageSmoothingEnabled=true;g.imageSmoothingQuality="high";
+g.clearRect(0,0,cssW,cssH);
+var coinR=Math.min(cssW,cssH)*0.38;
+g.save();g.translate(cssW*0.5,cssH*0.52);
+g.fillStyle="#9a6a12";
+g.beginPath();g.ellipse(0,1.6*(coinR/15),coinR,coinR,0,0,Math.PI*2);g.fill();
+g.fillStyle="#e8b430";
+g.beginPath();g.arc(0,0,coinR,0,Math.PI*2);g.fill();
+g.strokeStyle="#c48a18";g.lineWidth=Math.max(1,1.6*(coinR/15));
+g.beginPath();g.arc(0,0,coinR*0.78,0,Math.PI*2);g.stroke();
+g.save();g.scale(coinR/11,coinR/11);
+drawCoinPrint(g);
+g.restore();g.restore();
+}
+function paintHudCoins(){
+var els=document.querySelectorAll("canvas.coinGlyph");
+for(var i=0;i<els.length;i++)paintHudCoin(els[i]);
 }
 var dragonImgs={};
 ["baby","fire","ice","forest","shadow","gold","void","knight","nimbus","coral","thorn","mochi","viking","skeleton","pirate"].forEach(function(id){
@@ -2118,6 +2150,7 @@ function schedulePreviews(){
   previewTimer=setTimeout(function(){
     if(typeof drawHomeDragon==="function")drawHomeDragon();
     if(typeof renderPreviewCards==="function")renderPreviewCards();
+    if(typeof paintHudCoins==="function")paintHudCoins();
   },80);
 }
 function renderPreviewCards(){
@@ -2158,7 +2191,7 @@ for(var cd=0;cd<dragons.length;cd++){var dd=dragons[cd],ownD=owned.has(dd.id);cu
 for(var cc=0;cc<colors.length;cc++){var coo=colors[cc],ownC=ownedColors.has(coo.id)||coo.id==="natural";customC+='<button type="button" class="swatch '+(coo.exclusive?"exclusive ":"")+(selectedColor===coo.id?"selected":"")+(!ownC?" locked":"")+'" data-action="custom-color" data-id="'+coo.id+'" style="background:'+colorFill(coo)+'"><span>'+coo.name+(coo.exclusive?" ★":"")+'</span></button>';}
 for(var cm=0;cm<maps.length;cm++){var mm=maps[cm],ownM=ownedMaps.has(mm.id);customM+='<button type="button" class="map compact '+(selectedMap===mm.id?"selected ":"")+(!ownM?"locked":"")+'" data-action="custom-map" data-id="'+mm.id+'" style="background:linear-gradient(135deg,'+mm.a+','+mm.b+')"><b>'+mm.name+'</b></button>';}
 document.getElementById("shopCards").innerHTML=sc;document.getElementById("shopSwatches").innerHTML=sw;document.getElementById("shopMapsList").innerHTML=ml;document.getElementById("dragonCards").innerHTML=sc;document.getElementById("swatches").innerHTML=sw;document.getElementById("customDragonCards").innerHTML=customD;document.getElementById("customColorSwatches").innerHTML=customC;var cml=document.getElementById("customMapsList");if(cml)cml.innerHTML=customM;document.getElementById("shopCoins").textContent=String(coins);
-var current=document.getElementById("customCurrent"),pc=document.getElementById("customPreviewCanvas");if(current){current.textContent=getDragon().name+" · "+getColor().name+(getColor().exclusive?" ★":"")+" · "+getMap().name;current.classList.toggle("exclusivePick",!!(getColor().exclusive||getDragon().exclusive));}if(pc)drawPreviewCanvas(pc,getDragon(),getColor(),1.2);refreshInspect();schedulePreviews();var hc=document.getElementById("homeCoins");if(hc)hc.textContent=String(coins);drawHomeDragon();
+var current=document.getElementById("customCurrent"),pc=document.getElementById("customPreviewCanvas");if(current){current.textContent=getDragon().name+" · "+getColor().name+(getColor().exclusive?" ★":"")+" · "+getMap().name;current.classList.toggle("exclusivePick",!!(getColor().exclusive||getDragon().exclusive));}if(pc)drawPreviewCanvas(pc,getDragon(),getColor(),1.2);refreshInspect();schedulePreviews();var hc=document.getElementById("homeCoins");if(hc)hc.textContent=String(coins);drawHomeDragon();paintHudCoins();
 }
 function setShopTab(tab){var tabs=document.querySelectorAll("[data-shop-tab]"),panels=["Dragons","Colors","Maps","Inspect"];for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-shop-tab")===tab);for(var j=0;j<panels.length;j++){var el=document.getElementById("shopPanel"+panels[j]);if(el)el.classList.toggle("active",panels[j].toLowerCase()===tab)}if(tab==="inspect"){renderInspectPanel("shop");requestAnimationFrame(function(){renderInspectPanel("shop")})}}
 function setCustomTab(tab){var tabs=document.querySelectorAll("[data-custom-tab]");for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-custom-tab")===tab);var names=["dragons","colors","maps","inspect"];for(var j=0;j<names.length;j++){var el=document.getElementById("customPanel"+names[j].charAt(0).toUpperCase()+names[j].slice(1));if(el)el.classList.toggle("active",names[j]===tab)}if(tab==="inspect"){renderInspectPanel("custom");requestAnimationFrame(function(){renderInspectPanel("custom")})}}
@@ -2330,8 +2363,8 @@ canvas.addEventListener("pointerdown",input,{passive:false});
 window.addEventListener("keydown",function(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();input(e)}});
 
 bestEl.textContent=String(best);coinsEl.textContent=String(coins);
-try{render();setShopTab("dragons");resetGame();}catch(bootErr){console.error("Dragon Tap boot render:",bootErr);}
-requestAnimationFrame(loop);
+try{render();setShopTab("dragons");resetGame();paintHudCoins();}catch(bootErr){console.error("Dragon Tap boot render:",bootErr);}
+requestAnimationFrame(function(){paintHudCoins();loop()});
 })();
 </script>
 </body>
