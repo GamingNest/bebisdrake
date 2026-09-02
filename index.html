@@ -15,7 +15,7 @@ button{font:inherit;color:#fff;border:0;cursor:pointer}
 #hud{position:fixed;inset:0;pointer-events:none;z-index:3}
 .hudbox{position:absolute;top:max(10px,env(safe-area-inset-top));padding:6px 11px;border-radius:13px;background:#080a1ddd;border:1px solid #a06cff55;text-align:center}
 .hudbox small{display:block;color:#aeb8d7;font-size:8px;font-weight:900;letter-spacing:.12em}.hudbox b{font-size:22px}
-#bestBox{left:10px}#coinBox{top:auto;right:auto;left:10px;bottom:max(12px,env(safe-area-inset-bottom));border-color:#ffd35a55}
+#bestBox{left:10px}#coinBox{top:auto;right:auto;left:10px;bottom:max(12px,env(safe-area-inset-bottom));border-color:#ffd35a55}#timeBox{top:auto;left:auto;right:10px;bottom:max(12px,env(safe-area-inset-bottom));border-color:#5ce1ff55}
 #score{position:absolute;top:max(5px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);font-size:50px;font-weight:950;text-shadow:0 3px 9px #000,0 0 24px #8955ff}
 #pause{position:absolute;right:10px;top:max(10px,env(safe-area-inset-top));width:43px;height:43px;border-radius:13px;background:#080a1ddd;border:1px solid #a06cff55;pointer-events:auto}
 #overlay{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:16px;background:#02030bcc;backdrop-filter:blur(6px)}
@@ -41,7 +41,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 #overlay.home-open .menu button{background:linear-gradient(180deg,#fff,#f3e4ff);color:#5a3a68;border:2px solid #d8b8f0;border-radius:16px}
 .menu.util{grid-template-columns:1fr 1fr;margin-top:8px;max-width:220px;margin-left:auto;margin-right:auto}
 .menu.util button{padding:6px 3px;font-size:9px;opacity:.85;border-radius:12px!important}
-.homeCoins{position:absolute;top:10px;right:12px;background:#fff8e8;border:2px solid #f0c56a;border-radius:999px;padding:5px 10px;font-size:13px;font-weight:950;color:#7a5208;box-shadow:0 4px 12px #c48a1833;z-index:2}
+.homeCoins,.shopCoins{padding:6px 11px;border-radius:13px;background:#080a1ddd;border:1px solid #ffd35a55;text-align:center}.homeCoins small,.shopCoins small{display:block;color:#aeb8d7;font-size:8px;font-weight:900;letter-spacing:.12em}.homeCoins b,.shopCoins b{font-size:22px;color:#fff;font-weight:700}.homeCoins{position:absolute;top:10px;right:12px;z-index:2}.shopCoins{margin:8px auto 12px;width:max-content}
 .nestStage{position:relative;height:110px;margin:2px auto 0;display:flex;align-items:flex-end;justify-content:center;cursor:pointer}
 #homeDragon{width:160px;height:96px;display:block;position:relative;z-index:2;filter:drop-shadow(0 8px 10px #5a3a1844);pointer-events:auto}
 .nestTwigs{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);width:168px;height:40px;z-index:1}
@@ -84,13 +84,14 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
   <div id="bestBox" class="hudbox"><small>BEST</small><b id="best">0</b></div>
   <div id="score">0</div>
   <div id="coinBox" class="hudbox"><small>COINS</small><b id="coins">0</b></div>
+  <div id="timeBox" class="hudbox"><small>TIME</small><b id="runTime">0:00</b></div>
   <button id="pause" type="button">Ⅱ</button>
 </div>
 
 <div id="overlay" class="home-open">
 <div class="panel">
 <section id="home" class="screen active">
-<div class="homeCoins">🪙 <b id="homeCoins">0</b></div>
+<div class="homeCoins"><small>COINS</small><b id="homeCoins">0</b></div>
 <div class="nestStage">
   <div class="nestTwigs" aria-hidden="true"></div>
   <div class="nestEgg" aria-hidden="true"></div>
@@ -111,7 +112,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 </section>
 <section id="shop" class="screen">
 <button class="back" type="button" data-home>‹</button>
-<div class="title">Shop</div><div class="sub">Balance: 🪙 <b id="shopCoins">0</b></div>
+<div class="title">Shop</div><div class="shopCoins"><small>COINS</small><b id="shopCoins">0</b></div>
 <div class="shopTabs">
 <button type="button" class="shopTab active" data-shop-tab="dragons">🐉<span>Dragons</span></button>
 <button type="button" class="shopTab" data-shop-tab="colors">🎨<span>Colors / Skins</span></button>
@@ -187,14 +188,14 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 var canvas=document.getElementById("game"),ctx=canvas.getContext("2d");
 var overlay=document.getElementById("overlay"),play=document.getElementById("play");
 var pause=document.getElementById("pause"),scoreEl=document.getElementById("score");
-var bestEl=document.getElementById("best"),coinsEl=document.getElementById("coins");
+var bestEl=document.getElementById("best"),coinsEl=document.getElementById("coins"),runTimeEl=document.getElementById("runTime");
 var toastEl=document.getElementById("toast");
 var confirmOverlay=document.getElementById("confirmOverlay");
 var confirmText=document.getElementById("confirmText");
 var confirmBuy=document.getElementById("confirmBuy");
 var confirmCancel=document.getElementById("confirmCancel");
 
-var W=0,H=0,dpr=1,last=0,mode="menu",paused=false,score=0,scroll=0,wing=0,lastInput=0;
+var W=0,H=0,dpr=1,last=0,mode="menu",paused=false,score=0,scroll=0,wing=0,lastInput=0,playTime=0;
 var best=Number(localStorage.getItem("gn_best")||0);
 /* Personal build: starts with 2,000,000 coins when no saved balance exists. */
 var coins=2000000; localStorage.setItem("gn_coins","2000000");
@@ -389,12 +390,18 @@ coinItems.push(gateCoin(gates[i]));
 if(i<gates.length-1)coinItems.push(betweenCoin(gates[i],gates[i+1]));
 }
 }
+function formatRunTime(t){
+t=Math.floor(Math.max(0,t));
+var m=Math.floor(t/60),sec=t%60;
+return m+":"+(sec<10?"0":"")+sec;
+}
 function resetGame(){
-score=0;scroll=0;wing=0;
+score=0;scroll=0;wing=0;playTime=0;
 dragon.x=W*.28;dragon.y=H*.42;dragon.vy=0;dragon.rot=0;dragon.bank=0;dragon.stretch=0;crash.active=false;crash.time=0;crash.particles=[];crash.kind="";
 gates=[makeGate(W+100),makeGate(W+100+Math.max(285,W*.55))];
 addCoinsForCurrentGates();
 scoreEl.textContent="0";coinsEl.textContent=String(coins);
+if(runTimeEl)runTimeEl.textContent="0:00";
 }
 function startGame(){prismSeed=Math.random()*1e9;if(paintDragon.cache){for(var k in paintDragon.cache)if(k.indexOf(":prism")!==-1)delete paintDragon.cache[k]}resetGame();mode="playing";paused=false;crash.active=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");overlay.classList.remove("home-open");flap()}
 function flap(){
@@ -1916,6 +1923,8 @@ if(mode==="crashing"){
   return;
 }
 if(mode!=="playing"||paused)return;
+playTime+=dt;
+if(runTimeEl)runTimeEl.textContent=formatRunTime(playTime);
 dragon.vy+=1450*dt;dragon.y+=dragon.vy*dt;scroll+=210*dt;wing=Math.max(0,wing-dt*3);
 var targetRot=Math.max(-0.48,Math.min(0.82,dragon.vy/720));
 dragon.rot+=(targetRot-dragon.rot)*Math.min(1,dt*9);
