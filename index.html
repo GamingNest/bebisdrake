@@ -1201,26 +1201,24 @@ for(var y=0;y<IH;y++){
       var sh=0.65+yv*0.48;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="aurora"){
-      var deep=[10,42,36],mint=[43,255,176],ice=[122,208,255],pink=[255,115,210];
-      var wash=0.5+0.5*Math.sin(nx*2.4-ny*1.8+yv*1.2);
-      var u=Math.max(0,Math.min(1,yv*0.48+nx*0.18+(1-ny)*0.22+wash*0.18));
-      var mix;
-      if(u<0.34) mix=lerp3(deep,mint,u/0.34);
-      else if(u<0.67) mix=lerp3(mint,ice,(u-0.34)/0.33);
-      else mix=lerp3(ice,pink,(u-0.67)/0.33);
-      mix=lerp3(mix,ice,Math.max(0,(yv-0.42)/0.5)*0.2);
-      mix=lerp3(mix,pink,Math.max(0,(yv-0.62)/0.38)*0.16);
-      var sh=0.74+yv*0.4;
-      var spec=Math.pow(Math.max(0,yv-0.5)/0.5,1.7)*0.26;
-      nr=mix[0]*sh*(1-spec)+255*spec;
-      ng=mix[1]*sh*(1-spec)+255*spec;
-      nb=mix[2]*sh*(1-spec)+255*spec;
+      var deep=[8,32,28],mint=[28,168,118],ice=[72,148,196],pink=[186,72,148];
+      var u=Math.max(0,Math.min(1,nx*0.62+(1-ny)*0.38));
+      var mix,t,cr;
+      cr=function(t){t=Math.max(0,Math.min(1,t));return t<0.5?0.5*Math.pow(t*2,2.6):1-0.5*Math.pow((1-t)*2,2.6)};
+      if(u<0.22) mix=deep;
+      else if(u<0.38){t=cr((u-0.22)/0.16);mix=lerp3(deep,mint,t)}
+      else if(u<0.50) mix=mint;
+      else if(u<0.64){t=cr((u-0.50)/0.14);mix=lerp3(mint,ice,t)}
+      else if(u<0.76) mix=ice;
+      else if(u<0.90){t=cr((u-0.76)/0.14);mix=lerp3(ice,pink,t)}
+      else mix=pink;
+      var sh=0.34+yv*0.82;
+      nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
       var spark=((x*374761+y*668265+(h3&255)*409)+h1)>>>0;
-      if((spark%61)<5&&yv>0.16){
-        var gl=0.45+0.55*((spark>>>9)%100)/100;
-        nr=Math.min(255,nr+70*gl);ng=Math.min(255,ng+120*gl);nb=Math.min(255,nb+130*gl);
+      if((spark%79)<3&&yv>0.22){
+        var gl=0.35+0.4*((spark>>>9)%100)/100;
+        nr=Math.min(255,nr+36*gl);ng=Math.min(255,ng+52*gl);nb=Math.min(255,nb+58*gl);
       }
-      if((spark%89)===0&&yv>0.2){nr=Math.min(255,nr+90);ng=Math.min(255,ng+30);nb=Math.min(255,nb+80)}
     }else if(kind==="carbon"){
       var wave=0.5+0.5*Math.sin(nx*2.2+ny*1.6+yv*1.4);
       var u=Math.max(0,Math.min(1,yv*0.7+wave*0.3));
@@ -1402,6 +1400,7 @@ if(kind==="ghost")addGhostGlow(bx,IW,IH);
 if(kind==="jade")addJadeGlow(bx,IW,IH);
 if(puff)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),orKeep(knightArmor,eyeKeep),style!=="void");
 if(style==="void")imprintSourceDetail(bx,im,IW,IH,eyeKeep,2.35);
+if(kind==="aurora")imprintSourceDetail(bx,im,IW,IH,eyeKeep,1.75);
 restoreEyes(bx,im,IW,IH,style);
 }
 
