@@ -1024,7 +1024,7 @@ var o=new Uint8Array(a.length);
 for(var i=0;i<a.length;i++)o[i]=a[i]|b[i];
 return o;
 }
-function strokeSilhouette(bx,IW,IH,lineRgb,keep){
+function strokeSilhouette(bx,IW,IH,lineRgb,keep,innerRidges){
 var img=bx.getImageData(0,0,IW,IH),p=img.data,n=IW*IH;
 var aa=new Uint8Array(n),yyv=new Float32Array(n);
 for(var k=0;k<n;k++){
@@ -1053,6 +1053,7 @@ for(var y=0;y<IH;y++){
       out[i]=lr;out[i+1]=lg;out[i+2]=lb;out[i+3]=255;
       continue;
     }
+    if(innerRidges===false)continue;
     var ridge=0;
     var n4=[[1,0],[-1,0],[0,1],[0,-1],[2,0],[-2,0],[0,2],[0,-2]];
     for(var ni=0;ni<n4.length;ni++){
@@ -1069,6 +1070,60 @@ for(var y=0;y<IH;y++){
   }
 }
 for(var i=0;i<p.length;i++)p[i]=out[i];
+bx.putImageData(img,0,0);
+}
+function contrastLiftVoid(bx,IW,IH){
+var img=bx.getImageData(0,0,IW,IH),p=img.data;
+for(var i=0;i<p.length;i+=4){
+  if(p[i+3]<12)continue;
+  var yv=(0.2126*p[i]+0.7152*p[i+1]+0.0722*p[i+2])/255;
+  if(yv<0.004)continue;
+  var y2=Math.max(0,Math.min(1,(yv-0.10)*2.65));
+  var s=y2/yv;
+  p[i]=Math.max(0,Math.min(255,p[i]*s));
+  p[i+1]=Math.max(0,Math.min(255,p[i+1]*s));
+  p[i+2]=Math.max(0,Math.min(255,p[i+2]*s));
+}
+bx.putImageData(img,0,0);
+}
+function imprintSourceDetail(bx,im,IW,IH,keep,amount){
+amount=amount||2.2;
+var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
+var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
+var o=tx.getImageData(0,0,IW,IH).data;
+var n=IW*IH,y0=new Float32Array(n),aa=new Uint8Array(n);
+for(var k=0;k<n;k++){
+  var i=k*4;aa[k]=o[i+3];
+  y0[k]=(0.2126*o[i]+0.7152*o[i+1]+0.0722*o[i+2])/255;
+}
+var blur=new Float32Array(n),rad=2,w=rad*2+1;
+for(var y=0;y<IH;y++){
+  var acc=0,cnt=0,row=y*IW;
+  for(var x=-rad;x<IW;x++){
+    if(x+rad<IW){var k=row+x+rad;if(aa[k]>=12){acc+=y0[k];cnt++}}
+    if(x-rad-1>=0){var k=row+x-rad-1;if(aa[k]>=12){acc-=y0[k];cnt--}}
+    if(x>=0)blur[row+x]=cnt?acc/cnt:y0[row+x];
+  }
+}
+var tmpb=new Float32Array(n);
+for(var x=0;x<IW;x++){
+  var acc=0,cnt=0;
+  for(var y=-rad;y<IH;y++){
+    if(y+rad<IH){var k=(y+rad)*IW+x;if(aa[k]>=12){acc+=blur[k];cnt++}}
+    if(y-rad-1>=0){var k=(y-rad-1)*IW+x;if(aa[k]>=12){acc-=blur[k];cnt--}}
+    if(y>=0)tmpb[y*IW+x]=cnt?acc/cnt:blur[y*IW+x];
+  }
+}
+var img=bx.getImageData(0,0,IW,IH),p=img.data;
+for(var k=0;k<n;k++){
+  if(aa[k]<12)continue;
+  if(keep&&keep[k])continue;
+  var i=k*4;if(p[i+3]<12)continue;
+  var add=(y0[k]-tmpb[k])*amount*255;
+  p[i]=Math.max(0,Math.min(255,p[i]+add));
+  p[i+1]=Math.max(0,Math.min(255,p[i+1]+add));
+  p[i+2]=Math.max(0,Math.min(255,p[i+2]+add));
+}
 bx.putImageData(img,0,0);
 }
 function applyExclusiveSkin(bx,im,IW,IH,kind,style,phase){
@@ -1342,7 +1397,8 @@ bx.globalCompositeOperation="source-over";
 if(puff)fillInteriorHoles(bx,IW,IH,knightArmor);
 if(kind==="ghost")addGhostGlow(bx,IW,IH);
 if(kind==="jade")addJadeGlow(bx,IW,IH);
-if(puff)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),orKeep(knightArmor,eyeKeep));
+if(puff)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),orKeep(knightArmor,eyeKeep),style!=="void");
+if(style==="void")imprintSourceDetail(bx,im,IW,IH,eyeKeep,2.35);
 restoreEyes(bx,im,IW,IH,style);
 }
 
@@ -1633,6 +1689,8 @@ if(!paintDragon.cache[key]){
     applyExclusiveSkin(bx,im,IW,IH,cid,spriteId(d),t||0);
   }else if(cid!=="natural"){
     bx.drawImage(im,0,0);
+    var sid=spriteId(d);
+    if(sid==="void")contrastLiftVoid(bx,IW,IH);
     bx.globalCompositeOperation="saturation";
     bx.fillStyle="#ffffff";bx.fillRect(0,0,IW,IH);
     bx.globalCompositeOperation="color";
@@ -1644,7 +1702,6 @@ if(!paintDragon.cache[key]){
     bx.globalCompositeOperation="destination-in";
     bx.drawImage(im,0,0);
     bx.globalCompositeOperation="source-over";
-    var sid=spriteId(d);
     var keep=null;
     if(sid==="knight"){
       var tc=document.createElement("canvas");tc.width=IW;tc.height=IH;
@@ -1659,7 +1716,8 @@ if(!paintDragon.cache[key]){
     })();
     if(cid==="royal")applyRoyalGold(bx,im,IW,IH,eyeKeep);
     if(sid==="void"||sid==="shadow"||sid==="knight")fillInteriorHoles(bx,IW,IH,keep);
-    if(sid==="void"||sid==="shadow"||sid==="knight")strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),orKeep(keep,eyeKeep));
+    if(sid==="void"||sid==="shadow"||sid==="knight")strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),orKeep(keep,eyeKeep),sid!=="void");
+    if(sid==="void")imprintSourceDetail(bx,im,IW,IH,eyeKeep,2.35);
     restoreEyes(bx,im,IW,IH,sid);
   }else{
     bx.drawImage(im,0,0);
