@@ -2420,11 +2420,11 @@ function refreshInspect(){
   if(shopP&&shopP.classList.contains("active"))renderInspectPanel("shop");
 }
 function placeFullDragon(g,d,pal,boxW,boxH){
-var body=124,pad=18;
+var body=124,pad=2;
 var s=Math.min((boxW-pad*2)/body,(boxH-pad*2)/body);
 if(!(s>0.05))s=0.2;
 g.save();
-g.translate(boxW*0.5,boxH*0.52);
+g.translate(boxW*0.5,boxH*0.5+(0.52-0.5)*body*s);
 g.scale(s,s);
 paintDragon(g,d,pal,0,{still:true});
 g.restore();
