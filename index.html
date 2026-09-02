@@ -1788,8 +1788,9 @@ var sid=spriteId(d);
 if(sid==="fire") tailA=Math.sin(tm*6.2)*0.16 + pitch*0.32 - tuck*0.08;
 /* Cropped profile sprites: belly sits toward the head seam (x>~0.56). Default body
    clip ends at 0.56 so head rotation punches a pie-wedge of scutes. Keep baby/fire/
-   forest/shadow/gold/void/knight on the original layout. Ice uses a wider unrotated
-   torso so the front paw and neck crystals are not sliced. */
+   forest/shadow/gold/void/knight on the original layout. Ice keeps that layout too,
+   plus a small neck seam and a wider front-leg clip for the paw (a full-width torso
+   froze wings into the body). */
 var profile=sid==="nimbus"||sid==="coral"||sid==="thorn"||sid==="mochi"||sid==="viking"||sid==="pirate"||sid==="skeleton";
 var ice=sid==="ice";
 part(IW*0.02,IH*0.02,IW*0.40,IH*0.40, IW*0.34,IH*0.28, -0.18+flapL);
@@ -1832,9 +1833,9 @@ if(sid==="fire" && !(anim&&anim.still)){
 }
 part(IW*0.16,IH*0.56,IW*0.32,IH*0.36, IW*0.38,IH*0.68, legB);
 if(ice){
-  /* Ice crystals + front paw sit past the default body clip; unrotated wide torso. */
-  part(IW*0.14,IH*0.22,IW*0.74,IH*0.56, IW*0.48,IH*0.50, 0);
-  part(IW*0.46,IH*0.20,IW*0.50,IH*0.38, IW*0.68,IH*0.40, 0);
+  /* Body starts below the wing crops so flapping wings are not frozen into the torso. */
+  part(IW*0.20,IH*0.36,IW*0.38,IH*0.34, IW*0.42,IH*0.52, 0);
+  part(IW*0.52,IH*0.46,IW*0.14,IH*0.14, IW*0.56,IH*0.52, 0);
 }else if(profile){
   /* Torso+belly+throat, unrotated, further right so chin/neck underside is not a hole. */
   part(IW*0.16,IH*0.24,IW*0.66,IH*0.50, IW*0.48,IH*0.50, 0);
@@ -1842,11 +1843,13 @@ if(ice){
 }else{
   part(IW*0.20,IH*0.28,IW*0.36,IH*0.42, IW*0.42,IH*0.50, 0);
 }
-part(IW*0.34,IH*0.56,IW*0.30,IH*0.36, IW*0.50,IH*0.70, legF);
-part(IW*0.22,IH*0.02,IW*0.32,IH*0.38, IW*0.42,IH*0.28, 0.12+flapR);
 if(ice){
-  part(IW*0.46,IH*0.06,IW*0.54,IH*0.56, IW*0.70,IH*0.36, headN);
-}else if(profile){
+  part(IW*0.34,IH*0.52,IW*0.48,IH*0.36, IW*0.52,IH*0.70, legF);
+}else{
+  part(IW*0.34,IH*0.56,IW*0.30,IH*0.36, IW*0.50,IH*0.70, legF);
+}
+part(IW*0.22,IH*0.02,IW*0.32,IH*0.38, IW*0.42,IH*0.28, 0.12+flapR);
+if(profile){
   /* Head; taller so neck underside stays attached when head nods. */
   part(IW*0.50,IH*0.10,IW*0.50,IH*0.44, IW*0.74,IH*0.32, headN);
 }else{
