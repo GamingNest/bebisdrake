@@ -443,8 +443,8 @@ return "#"+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
 }
 function paletteFor(d,c){
 d=d||getDragon();c=c||getColor();
-if(!c||c.id==="natural"||!c.body)return {body:d.body,wing:d.wing,accent:d.accent,eye:d.eye,_natural:true};
-return {body:c.body,wing:c.wing,accent:c.accent||mixHex(c.body,.45),eye:d.eye,stops:c.stops,skin:c.skin};
+if(!c||c.id==="natural"||!c.body)return {id:"natural",body:d.body,wing:d.wing,accent:d.accent,eye:d.eye,_natural:true};
+return {id:c.id,body:c.body,wing:c.wing,accent:c.accent||mixHex(c.body,.45),eye:d.eye,stops:c.stops,skin:c.skin};
 }
 function colorPrice(c){return c.exclusive?50000:(c.price||200)}
 
@@ -1024,6 +1024,7 @@ if(h<1){r=c;g=x}else if(h<2){r=x;g=c}else if(h<3){g=c;b=x}else if(h<4){g=x;b=c}e
 return [Math.round((r+m)*255),Math.round((g+m)*255),Math.round((b+m)*255)];
 }
 function lerp3(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]}
+function smstep(a,b,x){x=(x-a)/(b-a);if(x<=0)return 0;if(x>=1)return 1;return x*x*(3-2*x)}
 function hash32(n){n|=0;n=Math.imul(n^n>>>16,2246822507);n=Math.imul(n^n>>>13,3266489909);return (n^n>>>16)>>>0}
 function armorKeepMask(o,IW,IH){
 var steel=new Uint8Array(IW*IH),goldCand=new Uint8Array(IW*IH),keep=new Uint8Array(IW*IH);
@@ -1435,22 +1436,52 @@ for(var y=0;y<IH;y++){
       var sh=0.88+yv*0.18;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="tiger"){
-      var fur=[214,96,18],cream=[244,214,150],ink=[22,16,10];
-      var mix=lerp3(fur,cream,Math.max(0,Math.min(1,(yv-0.28)/0.55)));
-      var band=(nx*6.4+ny*2.6+yv*0.9);
-      var t=band-Math.floor(band);
-      if(t<0.20||(t>0.48&&t<0.62)) mix=ink;
-      var sh=0.62+yv*0.48;
+      var fur=[214,96,18],cream=[244,214,150],ink=[18,12,8];
+      if(style==="fire"){fur=[232,78,10];cream=[255,196,120]}
+      else if(style==="ice"){fur=[220,108,36];cream=[255,228,186]}
+      else if(style==="gold"){fur=[196,84,12];cream=[255,220,150]}
+      else if(style==="void"||style==="shadow"){fur=[240,108,16];cream=[255,210,140];ink=[8,6,8]}
+      else if(style==="forest"||style==="thorn"){fur=[196,92,20];cream=[236,204,132]}
+      else if(style==="titan"||style==="nimbus"||style==="skeleton"){fur=[228,112,28];cream=[255,232,196]}
+      else if(style==="mochi"){fur=[232,120,48];cream=[255,224,186]}
+      else if(style==="knight"||style==="viking"){fur=[186,78,16];cream=[236,196,128]}
+      var yMap=yv;
+      if(style==="titan"||style==="ice"||style==="nimbus"||style==="skeleton"||style==="mochi") yMap=0.16+yv*yv*0.72;
+      var belly=smstep(0.38,0.78,yMap);
+      if(style==="titan"||style==="ice"||style==="nimbus") belly=Math.max(belly,smstep(0.46,0.78,ny)*0.55);
+      var mix=lerp3(fur,cream,belly*0.9);
+      var along=x*0.086+y*0.024+(sid%7)*0.37;
+      var wrap=y*0.062-x*0.016+yMap*1.15;
+      if(style==="mochi"){along=x*0.064+y*0.04;wrap=y*0.05}
+      if(style==="titan"){along=x*0.078+y*0.03}
+      var wave=Math.sin(along+Math.sin(wrap)*1.15);
+      var stripe=smstep(0.12,0.52,wave)*(1-belly*0.22);
+      mix=lerp3(mix,ink,stripe);
+      var sh=0.52+yv*0.58;
+      if(style==="void"||style==="shadow") sh=0.62+yv*0.5;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="melon"){
-      var rind=[24,110,40],leaf=[46,168,62],flesh=[255,88,130],pale=[255,214,224],seed=[22,16,12];
-      var mix;
-      if(yv<0.34) mix=lerp3(rind,leaf,yv/0.34);
-      else if(yv<0.52) mix=lerp3(leaf,flesh,(yv-0.34)/0.18);
-      else mix=lerp3(flesh,pale,(yv-0.52)/0.48);
-      var spark=((x*374761+y*668265+(h3&255)*409)+h1)>>>0;
-      if(yv>0.48&&(spark%41)<3) mix=seed;
-      var sh=0.70+yv*0.38;
+      var rind=[20,96,34],leaf=[48,168,58],flesh=[255,86,128],pale=[255,214,224],seed=[22,16,12];
+      if(style==="void"||style==="shadow"){rind=[18,120,42];leaf=[64,210,78];flesh=[255,96,140]}
+      else if(style==="fire"){rind=[28,108,32];flesh=[255,70,110]}
+      else if(style==="ice"||style==="nimbus"){leaf=[72,196,96];flesh=[255,120,160];pale=[255,230,236]}
+      else if(style==="titan"||style==="skeleton"){rind=[32,122,48];leaf=[70,186,78]}
+      else if(style==="mochi"){flesh=[255,110,150];pale=[255,228,234]}
+      var yMap=yv;
+      if(style==="titan"||style==="ice"||style==="nimbus"||style==="skeleton"||style==="mochi") yMap=0.14+yv*yv*0.7;
+      var fleshAmt=smstep(0.30,0.58,yMap);
+      if(style==="titan"||style==="ice"||style==="nimbus"||style==="skeleton") fleshAmt=Math.max(fleshAmt*0.7,smstep(0.44,0.72,ny)*0.75);
+      var mix=lerp3(rind,leaf,smstep(0.10,0.42,yMap));
+      mix=lerp3(mix,flesh,fleshAmt);
+      mix=lerp3(mix,pale,fleshAmt*smstep(0.58,0.92,yMap));
+      if(fleshAmt>0.55){
+        var sx=Math.floor(x/8),sy=Math.floor(y/12);
+        var hh=hash32(sx*73856093+sy*19349663+sid*83492791+h1);
+        var fx=x/8-sx-0.5,fy=y/12-sy-0.5;
+        if((hh%19)<4&&(fx*fx+fy*fy*2.6)<0.16) mix=seed;
+      }
+      var sh=0.58+yv*0.5;
+      if(style==="void"||style==="shadow") sh=0.68+yv*0.42;
       nr=mix[0]*sh;ng=mix[1]*sh;nb=mix[2]*sh;
     }else if(kind==="ghost"){
       var voidc=[18,28,48],mist=[92,128,168],ecto=[168,230,255],veil=[210,230,255];
@@ -1543,6 +1574,7 @@ if(kind==="jade")addJadeGlow(bx,IW,IH);
 if(puff)strokeSilhouette(bx,IW,IH,silhouetteLineRgb(bx,IW,IH),orKeep(knightArmor,eyeKeep),style!=="void");
 if(style==="void")imprintSourceDetail(bx,im,IW,IH,eyeKeep,2.35);
 if(kind==="aurora")imprintSourceDetail(bx,im,IW,IH,eyeKeep,1.75);
+if(kind==="tiger"||kind==="melon")imprintSourceDetail(bx,im,IW,IH,eyeKeep,style==="void"?2.2:1.45);
 restoreEyes(bx,im,IW,IH,style);
 }
 
@@ -1823,7 +1855,8 @@ var im=dragonImgs[spriteId(d)];
 if(!im||!im.complete||!im.naturalWidth)return;
 var src=im, IW=im.naturalWidth, IH=im.naturalHeight;
 var skin=pal||{};
-var cid0=(getColor&&getColor())?getColor().id:"natural";
+var cid0=(pal&&pal.id)||((getColor&&getColor())?getColor().id:"natural");
+if(pal&&pal._natural)cid0="natural";
 paintDragon.cache=paintDragon.cache||{};
 var key=spriteId(d)+":"+cid0+(cid0==="prism"?(":"+String(prismSeed)):"");
 if(!paintDragon.cache[key]){
@@ -1901,7 +1934,7 @@ function drawNeonAura(){
   g.drawImage(src,dx-(dw*(pad-1))/2,dy-(dh*(pad-1))/2,dw*pad,dh*pad);
   g.restore();
 }
-var cidNow=(getColor&&getColor())?getColor().id:"";
+var cidNow=(pal&&pal.id)||((getColor&&getColor())?getColor().id:"");
 var ghostAura=cidNow==="ghost";
 var neonAura=cidNow==="neon";
 var eclipseAura=cidNow==="eclipse";
@@ -2195,9 +2228,11 @@ for(var j=0;j<gates.length;j++){var q=gates[j];
 if(dragon.x+17*hitScale>q.x&&dragon.x-17*hitScale<q.x+76&&(dragon.y-14*hitScale<q.top||dragon.y+14*hitScale>q.top+q.gap)){die();return}}
 }
 function loop(t){
+  try{
   var dt=Math.min(.035,last?(t-last)/1000:.016);
   last=t;
   update(dt);
+  if(!ctx||ctx.canvas!==canvas)ctx=canvas.getContext("2d");
 
   /* iOS/Safari-safe frame reset:
      clear in device pixels with an identity transform, then restore
@@ -2214,6 +2249,10 @@ function loop(t){
   drawCoins();
   drawGround();
   drawDragon();
+  }catch(loopErr){
+    console.error("Dragon Tap frame:",loopErr);
+    try{ctx=canvas.getContext("2d");W=window.innerWidth;H=window.innerHeight;}catch(e2){}
+  }
   requestAnimationFrame(loop);
 }
 
@@ -2255,18 +2294,18 @@ function drawInspectScene(canvas,mapObj,dragonObj,colorObj){
   var cssH=canvas.clientHeight||Number(canvas.getAttribute("height"))||180;
   if(cssW<2)cssW=Number(canvas.getAttribute("width"))||360;
   if(cssH<2)cssH=Number(canvas.getAttribute("height"))||180;
-  canvas.width=Math.round(cssW*r);canvas.height=Math.round(cssH*r);
-  var inspectCtx=canvas.getContext("2d");
-  inspectCtx.setTransform(r,0,0,r,0,0);
-  inspectCtx.imageSmoothingEnabled=true;inspectCtx.imageSmoothingQuality="high";
-  inspectCtx.globalAlpha=1;inspectCtx.globalCompositeOperation="source-over";inspectCtx.shadowBlur=0;
-  inspectCtx.clearRect(0,0,cssW,cssH);
-  var savedCtx=ctx,savedW=W,savedH=H,savedScroll=scroll,savedMap=selectedMap,savedColor=selectedColor,savedGates=gates;
-  ctx=inspectCtx;W=cssW;H=cssH;scroll=90;selectedMap=mapObj.id;
-  if(colorObj&&colorObj.id)selectedColor=colorObj.id;
-  var gap=Math.max(48,cssH*0.36),top=Math.max(14,cssH*0.14);
-  gates=[{x:cssW*0.55,top:top,gap:gap,passed:false},{x:cssW*0.85,top:top+10,gap:gap,passed:false}];
+  var saved={ctx:ctx,W:W,H:H,scroll:scroll,map:selectedMap,color:selectedColor,gates:gates};
   try{
+    canvas.width=Math.round(cssW*r);canvas.height=Math.round(cssH*r);
+    var inspectCtx=canvas.getContext("2d");
+    if(!inspectCtx)return;
+    inspectCtx.setTransform(r,0,0,r,0,0);
+    inspectCtx.imageSmoothingEnabled=true;inspectCtx.imageSmoothingQuality="high";
+    inspectCtx.globalAlpha=1;inspectCtx.globalCompositeOperation="source-over";inspectCtx.shadowBlur=0;
+    inspectCtx.clearRect(0,0,cssW,cssH);
+    ctx=inspectCtx;W=cssW;H=cssH;scroll=90;selectedMap=mapObj.id;
+    var gap=Math.max(48,cssH*0.36),top=Math.max(14,cssH*0.14);
+    gates=[{x:cssW*0.55,top:top,gap:gap,passed:false},{x:cssW*0.85,top:top+10,gap:Math.max(40,gap-8),passed:false}];
     drawBackground();
     drawGround();
     drawGates();
@@ -2277,8 +2316,11 @@ function drawInspectScene(canvas,mapObj,dragonObj,colorObj){
     ctx.scale(ds,ds);
     paintDragon(ctx,dragonObj,paletteFor(dragonObj,colorObj||getColor()),0,{still:true});
     ctx.restore();
+  }catch(inspectErr){
+    console.error("Dragon Tap inspect:",inspectErr);
   }finally{
-    ctx=savedCtx;W=savedW;H=savedH;scroll=savedScroll;selectedMap=savedMap;selectedColor=savedColor;gates=savedGates;
+    ctx=saved.ctx;W=saved.W;H=saved.H;scroll=saved.scroll;selectedMap=saved.map;selectedColor=saved.color;gates=saved.gates;
+    try{if(ctx){ctx.globalAlpha=1;ctx.globalCompositeOperation="source-over";ctx.shadowBlur=0}}catch(e3){}
   }
 }
 function renderInspectPanel(which){
@@ -2431,7 +2473,6 @@ function showShopInspect(){
   }
   var inspect=document.getElementById("shopPanelInspect");
   if(inspect)inspect.classList.add("active");
-  renderInspectPanel("shop");
   requestAnimationFrame(function(){renderInspectPanel("shop")});
 }
 function itemIsOwned(type,id){
