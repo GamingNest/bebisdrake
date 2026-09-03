@@ -141,38 +141,42 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 .confirmCancelWide{width:100%;margin-top:8px}
 .inspectBack{display:inline-flex;align-items:center;min-height:34px;padding:6px 12px;margin:0 0 8px;border-radius:10px;background:#10182f;border:1px solid #ffffff12;font-size:11px;font-weight:900}
 .eggStage{text-align:center;padding:8px 4px 12px}
-.eggArt{width:176px;max-width:58%;height:auto;display:block;margin:2px auto 6px;filter:drop-shadow(0 12px 22px #ff9a2066);animation:eggIdle 2.2s ease-in-out infinite;transform-origin:50% 70%}
-@keyframes eggIdle{0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 10px 16px #ff9a2044)}50%{transform:translateY(-5px) scale(1.03);filter:drop-shadow(0 18px 30px #ffd35a99)}}
-.eggArt.opening{animation:eggOpen .95s ease-in forwards}
-@keyframes eggOpen{
-  0%{transform:rotate(0) scale(1);filter:brightness(1) drop-shadow(0 8px 16px #ff9a2088);opacity:1}
-  10%{transform:rotate(-13deg) scale(1.02)}
-  20%{transform:rotate(13deg)}
-  30%{transform:rotate(-10deg) translateY(3px)}
-  40%{transform:rotate(10deg) scale(1.08);filter:brightness(1.25) drop-shadow(0 0 24px #ffd35acc)}
-  55%{transform:rotate(-6deg) scale(1.16);filter:brightness(1.55) drop-shadow(0 0 36px #ffe27a)}
-  70%{transform:rotate(4deg) scale(1.28);filter:brightness(1.9) drop-shadow(0 0 48px #fff6c8)}
-  85%{transform:scale(1.45);filter:brightness(2.4) drop-shadow(0 0 60px #fff);opacity:.85}
-  100%{transform:scale(1.75);filter:brightness(3.2);opacity:0}
-}
+.eggPlate{width:min(250px,84%);margin:0 auto 2px;padding:8px 6px 12px;border-radius:50%;background:radial-gradient(circle at 50% 46%,#5a3a14cc 0%,#1a100800 70%)}
+.eggArt{width:100%;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 8px 16px #0008) drop-shadow(0 0 18px #ffb02088);animation:eggIdle 2.4s ease-in-out infinite}
+@keyframes eggIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.eggBreak{position:relative;width:min(250px,72vw);height:255px;margin:4px auto 8px;transform-origin:50% 72%}
+.eggBreak .eggHalf{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px #0008) drop-shadow(0 0 16px #ffb02099)}
+.eggHalf.left{clip-path:polygon(0 0,52% 0,47% 14%,55% 26%,44% 42%,54% 56%,43% 72%,51% 100%,0 100%)}
+.eggHalf.right{clip-path:polygon(52% 0,100% 0,100% 100%,51% 100%,43% 72%,54% 56%,44% 42%,55% 26%,47% 14%)}
+.eggCrack{position:absolute;left:49%;top:10%;width:5px;height:80%;margin-left:-2px;border-radius:3px;background:linear-gradient(#fffce0,#ffb020,#ff6a10);opacity:0;pointer-events:none;filter:blur(.5px);box-shadow:0 0 14px #ffe27a}
+.eggBreak.opening{animation:eggRumble .5s ease}
+@keyframes eggRumble{0%,100%{transform:rotate(0)}10%{transform:rotate(-12deg) translate(-4px,2px)}22%{transform:rotate(12deg) translate(4px,-2px)}34%{transform:rotate(-9deg)}46%{transform:rotate(9deg)}60%{transform:rotate(-5deg) scale(1.05)}78%{transform:rotate(4deg) scale(1.08)}}
+.eggBreak.opening .eggCrack{animation:crackGlow 1.15s ease-out forwards}
+@keyframes crackGlow{0%,18%{opacity:0}32%{opacity:1}55%{opacity:1}100%{opacity:0}}
+.eggBreak.opening .eggHalf.left{animation:splitL .62s .48s cubic-bezier(.15,.8,.2,1) forwards}
+.eggBreak.opening .eggHalf.right{animation:splitR .62s .48s cubic-bezier(.15,.8,.2,1) forwards}
+@keyframes splitL{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(-110px,6px) rotate(-26deg);opacity:0}}
+@keyframes splitR{0%{transform:translate(0,0) rotate(0);opacity:1}100%{transform:translate(110px,6px) rotate(26deg);opacity:0}}
 .lootBox{position:relative;overflow:visible}
-.lootFlash{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#fff6c8cc 0%,#ffb02000 62%);opacity:0;pointer-events:none}
-.lootBox.opening .lootFlash{animation:lootFlash .95s ease-out forwards}
-@keyframes lootFlash{0%,40%{opacity:0}62%{opacity:.9}100%{opacity:0}}
+.lootFlash{position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,#fff8d4ee 0%,#ffb02066 28%,#ffb02000 70%);opacity:0;pointer-events:none}
+.lootBox.opening .lootFlash{animation:lootFlash 1.15s ease-out forwards}
+@keyframes lootFlash{0%,40%{opacity:0}52%{opacity:1}100%{opacity:0}}
 .lootSparks{position:absolute;inset:0;pointer-events:none}
-.lootSparks i{position:absolute;left:50%;top:42%;width:7px;height:7px;margin:-3px;border-radius:50%;background:#ffe27a;box-shadow:0 0 8px #ffd35a;opacity:0}
-.lootBox.opening .lootSparks i{animation:sparkFly .95s ease-out forwards}
-.lootSparks i:nth-child(1){--x:-70px;--y:-90px}
-.lootSparks i:nth-child(2){--x:80px;--y:-70px}
-.lootSparks i:nth-child(3){--x:-90px;--y:20px}
-.lootSparks i:nth-child(4){--x:95px;--y:30px}
-.lootSparks i:nth-child(5){--x:-40px;--y:-110px}
-.lootSparks i:nth-child(6){--x:30px;--y:-100px}
-.lootSparks i:nth-child(7){--x:-20px;--y:80px}
-.lootSparks i:nth-child(8){--x:55px;--y:75px}
-@keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--x),var(--y)) scale(0.2);opacity:0}}
-.lootReveal.open{animation:lootPop .35s cubic-bezier(.2,1.4,.3,1)}
-@keyframes lootPop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+.lootSparks i{position:absolute;left:50%;top:42%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#ffe27a;box-shadow:0 0 10px #ffd35a;opacity:0}
+.lootBox.opening .lootSparks i{animation:sparkFly .7s .48s ease-out forwards}
+.lootSparks i:nth-child(1){--x:-80px;--y:-100px}
+.lootSparks i:nth-child(2){--x:90px;--y:-80px}
+.lootSparks i:nth-child(3){--x:-105px;--y:16px}
+.lootSparks i:nth-child(4){--x:110px;--y:28px}
+.lootSparks i:nth-child(5){--x:-48px;--y:-120px}
+.lootSparks i:nth-child(6){--x:36px;--y:-110px}
+.lootSparks i:nth-child(7){--x:-28px;--y:90px}
+.lootSparks i:nth-child(8){--x:62px;--y:85px}
+.lootSparks i:nth-child(9){--x:-120px;--y:-40px;width:5px;height:5px}
+.lootSparks i:nth-child(10){--x:125px;--y:-30px;width:5px;height:5px}
+@keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--x),var(--y)) scale(0.15);opacity:0}}
+.lootReveal.open{animation:lootPop .38s cubic-bezier(.2,1.5,.3,1)}
+@keyframes lootPop{0%{transform:scale(.55);opacity:0}100%{transform:scale(1);opacity:1}}
 .eggOdds{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px;margin:10px 0 12px;text-align:left}
 .eggOdds li{list-style:none;font-size:10px;color:#c5cce4;background:#10182f;border:1px solid #ffffff12;border-radius:10px;padding:7px 8px}
 .eggOdds b{display:block;color:#fff;font-size:11px}
@@ -234,7 +238,7 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 <div id="shopPanelMaps" class="shopPanel"><div class="sub">Preview and unlock maps · 300 coins each.</div><div id="shopMapsList"></div></div>
 <div id="shopPanelEgg" class="shopPanel">
 <div class="eggStage">
-<img class="eggArt" id="shopEggArt" src="ui/mystery-egg.png?v=egg1" alt="Mystery Egg">
+<div class="eggPlate"><img class="eggArt" id="shopEggArt" src="ui/mystery-egg.png?v=egg2" alt="Mystery Egg"></div>
 <div class="title" style="font-size:22px;margin:0">Mystery Egg</div>
 <div class="sub">A random gift. 100 coins to hatch.</div>
 <ul class="eggOdds">
@@ -330,8 +334,12 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 <div id="lootOverlay">
   <div class="confirmBox lootBox" id="lootBox">
     <div class="lootFlash"></div>
-    <div class="lootSparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-    <img class="eggArt" id="lootEgg" src="ui/mystery-egg.png?v=egg1" alt="">
+    <div class="lootSparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="eggBreak" id="lootEgg">
+      <img class="eggHalf left" src="ui/mystery-egg.png?v=egg2" alt="">
+      <img class="eggHalf right" src="ui/mystery-egg.png?v=egg2" alt="">
+      <div class="eggCrack"></div>
+    </div>
     <div id="lootReveal" class="lootReveal">
       <div class="lootIcon" id="lootIcon">🥚</div>
       <div class="lootSwatch" id="lootSwatch" style="display:none"></div>
@@ -2837,7 +2845,7 @@ function showLoot(drop,skipAnim){
   lootOverlay.classList.add("showLoot");
   if(lootBox)lootBox.className="confirmBox lootBox"+(drop.rarity==="legendary"?" legendary":drop.rarity==="rare"?" rare":"");
   if(lootBox)lootBox.classList.remove("opening");
-  if(lootEgg){lootEgg.style.display="block";lootEgg.className="eggArt"}
+  if(lootEgg){lootEgg.style.display="block";lootEgg.className="eggBreak"}
   if(lootReveal)lootReveal.classList.remove("open");
   if(lootClose)lootClose.style.visibility="hidden";
   var again=document.getElementById("lootAgain");if(again)again.style.display="none";
@@ -2859,7 +2867,7 @@ function showLoot(drop,skipAnim){
   if(skipAnim){reveal();return}
   if(lootEgg){lootEgg.classList.remove("opening");void lootEgg.offsetWidth;lootEgg.classList.add("opening")}
   if(lootBox){lootBox.classList.remove("opening");void lootBox.offsetWidth;lootBox.classList.add("opening")}
-  setTimeout(reveal,920);
+  setTimeout(reveal,1180);
 }
 function openMysteryEgg(){
   if(eggBusy)return;
