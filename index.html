@@ -141,12 +141,38 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 .confirmCancelWide{width:100%;margin-top:8px}
 .inspectBack{display:inline-flex;align-items:center;min-height:34px;padding:6px 12px;margin:0 0 8px;border-radius:10px;background:#10182f;border:1px solid #ffffff12;font-size:11px;font-weight:900}
 .eggStage{text-align:center;padding:8px 4px 12px}
-.eggArt{width:108px;height:136px;margin:8px auto 10px;border-radius:50% 50% 48% 48%/58% 58% 42% 42%;background:radial-gradient(circle at 32% 28%,#fff6d0 0%,#f0c24a 38%,#e09420 70%,#b56a10 100%);box-shadow:inset -14px -20px 0 #c47a1088,0 14px 28px #0008;position:relative}
-.eggArt::after{content:"";position:absolute;left:22%;top:18%;width:22%;height:14%;border-radius:50%;background:#fff8;transform:rotate(-18deg)}
-.eggArt.shake{animation:eggShake .5s ease}
-.eggArt.rare{background:radial-gradient(circle at 32% 28%,#fff 0%,#c9a0ff 40%,#7a40d8 78%,#3a1860 100%);box-shadow:inset -14px -20px 0 #4a208088,0 0 28px #a56cff88,0 14px 28px #0008}
-.eggArt.legendary{background:radial-gradient(circle at 32% 28%,#fffce8 0%,#ffe27a 36%,#f0b430 70%,#c48a18 100%);box-shadow:inset -14px -20px 0 #b0781088,0 0 32px #ffd35acc,0 14px 28px #0008}
-@keyframes eggShake{0%,100%{transform:rotate(0)}18%{transform:rotate(-14deg) translateY(2px)}36%{transform:rotate(12deg)}54%{transform:rotate(-10deg)}72%{transform:rotate(8deg)}}
+.eggArt{width:176px;max-width:58%;height:auto;display:block;margin:2px auto 6px;filter:drop-shadow(0 12px 22px #ff9a2066);animation:eggIdle 2.2s ease-in-out infinite;transform-origin:50% 70%}
+@keyframes eggIdle{0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 10px 16px #ff9a2044)}50%{transform:translateY(-5px) scale(1.03);filter:drop-shadow(0 18px 30px #ffd35a99)}}
+.eggArt.opening{animation:eggOpen .95s ease-in forwards}
+@keyframes eggOpen{
+  0%{transform:rotate(0) scale(1);filter:brightness(1) drop-shadow(0 8px 16px #ff9a2088);opacity:1}
+  10%{transform:rotate(-13deg) scale(1.02)}
+  20%{transform:rotate(13deg)}
+  30%{transform:rotate(-10deg) translateY(3px)}
+  40%{transform:rotate(10deg) scale(1.08);filter:brightness(1.25) drop-shadow(0 0 24px #ffd35acc)}
+  55%{transform:rotate(-6deg) scale(1.16);filter:brightness(1.55) drop-shadow(0 0 36px #ffe27a)}
+  70%{transform:rotate(4deg) scale(1.28);filter:brightness(1.9) drop-shadow(0 0 48px #fff6c8)}
+  85%{transform:scale(1.45);filter:brightness(2.4) drop-shadow(0 0 60px #fff);opacity:.85}
+  100%{transform:scale(1.75);filter:brightness(3.2);opacity:0}
+}
+.lootBox{position:relative;overflow:visible}
+.lootFlash{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#fff6c8cc 0%,#ffb02000 62%);opacity:0;pointer-events:none}
+.lootBox.opening .lootFlash{animation:lootFlash .95s ease-out forwards}
+@keyframes lootFlash{0%,40%{opacity:0}62%{opacity:.9}100%{opacity:0}}
+.lootSparks{position:absolute;inset:0;pointer-events:none}
+.lootSparks i{position:absolute;left:50%;top:42%;width:7px;height:7px;margin:-3px;border-radius:50%;background:#ffe27a;box-shadow:0 0 8px #ffd35a;opacity:0}
+.lootBox.opening .lootSparks i{animation:sparkFly .95s ease-out forwards}
+.lootSparks i:nth-child(1){--x:-70px;--y:-90px}
+.lootSparks i:nth-child(2){--x:80px;--y:-70px}
+.lootSparks i:nth-child(3){--x:-90px;--y:20px}
+.lootSparks i:nth-child(4){--x:95px;--y:30px}
+.lootSparks i:nth-child(5){--x:-40px;--y:-110px}
+.lootSparks i:nth-child(6){--x:30px;--y:-100px}
+.lootSparks i:nth-child(7){--x:-20px;--y:80px}
+.lootSparks i:nth-child(8){--x:55px;--y:75px}
+@keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--x),var(--y)) scale(0.2);opacity:0}}
+.lootReveal.open{animation:lootPop .35s cubic-bezier(.2,1.4,.3,1)}
+@keyframes lootPop{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
 .eggOdds{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px;margin:10px 0 12px;text-align:left}
 .eggOdds li{list-style:none;font-size:10px;color:#c5cce4;background:#10182f;border:1px solid #ffffff12;border-radius:10px;padding:7px 8px}
 .eggOdds b{display:block;color:#fff;font-size:11px}
@@ -208,7 +234,7 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 <div id="shopPanelMaps" class="shopPanel"><div class="sub">Preview and unlock maps · 300 coins each.</div><div id="shopMapsList"></div></div>
 <div id="shopPanelEgg" class="shopPanel">
 <div class="eggStage">
-<div class="eggArt" id="shopEggArt"></div>
+<img class="eggArt" id="shopEggArt" src="ui/mystery-egg.png?v=egg1" alt="Mystery Egg">
 <div class="title" style="font-size:22px;margin:0">Mystery Egg</div>
 <div class="sub">A random gift. 100 coins to hatch.</div>
 <ul class="eggOdds">
@@ -303,7 +329,9 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 
 <div id="lootOverlay">
   <div class="confirmBox lootBox" id="lootBox">
-    <div class="eggArt" id="lootEgg"></div>
+    <div class="lootFlash"></div>
+    <div class="lootSparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <img class="eggArt" id="lootEgg" src="ui/mystery-egg.png?v=egg1" alt="">
     <div id="lootReveal" class="lootReveal">
       <div class="lootIcon" id="lootIcon">🥚</div>
       <div class="lootSwatch" id="lootSwatch" style="display:none"></div>
@@ -2808,12 +2836,14 @@ function showLoot(drop,skipAnim){
   var info=describeDrop(drop);
   lootOverlay.classList.add("showLoot");
   if(lootBox)lootBox.className="confirmBox lootBox"+(drop.rarity==="legendary"?" legendary":drop.rarity==="rare"?" rare":"");
-  if(lootEgg){lootEgg.style.display="block";lootEgg.className="eggArt"+(drop.rarity==="legendary"?" legendary":drop.rarity==="rare"?" rare":"")}
+  if(lootBox)lootBox.classList.remove("opening");
+  if(lootEgg){lootEgg.style.display="block";lootEgg.className="eggArt"}
   if(lootReveal)lootReveal.classList.remove("open");
   if(lootClose)lootClose.style.visibility="hidden";
   var again=document.getElementById("lootAgain");if(again)again.style.display="none";
   function reveal(){
     if(lootEgg)lootEgg.style.display="none";
+    if(lootBox)lootBox.classList.remove("opening");
     if(lootReveal)lootReveal.classList.add("open");
     if(lootIcon)lootIcon.textContent=info.icon;
     if(lootTitle)lootTitle.textContent=info.title;
@@ -2827,8 +2857,9 @@ function showLoot(drop,skipAnim){
     eggBusy=false;
   }
   if(skipAnim){reveal();return}
-  if(lootEgg){lootEgg.classList.remove("shake");void lootEgg.offsetWidth;lootEgg.classList.add("shake")}
-  setTimeout(reveal,520);
+  if(lootEgg){lootEgg.classList.remove("opening");void lootEgg.offsetWidth;lootEgg.classList.add("opening")}
+  if(lootBox){lootBox.classList.remove("opening");void lootBox.offsetWidth;lootBox.classList.add("opening")}
+  setTimeout(reveal,920);
 }
 function openMysteryEgg(){
   if(eggBusy)return;
