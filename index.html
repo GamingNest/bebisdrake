@@ -83,6 +83,7 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 .missionTop{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:7px}
 .missionTop b{font-size:12px;font-weight:900}
 .missionReward{font-size:10px;color:#ffd75a;font-weight:950;white-space:nowrap}
+.missionReward canvas.coinGlyph{width:14px;height:14px}
 .missionBar{height:8px;border-radius:5px;background:#00000055;overflow:hidden;margin-bottom:7px}
 .missionBarFill{height:100%;background:linear-gradient(90deg,#6f4cff,#3b8cff);border-radius:5px}
 .missionCard.done .missionBarFill{background:linear-gradient(90deg,#3bd8a0,#6f4cff)}
@@ -123,6 +124,16 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 .resultStat.newBest small{color:#ffd35a}
 .resultNew{display:none;color:#ffd35a;font-size:11px;font-weight:950;letter-spacing:.08em;margin:-2px 0 8px}
 .resultNew.show{display:block}
+.resultMissions{max-height:132px;overflow-y:auto;margin:0 0 14px;text-align:left}
+.resultMissionsTitle{font-size:9px;font-weight:950;letter-spacing:.1em;color:#aab3d2;margin-bottom:6px;text-transform:uppercase}
+.resultMissionRow{background:#0e1430;border:1px solid #ffffff14;border-radius:12px;padding:8px 10px;margin-bottom:6px}
+.resultMissionRow:last-child{margin-bottom:0}
+.resultMissionRow.done{border-color:#4fd88a77}
+.resultMissionTop{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:10px;font-weight:800;color:#d9def3;margin-bottom:5px}
+.resultMissionTop b{color:#ffd75a;font-weight:950;white-space:nowrap}
+.resultMissionBottom{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
+.resultMissionBottom small{font-size:9px;color:#9da8ca;font-weight:800}
+.resultMissionDone{font-size:9px;color:#4fd88a;font-weight:950}
 .confirmBox{width:min(360px,92vw);padding:22px 18px 18px;border-radius:22px;border:1px solid #9365ff66;background:linear-gradient(160deg,#151b3cf8,#080b19f8);box-shadow:0 30px 90px #000d;text-align:center}
 .confirmIcon{font-size:42px;margin-bottom:6px}.confirmTitle{font-size:20px;font-weight:950;margin-bottom:8px}.confirmText{color:#cbd3eb;font-size:12px;line-height:1.45;margin-bottom:17px}
 .confirmButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.confirmButtons button{padding:12px;border-radius:12px;font-size:12px;font-weight:950}
@@ -247,6 +258,7 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
       <div class="resultStat" id="resultBestBox"><small>HIGHSCORE</small><b id="resultBest">0</b></div>
       <div class="resultStat"><small>TIME</small><b id="resultTime">0s</b></div>
     </div>
+    <div class="resultMissions" id="resultMissions"></div>
     <div class="confirmButtons">
       <button type="button" class="confirmCancel" id="resultHome">Home</button>
       <button type="button" class="confirmBuy" id="resultPlay">Play again</button>
@@ -304,6 +316,7 @@ if(!ownedColors.has(selectedColor))selectedColor="natural";
 if(!ownedMaps.has(selectedMap))selectedMap="sky";
 var totalCoinsEarned=Number(localStorage.getItem("gn_total_coins")||0);
 var totalGatesPassed=Number(localStorage.getItem("gn_total_gates")||0);
+var longestSurvival=Number(localStorage.getItem("gn_longest_survival")||0);
 var claimedMissions;
 try{claimedMissions=new Set(JSON.parse(localStorage.getItem("gn_claimed_missions")||"[]"));}catch(e){claimedMissions=new Set();}
 var missions=[
@@ -318,9 +331,32 @@ var missions=[
 {id:"gates_50",type:"gates",target:50,reward:180,label:"Pass through 50 pillars"},
 {id:"gates_100",type:"gates",target:100,reward:350,label:"Pass through 100 pillars"},
 {id:"gates_250",type:"gates",target:250,reward:800,label:"Pass through 250 pillars"},
-{id:"gates_500",type:"gates",target:500,reward:1600,label:"Pass through 500 pillars"}
+{id:"gates_500",type:"gates",target:500,reward:1600,label:"Pass through 500 pillars"},
+{id:"survive_5",type:"survive",target:5,reward:30,label:"Stay alive for 5 seconds"},
+{id:"survive_10",type:"survive",target:10,reward:70,label:"Stay alive for 10 seconds"},
+{id:"survive_20",type:"survive",target:20,reward:150,label:"Stay alive for 20 seconds"},
+{id:"survive_30",type:"survive",target:30,reward:260,label:"Stay alive for 30 seconds"},
+{id:"survive_60",type:"survive",target:60,reward:550,label:"Stay alive for 60 seconds"},
+{id:"survive_120",type:"survive",target:120,reward:1200,label:"Stay alive for 2 minutes"},
+{id:"dragons_1",type:"dragons",target:1,reward:100,label:"Unlock 1 dragon"},
+{id:"dragons_3",type:"dragons",target:3,reward:400,label:"Unlock 3 dragons"},
+{id:"dragons_5",type:"dragons",target:5,reward:900,label:"Unlock 5 dragons"},
+{id:"skins_1",type:"colors",target:1,reward:80,label:"Unlock 1 skin"},
+{id:"skins_3",type:"colors",target:3,reward:320,label:"Unlock 3 skins"},
+{id:"skins_5",type:"colors",target:5,reward:750,label:"Unlock 5 skins"},
+{id:"maps_1",type:"maps",target:1,reward:80,label:"Unlock 1 map"},
+{id:"maps_3",type:"maps",target:3,reward:320,label:"Unlock 3 maps"},
+{id:"maps_5",type:"maps",target:5,reward:750,label:"Unlock 5 maps"}
 ];
-function missionProgress(m){return m.type==="coins"?totalCoinsEarned:totalGatesPassed}
+function missionProgress(m){
+if(m.type==="coins")return totalCoinsEarned;
+if(m.type==="gates")return totalGatesPassed;
+if(m.type==="survive")return longestSurvival;
+if(m.type==="dragons")return owned.size;
+if(m.type==="colors")return ownedColors.size;
+if(m.type==="maps")return ownedMaps.size;
+return 0;
+}
 function missionUnclaimedDoneCount(){var n=0;for(var i=0;i<missions.length;i++){var m=missions[i];if(missionProgress(m)>=m.target&&!claimedMissions.has(m.id))n++}return n}
 var inspectKind="map";
 var inspectId=selectedMap;
@@ -454,6 +490,7 @@ localStorage.setItem("gn_map",selectedMap);
 localStorage.setItem("gn_muted",muted?"1":"0");
 localStorage.setItem("gn_total_coins",String(totalCoinsEarned));
 localStorage.setItem("gn_total_gates",String(totalGatesPassed));
+localStorage.setItem("gn_longest_survival",String(longestSurvival));
 localStorage.setItem("gn_claimed_missions",JSON.stringify(Array.from(claimedMissions)));
 _savePending=false;
 }
@@ -557,8 +594,11 @@ t=Math.floor(Math.max(0,t));
 var m=Math.floor(t/60),sec=t%60;
 return m+":"+(sec<10?"0":"")+sec;
 }
+var missionRunStart={};
+function snapshotMissionProgress(){for(var i=0;i<missions.length;i++){var m=missions[i];missionRunStart[m.id]=missionProgress(m);}}
 function resetGame(){
 score=0;scroll=0;wing=0;playTime=0;runCoins=0;runNewBest=false;
+snapshotMissionProgress();
 dragon.x=W*.28;dragon.y=H*.42;dragon.vy=0;dragon.rot=0;dragon.bank=0;dragon.stretch=0;crash.active=false;crash.time=0;crash.particles=[];crash.kind="";
 gates=[makeGate(W+100),makeGate(W+100+Math.max(285,W*.55))];
 addCoinsForCurrentGates();
@@ -719,6 +759,7 @@ crash.duration=(crash.kind==="magma"||crash.kind==="lava")?1200:900;
 spawnCrashFX(crash.kind,d,c,dragon.x,dragon.y);
 runNewBest=score>best;
 if(runNewBest)best=score;
+if(playTime>longestSurvival)longestSurvival=playTime;
 runCoins+=score*2;coins+=score*2;totalCoinsEarned+=score*2;save();saveFlush();
 setTimeout(function(){
   if(mode!=="crashing")return;
@@ -732,6 +773,22 @@ var sec=Math.floor(Math.max(0,t));
 if(sec<60)return sec+"s";
 return formatRunTime(sec)+" ("+sec+"s)";
 }
+function buildResultMissions(){
+var el=document.getElementById("resultMissions");if(!el)return;
+var rows="";
+for(var i=0;i<missions.length;i++){
+var m=missions[i],before=missionRunStart[m.id]||0,after=missionProgress(m);
+if(before>=m.target||after<=before)continue;
+var delta=after-before,justDone=after>=m.target&&before<m.target,pct=Math.max(0,Math.min(100,Math.round(after/m.target*100)));
+var progText=m.type==="survive"?(Math.min(after,m.target)+"s / "+m.target+"s"):(Math.min(after,m.target)+" / "+m.target);
+rows+='<div class="resultMissionRow'+(justDone?" done":"")+'"><div class="resultMissionTop"><span>'+m.label+'</span><b>+'+delta+'</b></div>'+
+'<div class="missionBar"><div class="missionBarFill" style="width:'+pct+'%"></div></div>'+
+'<div class="resultMissionBottom"><small>'+progText+'</small>'+(justDone?'<span class="resultMissionDone">✅ Ready to claim</span>':"")+'</div></div>';
+}
+if(!rows){el.style.display="none";el.innerHTML="";return;}
+el.style.display="block";
+el.innerHTML='<div class="resultMissionsTitle">Mission progress</div>'+rows;
+}
 function showResult(){
 if(!resultOverlay)return;
 resultScoreEl.textContent=String(score);
@@ -741,6 +798,7 @@ resultTimeEl.textContent=formatRunSeconds(playTime);
 resultTitleEl.textContent=runNewBest?"New Highscore":"Game Over";
 if(runNewBest){resultBestBox.classList.add("newBest");resultNewEl.classList.add("show")}
 else{resultBestBox.classList.remove("newBest");resultNewEl.classList.remove("show")}
+buildResultMissions();
 resultOverlay.classList.add("showResult");
 }
 function closeResult(){
@@ -2606,14 +2664,16 @@ var html="";
 for(var i=0;i<missions.length;i++){
 var m=missions[i],prog=missionProgress(m),done=prog>=m.target,claimed=claimedMissions.has(m.id),pct=Math.max(0,Math.min(100,Math.round(prog/m.target*100)));
 var btnLabel=claimed?"Claimed":(done?"Claim":"Locked");
+var progText=m.type==="survive"?(Math.min(prog,m.target)+"s / "+m.target+"s"):(Math.min(prog,m.target)+" / "+m.target);
 html+='<div class="missionCard '+(done?"done ":"")+(claimed?"claimed":"")+'">'+
-'<div class="missionTop"><b>'+m.label+'</b><span class="missionReward">+'+m.reward+' 🪙</span></div>'+
+'<div class="missionTop"><b>'+m.label+'</b><span class="missionReward coinHudRow">+'+m.reward+' <canvas class="coinGlyph" width="36" height="36"></canvas></span></div>'+
 '<div class="missionBar"><div class="missionBarFill" style="width:'+pct+'%"></div></div>'+
-'<div class="missionBottom"><small>'+Math.min(prog,m.target)+' / '+m.target+'</small>'+
+'<div class="missionBottom"><small>'+progText+'</small>'+
 '<button type="button" class="missionClaim '+(done&&!claimed?"ready":"")+'" data-action="claim-mission" data-id="'+m.id+'" '+((!done||claimed)?"disabled":"")+'>'+btnLabel+'</button></div>'+
 '</div>';
 }
 el.innerHTML=html;
+paintHudCoins();
 updateMissionsBadge();
 }
 function updateMissionsBadge(){
@@ -2766,6 +2826,16 @@ setConfirmChrome("buy","🛒","Confirm Purchase","Buy","Cancel");
 confirmText.innerHTML='Are you sure you want to buy <b>'+name+'</b> for <b>'+Number(price).toLocaleString()+" coins</b>?";
 confirmOverlay.classList.add("showConfirm");
 }
+function askResetConfirm(){
+pendingPurchase=null;
+setConfirmChrome("reset","⚠️","Reset progress?","Reset","Cancel");
+confirmText.innerHTML="Are you sure you want to reset? It will remove all dragons, skins, maps and progress.";
+confirmOverlay.classList.add("showConfirm");
+sfxClick();
+}
+function performReset(){
+localStorage.clear();localStorage.setItem("gn_coins","2000000");location.reload();
+}
 function closePurchase(){
 pendingPurchase=null;
 setConfirmChrome("buy","🛒","Confirm Purchase","Buy","Cancel");
@@ -2813,7 +2883,7 @@ try{
 if(b.id==="play"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();startGame();return;}
 if(b.id==="pause"){ensureAudio();sfxClick();e.preventDefault();e.stopPropagation();if(mode==="playing"){paused=!paused;pause.textContent=paused?"▶":"Ⅱ";toast(paused?"Paused":"Resumed");if(paused)saveFlush()}return;}
 if(b.id==="confirmCancel"){e.preventDefault();e.stopPropagation();sfxClick();closePurchase();return;}
-if(b.id==="confirmBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();if(confirmMode==="locked"){var lp=pendingPurchase;if(!lp){closePurchase();return;}askPurchase(lp.type,lp.id,lp.name,lp.price);return;}completePurchase();return;}
+if(b.id==="confirmBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();if(confirmMode==="locked"){var lp=pendingPurchase;if(!lp){closePurchase();return;}askPurchase(lp.type,lp.id,lp.name,lp.price);return;}if(confirmMode==="reset"){performReset();return;}completePurchase();return;}
 if(b.id==="choiceCancel"){e.preventDefault();e.stopPropagation();sfxClick();closeChoice();return;}
 if(b.id==="choiceInspect"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();doChoiceInspect();return;}
 if(b.id==="choiceBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();doChoiceBuy();return;}
@@ -2926,7 +2996,7 @@ if(nestStage)nestStage.addEventListener("click",function(e){if(e.target.closest(
 if(homeDragon)homeDragon.addEventListener("click",startFromHome);
 
 document.getElementById("sound").addEventListener("click",function(e){e.stopPropagation();muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound";if(!muted){ensureAudio();sfxClick()}});
-document.getElementById("reset").addEventListener("click",function(e){e.stopPropagation();localStorage.clear();localStorage.setItem("gn_coins","2000000");location.reload()});
+document.getElementById("reset").addEventListener("click",function(e){e.stopPropagation();askResetConfirm();});
 function input(e){if(e)e.preventDefault();var now=Date.now();if(now-lastInput<100)return;lastInput=now;flap()}
 canvas.addEventListener("pointerdown",input,{passive:false});
 window.addEventListener("keydown",function(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();input(e)}});
