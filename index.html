@@ -1934,7 +1934,7 @@ var EYE_PUPILS={
   shadow:[{cx:0.754,cy:0.451,pr:0.015}],
   gold:[{cx:0.680,cy:0.432,pr:0.017},{cx:0.786,cy:0.427,pr:0.017}],
   void:[{cx:0.768,cy:0.435,pr:0.016}],
-  knight:[{cx:0.554,cy:0.413,pr:0.016}],
+  knight:[{cx:0.550,cy:0.417,pr:0.032}],
   nimbus:[{cx:0.821,cy:0.457,pr:0.016}],
   coral:[{cx:0.834,cy:0.443,pr:0.016}],
   thorn:[{cx:0.800,cy:0.400,pr:0.016}],
@@ -2004,6 +2004,29 @@ for(var m=0;m<mapped.length;m++){
 }
 return discs;
 }
+function fillSolidPupils(p,IW,IH,style){
+var mapped=EYE_PUPILS[style];
+if(!mapped||!mapped.length)return;
+for(var m=0;m<mapped.length;m++){
+  var e=mapped[m];
+  var cx=e.cx*IW,cy=e.cy*IH,pr=eyePr(e,IW);
+  var fillR=pr*1.05, fillR2=fillR*fillR;
+  var hx=cx-pr*0.32,hy=cy-pr*0.38,hr=Math.max(2.2,pr*0.28),hr2=hr*hr;
+  var y0=Math.max(0,Math.floor(cy-fillR-1)),y1=Math.min(IH-1,Math.ceil(cy+fillR+1));
+  var x0=Math.max(0,Math.floor(cx-fillR-1)),x1=Math.min(IW-1,Math.ceil(cx+fillR+1));
+  for(var y=y0;y<=y1;y++){
+    for(var x=x0;x<=x1;x++){
+      var dx=x-cx,dy=y-cy,d2=dx*dx+dy*dy;
+      if(d2>fillR2)continue;
+      var i=(y*IW+x)*4;
+      if(p[i+3]<18)continue;
+      var sx=x-hx,sy=y-hy;
+      if(sx*sx+sy*sy<=hr2){p[i]=245;p[i+1]=248;p[i+2]=255;p[i+3]=255;continue}
+      p[i]=8;p[i+1]=8;p[i+2]=10;p[i+3]=255;
+    }
+  }
+}
+}
 function restoreEyes(bx,im,IW,IH,style){
 var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
 var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
@@ -2012,6 +2035,7 @@ var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
 var mapped=EYE_PUPILS[style];
 if(mapped&&mapped.length){
   var discs=copyEyeSockets(p,o,IW,IH,style);
+  if(style==="knight")fillSolidPupils(p,IW,IH,style);
   bx.putImageData(cur,0,0);
   if(bx.canvas){bx.canvas._eyePupils=discs;bx.canvas._eyeSrc=im}
   return;
