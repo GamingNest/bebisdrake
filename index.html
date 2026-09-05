@@ -6,17 +6,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#080616">
 <title>Dragon Tap — GamingNest</title>
-
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
-<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<meta name="apple-mobile-web-app-title" content="Dragon Tap">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080616;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -84,6 +73,7 @@ h1{text-align:center;margin:4px 0 0;font-size:42px;line-height:.95;letter-spacin
 #coinBox{padding:4px 8px;border-radius:11px}#coinBox small{font-size:7px}#coinBox b{font-size:16px}
 .coinHudRow{display:flex;align-items:center;gap:5px;justify-content:center}
 canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
+canvas.coinGlyph.small{width:14px;height:14px;display:inline-block;vertical-align:-3px}
 #homeDragon{width:160px;height:96px;display:block;position:relative;z-index:2;filter:drop-shadow(0 8px 10px #5a3a1844);pointer-events:auto}
 .screen{display:none}.screen.active{display:block}.back{float:left;width:34px;height:34px;border-radius:10px;background:#121936;border:1px solid #5e6eb044;font-size:22px}.title{text-align:center;font-size:21px;font-weight:950}.sub{text-align:center;color:#aab3d2;font-size:10px;margin:3px 0 10px}
 .cards{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.card{background:#0d1530;border:1px solid #5363a044;border-radius:14px;padding:7px;text-align:center}.card.selected{border-color:#a56cff;box-shadow:0 0 18px #884cff22}.card.exclusive{border-color:#d8a83b88;background:linear-gradient(160deg,#171322,#0b0d1d)}.card.exclusive.selected{border:2px solid #ffe27a;box-shadow:0 0 0 2px #000,0 0 24px #ffd35a99}.thumb{height:78px;border-radius:9px;display:flex;align-items:center;justify-content:center}.dragonArt{font-size:48px;filter:drop-shadow(0 0 10px #fff5)}.card b{display:block;font-size:11px;margin-top:5px}.card small{display:block;color:#9da8ca;font-size:9px;margin-top:2px}.card button{width:100%;padding:7px;margin-top:6px;border-radius:9px;background:#182043;font-size:10px;font-weight:900}.card button.buy{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
@@ -104,7 +94,7 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 .missionClaim.ready{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
 .missionClaim:disabled{opacity:.4}
 .menuBadge{position:absolute;top:-5px;right:-5px;min-width:16px;height:16px;padding:0 3px;border-radius:9px;background:#ff4d6d;color:#fff;font-size:9px;font-weight:950;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px #0a0e22}
-.customPreview{margin:6px 0 8px;border-radius:14px;border:1px solid #a56cff55;overflow:hidden;text-align:center}.customPreview canvas{width:100%;height:150px;display:block}.customCurrent{font-size:10px;font-weight:950;padding:4px 6px;color:#d9def3}.customCurrent.exclusivePick{color:#ffe27a;text-shadow:0 0 10px #ffd35a88}.customSectionTitle{font-size:11px;font-weight:950;margin:10px 0 6px;color:#cbd3eb}.customDragons{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.customDragons .card{padding:4px}.customDragons .thumb{height:52px}.customDragons .card b{font-size:9px;margin-top:3px}.customDragons .card button{display:none}.mapsGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.map.compact{min-height:58px;margin:0;padding:8px 9px}.map.compact b{font-size:11px}.map.compact small{display:none}.customTabs{margin:6px 0 8px;grid-template-columns:repeat(3,1fr)}.previewCanvas{width:100%;height:100%;display:block}.thumb{overflow:hidden}.swatchPreview{display:none}.mapPreview{display:none}.locked{opacity:.78}.priceTag{display:inline-block;margin-top:4px;padding:2px 6px;border-radius:7px;background:#0008;color:#ffd75a;font-size:8px;font-weight:950}.shopTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:10px 0 12px;position:sticky;top:0;z-index:2;background:#111736;padding:4px;border-radius:15px;border:1px solid #ffffff12}.shopTab{min-height:48px;border-radius:10px;background:#10182f;border:1px solid #ffffff12;font-size:8px;font-weight:900}.shopTab.active{background:linear-gradient(135deg,#6f4cff,#3b8cff);border-color:#a56cff}.shopTab span{display:block;margin-top:2px;font-size:8px}.shopPanel{display:none}.shopPanel.active{display:block}.shopPanel .sub{margin-bottom:8px}.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:72px;border-radius:13px;border:2px solid #ffffff22;position:relative;overflow:hidden;padding:0;background-size:cover}.swatch.selected{border-color:#fff;box-shadow:0 0 15px #fff4;outline:2px solid #fff8}.swatch.exclusive{border-color:#d8a83b;box-shadow:0 0 14px #ffd35a33}.swatch.exclusive.selected{border:3px solid #ffe27a;box-shadow:0 0 0 2px #000,0 0 22px #ffd35acc;transform:scale(1.07);z-index:2}.swatch.selected::after{content:"✓";position:absolute;top:5px;right:6px;width:16px;height:16px;border-radius:50%;background:#fff;color:#111;font-size:11px;font-weight:950;line-height:16px;text-align:center}.swatch.exclusive.selected::after{background:#ffe27a;color:#211400}.swatch span{position:absolute;left:0;right:0;bottom:18px;font-size:9px;font-weight:950;text-shadow:0 1px 4px #000}.swatch .priceTag{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);margin:0}
+.customPreview{margin:6px 0 8px;border-radius:14px;border:1px solid #a56cff55;overflow:hidden;text-align:center}.customPreview canvas{width:100%;height:150px;display:block}.customCurrent{font-size:10px;font-weight:950;padding:4px 6px;color:#d9def3}.customCurrent.exclusivePick{color:#ffe27a;text-shadow:0 0 10px #ffd35a88}.customSectionTitle{font-size:11px;font-weight:950;margin:10px 0 6px;color:#cbd3eb}.customDragons{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.customDragons .card{padding:4px}.customDragons .thumb{height:52px}.customDragons .card b{font-size:9px;margin-top:3px}.customDragons .card button{display:none}.mapsGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.map.compact{min-height:58px;margin:0;padding:8px 9px}.map.compact b{font-size:11px}.map.compact small{display:none}.customTabs{margin:6px 0 8px}.previewCanvas{width:100%;height:100%;display:block}.thumb{overflow:hidden}.swatchPreview{display:none}.mapPreview{display:none}.locked{opacity:.78}.priceTag{display:inline-block;margin-top:4px;padding:2px 6px;border-radius:7px;background:#0008;color:#ffd75a;font-size:8px;font-weight:950}.shopTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:10px 0 12px;position:sticky;top:0;z-index:2;background:#111736;padding:4px;border-radius:15px;border:1px solid #ffffff12}.shopTab{min-height:48px;border-radius:10px;background:#10182f;border:1px solid #ffffff12;font-size:9px;font-weight:900}.shopTab.active{background:linear-gradient(135deg,#6f4cff,#3b8cff);border-color:#a56cff}.shopTab span{display:block;margin-top:2px;font-size:8px}.shopPanel{display:none}.shopPanel.active{display:block}.shopPanel .sub{margin-bottom:8px}.swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.swatch{height:72px;border-radius:13px;border:2px solid #ffffff22;position:relative;overflow:hidden;padding:0;background-size:cover}.swatch.selected{border-color:#fff;box-shadow:0 0 15px #fff4;outline:2px solid #fff8}.swatch.exclusive{border-color:#d8a83b;box-shadow:0 0 14px #ffd35a33}.swatch.exclusive.selected{border:3px solid #ffe27a;box-shadow:0 0 0 2px #000,0 0 22px #ffd35acc;transform:scale(1.07);z-index:2}.swatch.selected::after{content:"✓";position:absolute;top:5px;right:6px;width:16px;height:16px;border-radius:50%;background:#fff;color:#111;font-size:11px;font-weight:950;line-height:16px;text-align:center}.swatch.exclusive.selected::after{background:#ffe27a;color:#211400}.swatch span{position:absolute;left:0;right:0;bottom:18px;font-size:9px;font-weight:950;text-shadow:0 1px 4px #000}.swatch .priceTag{position:absolute;left:50%;bottom:4px;transform:translateX(-50%);margin:0}
 .map{width:100%;min-height:92px;height:auto;margin:6px 0;border-radius:16px;text-align:left;padding:14px 14px 12px;border:2px solid #ffffff22;overflow:hidden;background-size:cover}.map.selected{border-color:#fff;box-shadow:0 0 18px #fff3}.map b{display:block;font-size:14px;text-shadow:0 1px 6px #000}.map small{color:#fff;font-size:10px;text-shadow:0 1px 5px #000;opacity:.92}
 .inspectKind{display:flex;gap:5px;margin:0 0 8px}
 .inspectKind button{flex:1;min-height:34px;padding:6px 4px;border-radius:10px;background:#10182f;border:1px solid #ffffff12;font-size:9px;font-weight:900}
@@ -122,11 +112,11 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 .inspectChips button.locked{opacity:.72}
 .inspectChips canvas,.inspectChips img{width:100%;height:100%;display:block;pointer-events:none;object-fit:contain}
 
-#toast{position:fixed;z-index:60;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);opacity:0;transition:.18s;background:#111832ee;border:1px solid #7d6cff55;padding:9px 13px;border-radius:12px;font-size:11px;font-weight:900;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,0)!important}
+#toast{position:fixed;z-index:30;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translate(-50%,12px);opacity:0;transition:.18s;background:#111832ee;border:1px solid #7d6cff55;padding:9px 13px;border-radius:12px;font-size:11px;font-weight:900;pointer-events:none}.show{opacity:1!important;transform:translate(-50%,0)!important}
 
 /* Purchase confirmation */
-#confirmOverlay,#choiceOverlay,#resultOverlay,#lootOverlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:#02030ccc;backdrop-filter:blur(7px);overflow:visible}
-#confirmOverlay.showConfirm,#choiceOverlay.showConfirm,#resultOverlay.showResult,#lootOverlay.showLoot{display:flex}
+#confirmOverlay,#choiceOverlay,#resultOverlay{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;padding:20px;background:#02030ccc;backdrop-filter:blur(7px)}
+#confirmOverlay.showConfirm,#choiceOverlay.showConfirm,#resultOverlay.showResult{display:flex}
 .resultStats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 16px}
 .resultStat{background:#0e1430;border:1px solid #ffffff14;border-radius:14px;padding:11px 8px}
 .resultStat small{display:block;color:#aab3d2;font-size:9px;font-weight:900;letter-spacing:.12em}
@@ -145,91 +135,12 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 .resultMissionBottom{display:flex;justify-content:space-between;align-items:center;margin-top:5px}
 .resultMissionBottom small{font-size:9px;color:#9da8ca;font-weight:800}
 .resultMissionDone{font-size:9px;color:#4fd88a;font-weight:950}
-.confirmBox{width:min(360px,92vw);padding:22px 18px 18px;border-radius:22px;border:1px solid #9365ff66;background:linear-gradient(160deg,#151b3cf8,#080b19f8);box-shadow:0 30px 90px #000d;text-align:center;overflow:visible}
+.confirmBox{width:min(360px,92vw);padding:22px 18px 18px;border-radius:22px;border:1px solid #9365ff66;background:linear-gradient(160deg,#151b3cf8,#080b19f8);box-shadow:0 30px 90px #000d;text-align:center}
 .confirmIcon{font-size:42px;margin-bottom:6px}.confirmTitle{font-size:20px;font-weight:950;margin-bottom:8px}.confirmText{color:#cbd3eb;font-size:12px;line-height:1.45;margin-bottom:17px}
 .confirmButtons{display:grid;grid-template-columns:1fr 1fr;gap:8px}.confirmButtons button{padding:12px;border-radius:12px;font-size:12px;font-weight:950}
 .confirmCancel{background:#151d39;border:1px solid #ffffff18}.confirmBuy{background:linear-gradient(135deg,#6f4cff,#3b8cff)}
 .confirmCancelWide{width:100%;margin-top:8px}
 .inspectBack{display:inline-flex;align-items:center;min-height:34px;padding:6px 12px;margin:0 0 8px;border-radius:10px;background:#10182f;border:1px solid #ffffff12;font-size:11px;font-weight:900}
-.eggStage{text-align:center;padding:8px 4px 18px;overflow:visible}
-.eggPlate{position:relative;width:min(280px,88%);margin:0 auto 8px;padding:8px 4px 20px;overflow:visible;background:none}
-.eggArt{width:100%;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 8px 14px #0006);animation:eggIdle 2.6s ease-in-out infinite}
-@keyframes eggIdle{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-.eggGlitter{position:absolute;inset:-6px;pointer-events:none}
-.eggGlitter i{position:absolute;width:6px;height:6px;border-radius:50%;background:#fff6c8;box-shadow:0 0 8px 2px #ffd35acc;animation:twinkle 1.7s ease-in-out infinite}
-.eggGlitter i:nth-child(odd){width:4px;height:4px;border-radius:1px;transform:rotate(45deg);background:#ffe27a}
-@keyframes twinkle{0%,100%{opacity:.12;transform:scale(.55) rotate(45deg)}40%{opacity:1;transform:scale(1.35) rotate(45deg)}70%{opacity:.25}}
-.eggGlitter i:nth-child(1){left:10%;top:24%;animation-delay:0s}
-.eggGlitter i:nth-child(2){left:86%;top:20%;animation-delay:.25s}
-.eggGlitter i:nth-child(3){left:6%;top:52%;animation-delay:.5s}
-.eggGlitter i:nth-child(4){left:90%;top:48%;animation-delay:.7s}
-.eggGlitter i:nth-child(5){left:22%;top:8%;animation-delay:.15s}
-.eggGlitter i:nth-child(6){left:74%;top:6%;animation-delay:.9s}
-.eggGlitter i:nth-child(7){left:18%;top:82%;animation-delay:.35s}
-.eggGlitter i:nth-child(8){left:78%;top:84%;animation-delay:1.1s}
-.eggGlitter i:nth-child(9){left:48%;top:2%;animation-delay:.6s}
-.eggGlitter i:nth-child(10){left:50%;top:92%;animation-delay:.8s}
-.eggBreak{position:relative;width:min(260px,70vw);height:300px;margin:10px auto 14px;transform-origin:50% 70%;overflow:visible}
-.eggBreak .eggHalf{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 12px #0008)}
-.eggHalf.left{clip-path:polygon(0 0,56% 0,52% 14%,58% 26%,50% 42%,58% 56%,49% 72%,55% 100%,0 100%)}
-.eggHalf.right{clip-path:polygon(44% 0,100% 0,100% 100%,45% 100%,49% 72%,42% 56%,50% 42%,42% 26%,48% 14%)}
-.eggBreak.opening{animation:eggEpic 1.9s ease-out}
-@keyframes eggEpic{
-  0%{transform:scale(.94) rotate(0)}
-  10%{transform:scale(.98) rotate(-6deg)}
-  20%{transform:scale(1.02) rotate(7deg)}
-  30%{transform:scale(1.04) rotate(-8deg)}
-  42%{transform:scale(1.07) rotate(5deg)}
-  55%{transform:scale(1.1) rotate(-3deg)}
-  70%{transform:scale(1.06) rotate(2deg)}
-  100%{transform:scale(1) rotate(0)}
-}
-.eggBreak.opening .eggHalf.left{animation:splitL .85s .92s cubic-bezier(.12,.85,.2,1) forwards}
-.eggBreak.opening .eggHalf.right{animation:splitR .85s .92s cubic-bezier(.12,.85,.2,1) forwards}
-@keyframes splitL{0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}100%{transform:translate(-150px,18px) rotate(-38deg) scale(.85);opacity:0}}
-@keyframes splitR{0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}100%{transform:translate(150px,18px) rotate(38deg) scale(.85);opacity:0}}
-.lootBox{position:relative;overflow:visible}
-.lootAura{position:absolute;left:50%;top:42%;width:220%;height:220%;transform:translate(-50%,-50%);pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(255,176,48,.4) 0%,rgba(255,160,32,.16) 24%,rgba(255,140,20,0) 52%);opacity:.85}
-.lootBox.opening .lootAura{animation:auraPulse 1.9s ease-out}
-@keyframes auraPulse{0%{opacity:.4;transform:translate(-50%,-50%) scale(.85)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:.2;transform:translate(-50%,-50%) scale(1.15)}}
-
-.lootBox.opening{box-shadow:0 0 0 2px #ffe27a88,0 0 60px #ffb02066,0 30px 90px #000d}
-.lootRays{position:absolute;left:50%;top:38%;width:420px;height:420px;margin:-210px;border-radius:50%;opacity:0;pointer-events:none;background:repeating-conic-gradient(from 0deg,#ffe27a44 0 7deg,#ffe27a00 7deg 30deg);-webkit-mask-image:radial-gradient(circle, #000 0 40%, transparent 70%);mask-image:radial-gradient(circle,#000 0 40%,transparent 70%)}
-.lootBox.opening .lootRays{animation:raysSpin 1.9s linear forwards}
-@keyframes raysSpin{0%{opacity:0;transform:scale(.4) rotate(0)}28%{opacity:.55}70%{opacity:.8;transform:scale(1.35) rotate(140deg)}100%{opacity:0;transform:scale(1.7) rotate(210deg)}}
-.lootShock{position:absolute;left:50%;top:40%;width:24px;height:24px;margin:-12px;border:3px solid #fff6c8;border-radius:50%;opacity:0;pointer-events:none;box-shadow:0 0 18px #ffd35a}
-.lootBox.opening .lootShock{animation:shockwave .9s .9s ease-out forwards}
-@keyframes shockwave{0%{transform:scale(.4);opacity:.95}100%{transform:scale(16);opacity:0}}
-.lootFlash{position:absolute;left:50%;top:40%;width:240%;height:240%;transform:translate(-50%,-50%);background:radial-gradient(circle,#fffce8 0%,#ffd35a99 16%,rgba(255,176,48,0) 42%);opacity:0;pointer-events:none}
-.lootBox.opening .lootFlash{animation:lootFlash 1.9s ease-out forwards}
-@keyframes lootFlash{0%,46%{opacity:0}54%{opacity:1}72%{opacity:.35}100%{opacity:0}}
-.lootSparks{position:absolute;inset:0;pointer-events:none}
-.lootSparks i{position:absolute;left:50%;top:40%;width:8px;height:8px;margin:-4px;border-radius:50%;background:#ffe27a;box-shadow:0 0 12px #ffd35a;opacity:0}
-.lootBox.opening .lootSparks i{animation:sparkFly .95s .9s ease-out forwards}
-.lootSparks i:nth-child(1){--x:-90px;--y:-120px}
-.lootSparks i:nth-child(2){--x:100px;--y:-95px}
-.lootSparks i:nth-child(3){--x:-125px;--y:10px}
-.lootSparks i:nth-child(4){--x:130px;--y:22px}
-.lootSparks i:nth-child(5){--x:-55px;--y:-140px}
-.lootSparks i:nth-child(6){--x:40px;--y:-130px}
-.lootSparks i:nth-child(7){--x:-36px;--y:110px}
-.lootSparks i:nth-child(8){--x:70px;--y:105px}
-.lootSparks i:nth-child(9){--x:-140px;--y:-50px;width:5px;height:5px}
-.lootSparks i:nth-child(10){--x:145px;--y:-40px;width:5px;height:5px}
-@keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--x),var(--y)) scale(0.12);opacity:0}}
-.lootReveal.open{animation:lootPop .5s cubic-bezier(.15,1.6,.3,1)}
-@keyframes lootPop{0%{transform:scale(.35) translateY(12px);opacity:0;filter:brightness(2)}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);filter:brightness(1)}}
-.eggOdds{display:grid;grid-template-columns:1fr 1fr;gap:5px 8px;margin:10px 0 12px;text-align:left}
-.eggOdds li{list-style:none;font-size:10px;color:#c5cce4;background:#10182f;border:1px solid #ffffff12;border-radius:10px;padding:7px 8px}
-.eggOdds b{display:block;color:#fff;font-size:11px}
-.eggOdds .rare{color:#d7b4ff}.eggOdds .legend{color:#ffe27a}
-.lootReveal{display:none;margin:6px 0 12px}.lootReveal.open{display:block}
-.lootIcon{font-size:52px;line-height:1;margin:4px 0 8px;filter:drop-shadow(0 6px 12px #0008)}
-.lootTitle{font-size:22px;font-weight:950;margin-bottom:4px}
-.lootSub{color:#aab3d2;font-size:12px;margin-bottom:4px}
-.lootBox.rare{border-color:#a56cffaa;box-shadow:0 0 40px #884cff55}
-.lootBox.legendary{border-color:#ffe27aaa;box-shadow:0 0 48px #ffd35a66}
-.lootSwatch{width:72px;height:72px;border-radius:16px;margin:8px auto;border:2px solid #fff6}
 </style>
 </head>
 <body>
@@ -271,29 +182,12 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
 <div class="title">Shop</div><div class="shopCoins"><small>COINS</small><div class="coinHudRow"><canvas class="coinGlyph" width="36" height="36"></canvas><b id="shopCoins">0</b></div></div>
 <div class="shopTabs">
 <button type="button" class="shopTab active" data-shop-tab="dragons">🐉<span>Dragons</span></button>
-<button type="button" class="shopTab" data-shop-tab="colors">🎨<span>Skins</span></button>
+<button type="button" class="shopTab" data-shop-tab="colors">🎨<span>Colors / Skins</span></button>
 <button type="button" class="shopTab" data-shop-tab="maps">🗺️<span>Maps</span></button>
-<button type="button" class="shopTab" data-shop-tab="egg">🥚<span>Egg</span></button>
 </div>
 <div id="shopPanelDragons" class="shopPanel active"><div class="sub">Preview and unlock dragons.</div><div id="shopCards" class="cards"></div></div>
 <div id="shopPanelColors" class="shopPanel"><div class="sub">Preview and unlock skins · 200 coins each.</div><div id="shopSwatches" class="swatches"></div></div>
 <div id="shopPanelMaps" class="shopPanel"><div class="sub">Preview and unlock maps · 300 coins each.</div><div id="shopMapsList"></div></div>
-<div id="shopPanelEgg" class="shopPanel">
-<div class="eggStage">
-<div class="eggPlate"><div class="eggGlitter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><img class="eggArt" id="shopEggArt" src="ui/mystery-egg.png?v=egg6" alt="Mystery Egg"></div>
-<div class="title" style="font-size:22px;margin:0">Mystery Egg</div>
-<div class="sub">A random gift. 100 coins to hatch.</div>
-<ul class="eggOdds">
-<li><b>30–99 🪙</b>Common</li>
-<li><b>100–300 🪙</b>Uncommon</li>
-<li><b>500–2500 🪙</b>Rare coins</li>
-<li class="rare"><b>Skin</b>Rare</li>
-<li class="rare"><b>Exclusive skin ★</b>Very rare</li>
-<li class="legend"><b>Exclusive dragon ★</b>Ultra rare</li>
-</ul>
-<button type="button" class="inspectBuy" data-action="open-egg" id="openEggBtn">Hatch · 100 🪙</button>
-</div>
-</div>
 <div id="shopPanelInspect" class="shopPanel">
 <button type="button" class="inspectBack" data-action="inspect-back">‹ Back</button>
 <div class="inspectKind">
@@ -373,30 +267,7 @@ canvas.coinGlyph{width:20px;height:20px;display:block;flex:0 0 auto}
   </div>
 </div>
 
-<div id="lootOverlay">
-  <div class="confirmBox lootBox" id="lootBox">
-    <div class="lootAura"></div>
-    <div class="lootRays"></div>
-    <div class="lootShock"></div>
-    <div class="lootFlash"></div>
-    <div class="lootSparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-    <div class="eggBreak" id="lootEgg">
-      <div class="eggGlitter" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <img class="eggHalf left" src="ui/mystery-egg.png?v=egg6" alt="">
-      <img class="eggHalf right" src="ui/mystery-egg.png?v=egg6" alt="">
-    </div>
-    <div id="lootReveal" class="lootReveal">
-      <div class="lootIcon" id="lootIcon">🥚</div>
-      <div class="lootSwatch" id="lootSwatch" style="display:none"></div>
-      <div class="lootTitle" id="lootTitle">Mystery Egg</div>
-      <div class="lootSub" id="lootSub">Hatching…</div>
-    </div>
-    <button type="button" class="inspectBuy" id="lootClose">Done</button>
-    <button type="button" class="inspectBuy owned" id="lootAgain" data-action="open-egg" style="margin-top:6px">Hatch another · 100 🪙</button>
-  </div>
-</div>
 <div id="toast"></div>
-
 
 <script>
 (function(){
@@ -693,7 +564,8 @@ return {id:c.id,body:c.body,wing:c.wing,accent:c.accent||mixHex(c.body,.45),eye:
 function colorPrice(c){return c.exclusive?50000:(c.price||200)}
 
 function getPlayerLevel(){return Math.min(100,1+Math.floor(best/10))}
-function toast(t){toastEl.textContent=t;toastEl.className="show";clearTimeout(toast.timer);toast.timer=setTimeout(function(){toastEl.className=""},1300)}
+function toast(t){toastEl.innerHTML=t;toastEl.className="show";var _tc=toastEl.querySelectorAll("canvas.coinGlyph");for(var _i=0;_i<_tc.length;_i++)paintHudCoin(_tc[_i]);clearTimeout(toast.timer);toast.timer=setTimeout(function(){toastEl.className=""},1300)}
+var coinIconHTML='<canvas class="coinGlyph small" width="30" height="30"></canvas>';
 
 function makeGate(x){
 var gap=190,ground=H-85,min=58,max=Math.max(min+1,ground-gap-58);
@@ -1945,7 +1817,7 @@ var EYE_PUPILS={
   shadow:[{cx:0.754,cy:0.451,pr:0.015}],
   gold:[{cx:0.680,cy:0.432,pr:0.017},{cx:0.786,cy:0.427,pr:0.017}],
   void:[{cx:0.768,cy:0.435,pr:0.016}],
-  knight:[{cx:0.573,cy:0.424,pr:0.040}],
+  knight:[{cx:0.554,cy:0.413,pr:0.016}],
   nimbus:[{cx:0.821,cy:0.457,pr:0.016}],
   coral:[{cx:0.834,cy:0.443,pr:0.016}],
   thorn:[{cx:0.800,cy:0.400,pr:0.016}],
@@ -2015,31 +1887,6 @@ for(var m=0;m<mapped.length;m++){
 }
 return discs;
 }
-function fillSolidPupils(p,IW,IH,style){
-var mapped=EYE_PUPILS[style];
-if(!mapped||!mapped.length)return;
-for(var m=0;m<mapped.length;m++){
-  var e=mapped[m];
-  var cx=e.cx*IW,cy=e.cy*IH,pr=eyePr(e,IW);
-  var fillR=pr*1.12, fillR2=fillR*fillR;
-  var hx=cx-pr*0.28,hy=cy-pr*0.36,hr=Math.max(2.4,pr*0.26),hr2=hr*hr;
-  var y0=Math.max(0,Math.floor(cy-fillR-2)),y1=Math.min(IH-1,Math.ceil(cy+fillR+2));
-  var x0=Math.max(0,Math.floor(cx-fillR-2)),x1=Math.min(IW-1,Math.ceil(cx+fillR+2));
-  for(var y=y0;y<=y1;y++){
-    for(var x=x0;x<=x1;x++){
-      var dx=x-cx,dy=y-cy,d2=dx*dx+dy*dy;
-      if(d2>fillR2)continue;
-      var i=(y*IW+x)*4;
-      // Soft edge: only skip fully empty pixels far from any solid neighbor
-      var sx=x-hx,sy=y-hy;
-      if(sx*sx+sy*sy<=hr2){p[i]=250;p[i+1]=252;p[i+2]=255;p[i+3]=255;continue}
-      var edge=d2>fillR2*0.82;
-      if(edge&&p[i+3]<12)continue;
-      p[i]=6;p[i+1]=6;p[i+2]=8;p[i+3]=255;
-    }
-  }
-}
-}
 function restoreEyes(bx,im,IW,IH,style){
 var tmp=document.createElement("canvas");tmp.width=IW;tmp.height=IH;
 var tx=tmp.getContext("2d");tx.drawImage(im,0,0);
@@ -2048,7 +1895,6 @@ var cur=bx.getImageData(0,0,IW,IH),p=cur.data;
 var mapped=EYE_PUPILS[style];
 if(mapped&&mapped.length){
   var discs=copyEyeSockets(p,o,IW,IH,style);
-  if(style==="knight")fillSolidPupils(p,IW,IH,style);
   bx.putImageData(cur,0,0);
   if(bx.canvas){bx.canvas._eyePupils=discs;bx.canvas._eyeSrc=im}
   return;
@@ -2551,7 +2397,7 @@ for(var i=0;i<gates.length;i++){var p=gates[i];p.x-=speed*dt;
 if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=2;runCoins+=2;totalCoinsEarned+=2;totalGatesPassed++;scoreEl.textContent=String(score);sfxGate();coinsEl.textContent=String(coins);save()}}
 for(var c=0;c<coinItems.length;c++){var coin=coinItems[c];if(coin.collected)continue;
 coin.x-=speed*dt;var dx=dragon.x-coin.x,dy=dragon.y-coin.y;
-if(dx*dx+dy*dy<1444){coin.collected=true;coins++;runCoins+=1;totalCoinsEarned+=1;sfxCoin();coinsEl.textContent=String(coins);save();toast("+1 🪙")}}
+if(dx*dx+dy*dy<1444){coin.collected=true;coins++;runCoins+=1;totalCoinsEarned+=1;sfxCoin();coinsEl.textContent=String(coins);save();toast("+1 "+coinIconHTML)}}
 if(gates.length&&gates[0].x<-100){gates.shift();if(!gates.length)gates.push(makeGate(W+100));gates.push(makeGate(gates[gates.length-1].x+Math.max(285,W*.55)));addCoinsForCurrentGates()}
 var hitScale=(getDragon().scale||.68)*.82;var ground=H-85;if(dragon.y-15*hitScale<0||dragon.y+15*hitScale>ground){die();return}
 for(var j=0;j<gates.length;j++){var q=gates[j];
@@ -2716,17 +2562,18 @@ function renderInspectPanel(which){
     name=trio.m.name;desc=trio.m.desc;isOwned=ownedMaps.has(trio.m.id);price=300;equipped=selectedMap===trio.m.id;
   }
   if(nameEl)nameEl.textContent=name;
-  if(descEl)descEl.textContent=desc+" · "+(isOwned?"Owned":(price?price.toLocaleString()+" 🪙":"Free"));
+  if(descEl)descEl.innerHTML=desc+" · "+(isOwned?"Owned":(price?price.toLocaleString()+" "+coinIconHTML:"Free"));
   if(btn){
     btn.setAttribute("data-action","inspect-buy");
     if(isOwned){btn.textContent=equipped?"Selected":"Select";btn.className="inspectBuy owned"}
-    else{btn.textContent=(price?"Unlock · "+price.toLocaleString()+" 🪙":"Unlock");btn.className="inspectBuy"}
+    else{btn.innerHTML=(price?"Unlock · "+price.toLocaleString()+" "+coinIconHTML:"Unlock");btn.className="inspectBuy"}
   }
   var inspectCanvas=document.getElementById("shopInspectCanvas");
   if(inspectCanvas){
     inspectCanvas.classList.toggle("mapView",inspectKind==="map");
     drawInspectScene(inspectCanvas,trio.m,trio.d,trio.c,inspectKind);
   }
+  paintHudCoins();
   }catch(panelErr){
     console.error("Dragon Tap inspect panel:",panelErr);
     restoreGameSurface();
@@ -2804,9 +2651,9 @@ return "linear-gradient(135deg,"+col.body+","+col.wing+")";
 }
 function render(){
 var sc="",sw="",ml="",customD="",customC="",level=getPlayerLevel();
-for(var j=0;j<dragons.length;j++){var q=dragons[j],oo=owned.has(q.id),can=q.exclusive?(coins>=50000||level>=100):(coins>=q.price),qlabel=q.price===0?"Free":(q.exclusive?"50,000 coins OR Level 100":q.price+" coins"),qaction=oo?(selectedDragon===q.id?"Selected":"Select"):(q.exclusive&&!can?"Locked":"Unlock");sc+='<div class="card '+(q.exclusive?"exclusive ":"")+(selectedDragon===q.id?" selected":"")+(!oo&&!can?" locked":"")+'" data-action="dragon" data-id="'+q.id+'"><div class="thumb"><canvas class="previewCanvas" width="360" height="156" data-preview-dragon="'+q.id+'"></canvas></div><b>'+q.name+'</b><small>'+qlabel+'</small><button type="button" data-action="dragon" data-id="'+q.id+'" class="'+((!oo&&can)?"buy":"")+'">'+qaction+'</button></div>';}
-for(var k=0;k<colors.length;k++){var col=colors[k],co=ownedColors.has(col.id)||col.id==="natural",cs=selectedColor===col.id,pr=colorPrice(col),plabel=col.id==="natural"?"Free":(co?(cs?"Selected":"Owned"):(col.exclusive?"50,000 🪙":pr+" 🪙"));sw+='<button type="button" class="swatch '+(col.exclusive?"exclusive ":"")+(cs?"selected ":"")+(!co?"locked":"")+'" data-action="color" data-id="'+col.id+'" style="background:'+colorFill(col)+'"><span>'+col.name+(col.exclusive?" ★":"")+'</span><em class="priceTag">'+plabel+'</em></button>';}
-for(var n=0;n<maps.length;n++){var m=maps[n],mo=ownedMaps.has(m.id),ms=selectedMap===m.id;ml+='<button type="button" class="map '+(ms?"selected ":"")+(!mo?"locked":"")+'" data-action="map" data-id="'+m.id+'" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><b>'+m.name+'</b><small>'+m.desc+'</small><em class="priceTag">'+(mo?(ms?"Selected":"Owned"):"300 🪙")+'</em></button>';}
+for(var j=0;j<dragons.length;j++){var q=dragons[j],oo=owned.has(q.id),can=q.exclusive?(coins>=50000||level>=100):(coins>=q.price),qlabel=q.price===0?"Free":(q.exclusive?"50,000 "+coinIconHTML+" OR Level 100":q.price+" "+coinIconHTML),qaction=oo?(selectedDragon===q.id?"Selected":"Select"):(q.exclusive&&!can?"Locked":"Unlock");sc+='<div class="card '+(q.exclusive?"exclusive ":"")+(selectedDragon===q.id?" selected":"")+(!oo&&!can?" locked":"")+'" data-action="dragon" data-id="'+q.id+'"><div class="thumb"><canvas class="previewCanvas" width="360" height="156" data-preview-dragon="'+q.id+'"></canvas></div><b>'+q.name+'</b><small>'+qlabel+'</small><button type="button" data-action="dragon" data-id="'+q.id+'" class="'+((!oo&&can)?"buy":"")+'">'+qaction+'</button></div>';}
+for(var k=0;k<colors.length;k++){var col=colors[k],co=ownedColors.has(col.id)||col.id==="natural",cs=selectedColor===col.id,pr=colorPrice(col),plabel=col.id==="natural"?"Free":(co?(cs?"Selected":"Owned"):(col.exclusive?"50,000 "+coinIconHTML:pr+" "+coinIconHTML));sw+='<button type="button" class="swatch '+(col.exclusive?"exclusive ":"")+(cs?"selected ":"")+(!co?"locked":"")+'" data-action="color" data-id="'+col.id+'" style="background:'+colorFill(col)+'"><span>'+col.name+(col.exclusive?" ★":"")+'</span><em class="priceTag">'+plabel+'</em></button>';}
+for(var n=0;n<maps.length;n++){var m=maps[n],mo=ownedMaps.has(m.id),ms=selectedMap===m.id;ml+='<button type="button" class="map '+(ms?"selected ":"")+(!mo?"locked":"")+'" data-action="map" data-id="'+m.id+'" style="background:linear-gradient(135deg,'+m.a+','+m.b+')"><b>'+m.name+'</b><small>'+m.desc+'</small><em class="priceTag">'+(mo?(ms?"Selected":"Owned"):"300 "+coinIconHTML)+'</em></button>';}
 var customM="";
 for(var cd=0;cd<dragons.length;cd++){var dd=dragons[cd],ownD=owned.has(dd.id);customD+='<div class="card '+(selectedDragon===dd.id?"selected":"")+(!ownD?" locked":"")+'" data-action="custom-dragon" data-id="'+dd.id+'"><div class="thumb"><canvas class="previewCanvas" width="280" height="112" data-preview-dragon="'+dd.id+'"></canvas>'+(ownD?"":'<span class="lockBadge">🔒</span>')+'</div><b>'+dd.name.replace(" Dragon","")+'</b></div>';}
 for(var cc=0;cc<colors.length;cc++){var coo=colors[cc],ownC=ownedColors.has(coo.id)||coo.id==="natural";customC+='<button type="button" class="swatch '+(coo.exclusive?"exclusive ":"")+(selectedColor===coo.id?"selected":"")+(!ownC?" locked":"")+'" data-action="custom-color" data-id="'+coo.id+'" style="background:'+colorFill(coo)+'">'+(ownC?"":'<span class="lockBadge">🔒</span>')+'<span>'+coo.name+(coo.exclusive?" ★":"")+'</span></button>';}
@@ -2842,125 +2689,12 @@ if(!badge){badge=document.createElement("span");badge.className="menuBadge";btn.
 badge.textContent=String(n);
 }else if(badge){badge.remove();}
 }
-
-var EGG_PRICE=100;
-var eggBusy=false;
-var lootOverlay=document.getElementById("lootOverlay");
-var lootBox=document.getElementById("lootBox");
-var lootEgg=document.getElementById("lootEgg");
-var lootReveal=document.getElementById("lootReveal");
-var lootIcon=document.getElementById("lootIcon");
-var lootTitle=document.getElementById("lootTitle");
-var lootSub=document.getElementById("lootSub");
-var lootSwatch=document.getElementById("lootSwatch");
-var lootClose=document.getElementById("lootClose");
-var EGG_TABLE=[
-  {w:2200,kind:"coins",amount:30},
-  {w:2000,kind:"coins",amount:50},
-  {w:1800,kind:"coins",amount:75},
-  {w:1400,kind:"coins",amount:99},
-  {w:1200,kind:"coins",amount:100},
-  {w:900,kind:"coins",amount:200},
-  {w:700,kind:"coins",amount:300},
-  {w:440,kind:"coins",amount:500},
-  {w:140,kind:"coins",amount:1000},
-  {w:40,kind:"coins",amount:2500},
-  {w:650,kind:"skin"},
-  {w:90,kind:"exclusive-skin"},
-  {w:40,kind:"exclusive-dragon"}
-];
-function pickWeighted(table){
-  var t=0,i,r;
-  for(i=0;i<table.length;i++)t+=table[i].w;
-  r=Math.random()*t;
-  for(i=0;i<table.length;i++){r-=table[i].w;if(r<=0)return table[i]}
-  return table[table.length-1];
-}
-function pickFrom(list){return list.length?list[Math.floor(Math.random()*list.length)]:null}
-function coinRarity(n){return n>=1000?"legendary":n>=500?"rare":n>=100?"uncommon":"common"}
-function rollEgg(){
-  var hit=pickWeighted(EGG_TABLE);
-  if(hit.kind==="coins")return {type:"coins",amount:hit.amount,rarity:coinRarity(hit.amount)};
-  if(hit.kind==="skin"){
-    var pool=colors.filter(function(c){return !c.exclusive&&c.id!=="natural"&&!ownedColors.has(c.id)});
-    if(!pool.length)return {type:"coins",amount:200,rarity:"uncommon",dup:"All regular skins owned"};
-    var c=pickFrom(pool);
-    return {type:"skin",id:c.id,name:c.name,exclusive:false,rarity:"rare"};
-  }
-  if(hit.kind==="exclusive-skin"){
-    var pool=colors.filter(function(c){return c.exclusive&&!ownedColors.has(c.id)});
-    if(!pool.length)return {type:"coins",amount:500,rarity:"rare",dup:"All exclusive skins owned"};
-    var c=pickFrom(pool);
-    return {type:"skin",id:c.id,name:c.name,exclusive:true,rarity:"legendary"};
-  }
-  var pool=dragons.filter(function(d){return d.exclusive&&!owned.has(d.id)});
-  if(!pool.length)return {type:"coins",amount:1000,rarity:"legendary",dup:"All exclusive dragons owned"};
-  var d=pickFrom(pool);
-  return {type:"dragon",id:d.id,name:d.name,exclusive:true,rarity:"legendary"};
-}
-function applyEggReward(drop){
-  if(drop.type==="coins"){coins+=drop.amount;return}
-  if(drop.type==="skin"){ownedColors.add(drop.id);selectedColor=drop.id;return}
-  if(drop.type==="dragon"){owned.add(drop.id);selectedDragon=drop.id}
-}
-function closeLoot(){
-  if(lootOverlay)lootOverlay.classList.remove("showLoot");
-  eggBusy=false;
-}
-function describeDrop(drop){
-  if(drop.type==="coins")return {icon:"🪙",title:"+"+drop.amount.toLocaleString()+" coins",sub:drop.dup||"Lucky pocket change",swatch:""};
-  if(drop.type==="skin")return {icon:drop.exclusive?"✨":"🎨",title:drop.name+(drop.exclusive?" ★":""),sub:drop.exclusive?"Exclusive skin unlocked!":"New skin unlocked!",swatch:colorFill(findColor(drop.id))};
-  return {icon:"🐉",title:drop.name+" ★",sub:"Exclusive dragon unlocked!",swatch:""};
-}
-function showLoot(drop,skipAnim){
-  if(!lootOverlay)return;
-  var info=describeDrop(drop);
-  lootOverlay.classList.add("showLoot");
-  if(lootBox)lootBox.className="confirmBox lootBox"+(drop.rarity==="legendary"?" legendary":drop.rarity==="rare"?" rare":"");
-  if(lootBox)lootBox.classList.remove("opening");
-  if(lootEgg){lootEgg.style.display="block";lootEgg.className="eggBreak"}
-  if(lootReveal)lootReveal.classList.remove("open");
-  if(lootClose)lootClose.style.visibility="hidden";
-  var again=document.getElementById("lootAgain");if(again)again.style.display="none";
-  function reveal(){
-    if(lootEgg)lootEgg.style.display="none";
-    if(lootBox)lootBox.classList.remove("opening");
-    if(lootReveal)lootReveal.classList.add("open");
-    if(lootIcon)lootIcon.textContent=info.icon;
-    if(lootTitle)lootTitle.textContent=info.title;
-    if(lootSub)lootSub.textContent=info.sub;
-    if(lootSwatch){
-      if(info.swatch){lootSwatch.style.display="block";lootSwatch.style.background=info.swatch}
-      else lootSwatch.style.display="none";
-    }
-    if(lootClose)lootClose.style.visibility="visible";
-    if(again)again.style.display="block";
-    eggBusy=false;
-  }
-  if(skipAnim){reveal();return}
-  if(lootEgg){lootEgg.classList.remove("opening");void lootEgg.offsetWidth;lootEgg.classList.add("opening")}
-  if(lootBox){lootBox.classList.remove("opening");void lootBox.offsetWidth;lootBox.classList.add("opening")}
-  setTimeout(reveal,1880);
-}
-function openMysteryEgg(){
-  if(eggBusy)return;
-  if(coins<EGG_PRICE){toast("Need 100 coins");return}
-  eggBusy=true;
-  coins-=EGG_PRICE;
-  var drop=rollEgg();
-  applyEggReward(drop);
-  save();if(typeof saveFlush==="function")saveFlush();
-  render();
-  if(drop.rarity==="legendary"||drop.exclusive)sfxUnlock();else sfxCoin();
-  showLoot(drop,false);
-}
-
 function setShopTab(tab){
-  if(tab!=="dragons"&&tab!=="colors"&&tab!=="maps"&&tab!=="egg")tab="dragons";
-  shopInspectReturnTab=tab==="egg"?"dragons":tab;
+  if(tab!=="dragons"&&tab!=="colors"&&tab!=="maps")tab="dragons";
+  shopInspectReturnTab=tab;
   var tabs=document.querySelectorAll("[data-shop-tab]");
   for(var i=0;i<tabs.length;i++)tabs[i].classList.toggle("active",tabs[i].getAttribute("data-shop-tab")===tab);
-  var panels=["Dragons","Colors","Maps","Egg"];
+  var panels=["Dragons","Colors","Maps"];
   for(var j=0;j<panels.length;j++){
     var el=document.getElementById("shopPanel"+panels[j]);
     if(el)el.classList.toggle("active",panels[j].toLowerCase()===tab);
@@ -2979,7 +2713,7 @@ function setCustomTab(tab){
   }
 }
 function showShopInspect(){
-  var panels=["Dragons","Colors","Maps","Egg"];
+  var panels=["Dragons","Colors","Maps"];
   for(var j=0;j<panels.length;j++){
     var el=document.getElementById("shopPanel"+panels[j]);
     if(el)el.classList.remove("active");
@@ -3146,7 +2880,6 @@ coins-=300;ownedMaps.add(p.id);selectedMap=p.id;save();render();sfxUnlock();toas
 document.addEventListener("click",function(e){
 if(e.target===choiceOverlay){e.preventDefault();e.stopPropagation();sfxClick();closeChoice();return;}
 if(e.target===resultOverlay){e.preventDefault();e.stopPropagation();sfxClick();resultGoHome();return;}
-if(e.target===lootOverlay){e.preventDefault();e.stopPropagation();sfxClick();closeLoot();return;}
 var b=e.target.closest?e.target.closest("[data-action],button"):null;
 if(!b)return;
 try{
@@ -3159,7 +2892,6 @@ if(b.id==="choiceInspect"){e.preventDefault();e.stopPropagation();ensureAudio();
 if(b.id==="choiceBuy"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();doChoiceBuy();return;}
 if(b.id==="resultHome"){e.preventDefault();e.stopPropagation();sfxClick();resultGoHome();return;}
 if(b.id==="resultPlay"){e.preventDefault();e.stopPropagation();ensureAudio();sfxClick();startGame();return;}
-if(b.id==="lootClose"){e.preventDefault();e.stopPropagation();sfxClick();closeLoot();return;}
 if(b.hasAttribute("data-screen")){e.stopPropagation();var targetScreen=b.getAttribute("data-screen");show(targetScreen);render();if(targetScreen==="shop")setShopTab(b.getAttribute("data-open-shop-tab")||"dragons");if(targetScreen==="customize")setCustomTab("dragons");return;}
 if(b.hasAttribute("data-shop-tab")){setShopTab(b.getAttribute("data-shop-tab"));sfxClick();return;}
 if(b.hasAttribute("data-custom-tab")){setCustomTab(b.getAttribute("data-custom-tab"));sfxClick();return;}
@@ -3178,11 +2910,8 @@ if(action==="claim-mission"){
 e.preventDefault();e.stopPropagation();
 var mm2=missions.find(function(x){return x.id===id});
 if(!mm2||claimedMissions.has(id)||missionProgress(mm2)<mm2.target)return;
-claimedMissions.add(id);coins+=mm2.reward;save();renderMissions();sfxUnlock();toast("+"+mm2.reward+" 🪙 claimed!");
+claimedMissions.add(id);coins+=mm2.reward;save();renderMissions();sfxUnlock();toast("+"+mm2.reward+" "+coinIconHTML+" claimed!");
 return;
-}
-if(action==="open-egg"){
-e.preventDefault();e.stopPropagation();ensureAudio();openMysteryEgg();return;
 }
 if(action==="inspect-back"){
 e.preventDefault();e.stopPropagation();sfxClick();setShopTab(shopInspectReturnTab||"dragons");return;
