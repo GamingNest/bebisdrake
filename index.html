@@ -7,12 +7,12 @@
 <meta name="theme-color" content="#080616">
 <title>Dragon Tap — GamingNest</title>
 
-<link rel="manifest" href="manifest.webmanifest?v=dragon4">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=dragon4">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=dragon4">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=dragon4">
-<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png?v=dragon4">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=dragon4">
+<link rel="manifest" href="manifest.webmanifest?v=dragon5">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=dragon5">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=dragon5">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=dragon5">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png?v=dragon5">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=dragon5">
 <meta name="apple-mobile-web-app-title" content="Dragon Tap">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -581,35 +581,44 @@ var dragon={x:0,y:0,vy:0,rot:0,bank:0,stretch:0},gates=[],coinItems=[];
 var crash={active:false,time:0,duration:900,rot:0,scale:1,particles:[],kind:""};
 var pendingPurchase=null;
 var prismSeed=Math.random()*1e9;
-var audioCtx=null;
+var audioCtx=null,masterGain=null;
 /* Perf caches: gradients are expensive to build every frame, so we
    memoize the ones whose inputs rarely change and reuse them. */
 var _bgGradCache={key:null,grad:null};
 var _vignetteCache={key:null,grad:null};
 var _pillarImgCache={};
 var _saveTimer=null,_savePending=false;
+var _lastRunTimeStr="";
 function ensureAudio(){
 if(muted)return null;
 try{
-if(!audioCtx)audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+if(!audioCtx){
+audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+masterGain=audioCtx.createGain();
+masterGain.gain.value=1;
+masterGain.connect(audioCtx.destination);
+}
 if(audioCtx.state==="suspended")audioCtx.resume();
 return audioCtx;
 }catch(e){return null}
 }
-function tone(freq,duration,type,volume,slide){
-var ac=ensureAudio();if(!ac)return;
-var o=ac.createOscillator(),g=ac.createGain(),now=ac.currentTime;
+function tone(freq,duration,type,volume,slide,when){
+var ac=ensureAudio();if(!ac||!masterGain)return;
+var o=ac.createOscillator(),g=ac.createGain(),now=ac.currentTime+(when||0);
 o.type=type||"sine";o.frequency.setValueAtTime(freq,now);
 if(slide)o.frequency.linearRampToValueAtTime(Math.max(30,freq+slide),now+duration);
 g.gain.setValueAtTime(0.0001,now);g.gain.exponentialRampToValueAtTime(volume||0.05,now+0.008);g.gain.exponentialRampToValueAtTime(0.0001,now+duration);
-o.connect(g);g.connect(ac.destination);o.start(now);o.stop(now+duration+0.02);
+o.connect(g);g.connect(masterGain);o.start(now);o.stop(now+duration+0.02);
 }
 function sfxFlap(){tone(430,.08,"triangle",.035,180)}
-function sfxCoin(){tone(760,.09,"sine",.05,300);setTimeout(function(){tone(1050,.10,"sine",.035,120)},45)}
+function sfxCoin(){tone(760,.09,"sine",.05,300);tone(1050,.10,"sine",.035,120,0.045)}
 function sfxGate(){tone(520,.07,"square",.018,-100)}
 function sfxDie(){tone(240,.22,"sawtooth",.045,-170)}
 function sfxClick(){tone(300,.045,"sine",.018,80)}
-function sfxUnlock(){tone(520,.08,"triangle",.035,180);setTimeout(function(){tone(780,.12,"triangle",.04,220)},70)}
+function sfxUnlock(){tone(520,.08,"triangle",.035,180);tone(780,.12,"triangle",.04,220,0.07)}
+/* Run gameplay SFX on the next animation frame so oscillator setup
+   does not block the tap/score frame on mobile browsers. */
+function scheduleSfx(fn){if(muted)return;requestAnimationFrame(fn)}
 
 function persistNow(){
 localStorage.setItem("gn_best",String(best));
@@ -629,11 +638,16 @@ _savePending=false;
    localStorage writes (synchronous disk I/O) so rapid coin/gate pickups
    during gameplay don't stall the frame. Anything time-critical (buying,
    resetting, leaving the game) should call saveFlush() right after. */
+/* During an active run, call sites already update score/coins HUD.
+   Skip menu/home/missions DOM work here — those hidden trees still force
+   style/layout on mobile and hitch on every gate/coin. Persist stays batched. */
 function save(){
+if(mode!=="playing"){
 bestEl.textContent=String(best);coinsEl.textContent=String(coins);
 var sc=document.getElementById("shopCoins");if(sc)sc.textContent=String(coins);
 refreshHomeStats();
 updateMissionsBadge();
+}
 _savePending=true;
 if(_saveTimer)return;
 _saveTimer=setTimeout(function(){_saveTimer=null;if(_savePending)persistNow()},400);
@@ -694,7 +708,7 @@ return {id:c.id,body:c.body,wing:c.wing,accent:c.accent||mixHex(c.body,.45),eye:
 function colorPrice(c){return c.exclusive?50000:(c.price||200)}
 
 function getPlayerLevel(){return Math.min(100,1+Math.floor(best/10))}
-function toast(t){toastEl.textContent=t;toastEl.className="show";clearTimeout(toast.timer);toast.timer=setTimeout(function(){toastEl.className=""},1300)}
+function toast(t){clearTimeout(toast.timer);if(toastEl.className==="show"&&toastEl.textContent===t){toast.timer=setTimeout(function(){toastEl.className=""},1300);return}toastEl.textContent=t;toastEl.className="show";toast.timer=setTimeout(function(){toastEl.className=""},1300)}
 
 function makeGate(x){
 var gap=190,ground=H-85,min=58,max=Math.max(min+1,ground-gap-58);
@@ -734,12 +748,12 @@ dragon.x=W*.28;dragon.y=H*.42;dragon.vy=0;dragon.rot=0;dragon.bank=0;dragon.stre
 gates=[makeGate(W+100),makeGate(W+100+Math.max(285,W*.55))];
 addCoinsForCurrentGates();
 scoreEl.textContent="0";coinsEl.textContent=String(coins);
-if(runTimeEl)runTimeEl.textContent="0:00";
+if(runTimeEl){_lastRunTimeStr="0:00";runTimeEl.textContent="0:00";}
 }
 function startGame(){closeResult();prismSeed=Math.random()*1e9;if(paintDragon.cache){for(var k in paintDragon.cache)if(k.indexOf(":prism")!==-1)delete paintDragon.cache[k]}resetGame();mode="playing";paused=false;crash.active=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");overlay.classList.remove("home-open");flap()}
 function flap(){
 if(mode==="crashing")return;
-if(mode==="playing"){if(paused)return;dragon.vy=-455;wing=1;sfxFlap()}
+if(mode==="playing"){if(paused)return;dragon.vy=-455;wing=1;scheduleSfx(sfxFlap)}
 else if(mode==="menu"||mode==="dead"){if(resultOverlay&&resultOverlay.classList.contains("showResult"))return;startGame();}
 }
 function crashPush(p){crash.particles.push(p)}
@@ -2541,7 +2555,7 @@ if(mode==="crashing"){
 }
 if(mode!=="playing"||paused)return;
 playTime+=dt;
-if(runTimeEl)runTimeEl.textContent=formatRunTime(playTime);
+if(runTimeEl){var rt=formatRunTime(playTime);if(rt!==_lastRunTimeStr){_lastRunTimeStr=rt;runTimeEl.textContent=rt}}
 dragon.vy+=1450*dt;dragon.y+=dragon.vy*dt;scroll+=210*dt;wing=Math.max(0,wing-dt*3);
 var targetRot=Math.max(-0.48,Math.min(0.82,dragon.vy/720));
 dragon.rot+=(targetRot-dragon.rot)*Math.min(1,dt*9);
@@ -2549,10 +2563,10 @@ dragon.bank+=(targetRot*.35-dragon.bank)*Math.min(1,dt*7);
 dragon.stretch+=((Math.max(-.08,Math.min(.12,-dragon.vy/2200)))-dragon.stretch)*Math.min(1,dt*8);
 var speed=205+Math.min(140,score*5);
 for(var i=0;i<gates.length;i++){var p=gates[i];p.x-=speed*dt;
-if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=2;runCoins+=2;totalCoinsEarned+=2;totalGatesPassed++;scoreEl.textContent=String(score);sfxGate();coinsEl.textContent=String(coins);save()}}
+if(!p.passed&&p.x+76<dragon.x){p.passed=true;score++;coins+=2;runCoins+=2;totalCoinsEarned+=2;totalGatesPassed++;scoreEl.textContent=String(score);coinsEl.textContent=String(coins);scheduleSfx(sfxGate);save()}}
 for(var c=0;c<coinItems.length;c++){var coin=coinItems[c];if(coin.collected)continue;
 coin.x-=speed*dt;var dx=dragon.x-coin.x,dy=dragon.y-coin.y;
-if(dx*dx+dy*dy<1444){coin.collected=true;coins++;runCoins+=1;totalCoinsEarned+=1;sfxCoin();coinsEl.textContent=String(coins);save();toast("+1 🪙")}}
+if(dx*dx+dy*dy<1444){coin.collected=true;coins++;runCoins+=1;totalCoinsEarned+=1;coinsEl.textContent=String(coins);scheduleSfx(sfxCoin);save()}}
 if(gates.length&&gates[0].x<-100){gates.shift();if(!gates.length)gates.push(makeGate(W+100));gates.push(makeGate(gates[gates.length-1].x+Math.max(285,W*.55)));addCoinsForCurrentGates()}
 var hitScale=(getDragon().scale||.68)*.82;var ground=H-85;if(dragon.y-15*hitScale<0||dragon.y+15*hitScale>ground){die();return}
 for(var j=0;j<gates.length;j++){var q=gates[j];
@@ -2563,7 +2577,6 @@ function loop(t){
   var dt=Math.min(.035,last?(t-last)/1000:.016);
   last=t;
   update(dt);
-  restoreGameSurface();
   if(ctx){
 
   /* iOS/Safari-safe frame reset:
