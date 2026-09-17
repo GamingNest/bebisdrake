@@ -7,19 +7,19 @@
 <meta name="theme-color" content="#080616">
 <title>Dragon Tap — GamingNest</title>
 
-<link rel="manifest" href="manifest.webmanifest?v=dragon5">
-<link rel="apple-touch-icon" href="icons/icon-180.png?v=dragon5">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=dragon5">
-<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=dragon5">
-<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png?v=dragon5">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=dragon5">
+<link rel="manifest" href="manifest.webmanifest?v=dragon6">
+<link rel="apple-touch-icon" href="icons/icon-180.png?v=dragon6">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png?v=dragon6">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png?v=dragon6">
+<link rel="icon" type="image/png" sizes="48x48" href="icons/favicon-48.png?v=dragon6">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=dragon6">
 <meta name="apple-mobile-web-app-title" content="Dragon Tap">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080616;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080616;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;touch-action:none;-webkit-user-select:none;user-select:none}
 body{overscroll-behavior:none}
 button{font:inherit;color:#fff;border:0;cursor:pointer}
 #game{position:fixed;inset:0;width:100%;height:100%;touch-action:none}
@@ -616,9 +616,17 @@ function sfxGate(){tone(520,.07,"square",.018,-100)}
 function sfxDie(){tone(240,.22,"sawtooth",.045,-170)}
 function sfxClick(){tone(300,.045,"sine",.018,80)}
 function sfxUnlock(){tone(520,.08,"triangle",.035,180);tone(780,.12,"triangle",.04,220,0.07)}
-/* Run gameplay SFX on the next animation frame so oscillator setup
-   does not block the tap/score frame on mobile browsers. */
-function scheduleSfx(fn){if(muted)return;requestAnimationFrame(fn)}
+/* Queue gameplay SFX and flush AFTER the frame paints (rAF + setTimeout 0)
+   so oscillator setup never contends with the tap response frame. */
+var _sfxQueue=[];
+function scheduleSfx(fn){if(muted||!fn)return;_sfxQueue.push(fn)}
+function flushSfxQueue(){
+if(!_sfxQueue.length)return;
+var q=_sfxQueue;_sfxQueue=[];
+setTimeout(function(){
+for(var i=0;i<q.length;i++){try{q[i]()}catch(sfxErr){}}
+},0);
+}
 
 function persistNow(){
 localStorage.setItem("gn_best",String(best));
@@ -753,7 +761,15 @@ if(runTimeEl){_lastRunTimeStr="0:00";runTimeEl.textContent="0:00";}
 function startGame(){closeResult();prismSeed=Math.random()*1e9;if(paintDragon.cache){for(var k in paintDragon.cache)if(k.indexOf(":prism")!==-1)delete paintDragon.cache[k]}resetGame();mode="playing";paused=false;crash.active=false;pause.textContent="Ⅱ";overlay.classList.add("hidden");overlay.classList.remove("home-open");flap()}
 function flap(){
 if(mode==="crashing")return;
-if(mode==="playing"){if(paused)return;dragon.vy=-455;wing=1;scheduleSfx(sfxFlap)}
+if(mode==="playing"){
+if(paused)return;
+/* Physics only here — SFX/VFX deferred so the tap frame stays tiny. */
+dragon.vy=-455;wing=1;
+/* Bias pitch immediately so the next paint reads the flap without waiting a full update(). */
+var tr=Math.max(-0.48,Math.min(0.82,dragon.vy/720));
+dragon.rot+= (tr-dragon.rot)*0.7;
+scheduleSfx(sfxFlap);
+}
 else if(mode==="menu"||mode==="dead"){if(resultOverlay&&resultOverlay.classList.contains("showResult"))return;startGame();}
 }
 function crashPush(p){crash.particles.push(p)}
@@ -2600,6 +2616,7 @@ function loop(t){
     console.error("Dragon Tap frame:",loopErr);
     restoreGameSurface();
   }
+  flushSfxQueue();
   requestAnimationFrame(loop);
 }
 
@@ -3285,8 +3302,31 @@ if(homeDragon)homeDragon.addEventListener("click",startFromHome);
 
 document.getElementById("sound").addEventListener("click",function(e){e.stopPropagation();muted=!muted;save();this.innerHTML="<i>"+(muted?"🔇":"🔊")+"</i>Sound";if(!muted){ensureAudio();sfxClick()}});
 document.getElementById("reset").addEventListener("click",function(e){e.stopPropagation();askResetConfirm();});
-function input(e){if(e)e.preventDefault();var now=Date.now();if(now-lastInput<100)return;lastInput=now;flap()}
+/* Tap path: keep this handler allocation-free and tiny.
+   - touchstart + pointerdown (deduped)
+   - ignore compatibility mouse/click ghosts after touch (~300ms on mobile)
+   - only set flap physics; SFX flushes after paint via scheduleSfx */
+var lastTouchAt=0;
+function input(e){
+if(e){
+if(e.cancelable)e.preventDefault();
+if(e.stopPropagation)e.stopPropagation();
+}
+var now=performance.now();
+var pType=e&&e.pointerType;
+var isTouch= !!(e&&(e.type==="touchstart"||pType==="touch"||(e.touches&&e.touches.length)));
+var isPen= pType==="pen";
+var isMouse= !!(e&&(pType==="mouse"||e.type==="mousedown"||e.type==="click"));
+if(isTouch||isPen)lastTouchAt=now;
+/* Ghost mouse events synthesized after touch — swallowing these removes the late second flap. */
+if(isMouse&&lastTouchAt>0&&(now-lastTouchAt)<750)return;
+if(now-lastInput<90)return;
+lastInput=now;
+flap();
+}
+canvas.style.touchAction="none";
 canvas.addEventListener("pointerdown",input,{passive:false});
+canvas.addEventListener("touchstart",input,{passive:false});
 window.addEventListener("keydown",function(e){if(e.code==="Space"||e.code==="ArrowUp"){e.preventDefault();input(e)}});
 
 bestEl.textContent=String(best);coinsEl.textContent=String(coins);
